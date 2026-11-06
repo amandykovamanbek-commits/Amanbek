@@ -163,11 +163,28 @@
     <div id="cond" style="margin-top:14px;background:#2c2e3a;border-radius:26px 26px 26px 6px;padding:20px 26px;font-size:44px;font-weight:900;color:#FFD43B;width:fit-content;opacity:0">Есть одно условие…</div>
   </div>
 
+  <div id="cPoll" class="card" style="width:900px;padding:30px 34px">
+    <div class="lbl">часть 3 · какое условие?</div>
+    <div class="opt" style="display:flex;align-items:center;gap:22px;background:#f2f4f8;border-radius:22px;padding:16px 20px;margin-top:14px;opacity:0">
+      <div style="flex:none;width:76px;height:76px;border-radius:20px;background:#4f6bff;color:#fff;font-size:50px;font-weight:900;display:flex;align-items:center;justify-content:center">А</div>
+      <div style="font-size:38px;font-weight:800;line-height:1.15">Монтировать каждый день без выходных</div></div>
+    <div class="opt" style="display:flex;align-items:center;gap:22px;background:#f2f4f8;border-radius:22px;padding:16px 20px;margin-top:14px;opacity:0">
+      <div style="flex:none;width:76px;height:76px;border-radius:20px;background:#16a34a;color:#fff;font-size:50px;font-weight:900;display:flex;align-items:center;justify-content:center">Б</div>
+      <div style="font-size:38px;font-weight:800;line-height:1.15">Никому не говорить, что монтаж его</div></div>
+    <div class="opt" style="display:flex;align-items:center;gap:22px;background:#f2f4f8;border-radius:22px;padding:16px 20px;margin-top:14px;opacity:0">
+      <div style="flex:none;width:76px;height:76px;border-radius:20px;background:#e5383b;color:#fff;font-size:50px;font-weight:900;display:flex;align-items:center;justify-content:center">В</div>
+      <div style="font-size:38px;font-weight:800;line-height:1.15">Бросить школу и уйти к нему в команду</div></div>
+    <div class="opt" style="display:flex;align-items:center;gap:22px;background:#f2f4f8;border-radius:22px;padding:16px 20px;margin-top:14px;opacity:0">
+      <div style="flex:none;width:76px;height:76px;border-radius:20px;background:#f59f00;color:#fff;font-size:50px;font-weight:900;display:flex;align-items:center;justify-content:center">Г</div>
+      <div style="font-size:38px;font-weight:800;line-height:1.15">Новое видео за сутки — бесплатно</div></div>
+    
+  </div>
+
   <div id="confetti" class="layer"></div>
 
   <div id="cEnd" class="layer" style="opacity:0">
     <div style="position:absolute;left:0;right:0;top:1640px;text-align:center">
-      <span style="display:inline-block;background:#FFD43B;color:#16171d;font-weight:900;font-size:40px;padding:14px 30px;border-radius:40px;box-shadow:0 10px 30px rgba(0,0,0,.35)">КАКОЕ УСЛОВИЕ? ПИШИ ↓</span><br>
+      <span style="display:inline-block;background:#FFD43B;color:#16171d;font-weight:900;font-size:40px;padding:14px 30px;border-radius:40px;box-shadow:0 10px 30px rgba(0,0,0,.35)">ПИШИ БУКВУ В КОММЕНТЫ ↓</span><br>
       <span style="display:inline-block;margin-top:18px;background:#16171d;color:#fff;font-weight:900;font-size:36px;padding:12px 28px;border-radius:40px">ЧАСТЬ 3 — СКОРО</span>
     </div>
   </div>
@@ -212,6 +229,7 @@ const SCENES = [
   { id: 's10', bg: 'bedEve',   text: 'А вечером ролик выходит. Миллион просмотров за сутки. В описании: «Монтаж — Даня».' },
   { id: 's11', bg: 'bedEve',   text: 'И приходит перевод — пятнадцать тысяч рублей. Первые настоящие деньги!' },
   { id: 's12', bg: 'bedNight', text: 'Но Блиц пишет снова: «Хочешь работать со мной постоянно? Есть одно условие». Какое? Узнаешь в третьей части.' },
+  { id: 's13', bg: 'bedNight', text: 'А пока — угадай, какое условие. А — монтировать каждый день, без выходных. Б — никому не говорить, что монтаж его. В — бросить школу и уйти к нему в команду. Г — смонтировать новое видео за сутки. Бесплатно. Пиши букву в комментах!' },
 ];
 const norm = w => w.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/g, '');
 
@@ -574,7 +592,8 @@ function buildCues() {
   T.friday = S('s9').start; T.sendIn = W('s9', 'отправляет') - .1; T.silent = W('s9', 'блиц'); T.sendOut = S('s9').end;
   T.viewsIn = W('s10', 'ролик') - .05; T.mil = W('s10', 'миллион'); T.desc = W('s10', 'монтаж'); T.viewsOut = S('s10').end;
   T.bank = W('s11', 'перевод'); T.bankOut = S('s11').end; T.first = W('s11', 'первые');
-  T.o2In = W('s12', 'хочешь') - .1; T.cond = W('s12', 'условие'); T.q = W('s12', 'какое'); T.endIn = W('s12', 'узнаешь'); T.o2Out = DURATION + 1;
+  T.o2In = W('s12', 'хочешь') - .1; T.cond = W('s12', 'условие'); T.q = W('s12', 'какое'); T.o2Out = S('s12').end;
+  T.pollIn = S('s13').start + .05; T.opt = [W('s13', 'а', 1), W('s13', 'б'), W('s13', 'в'), W('s13', 'г')]; T.endIn = W('s13', 'пиши'); T.pollOut = DURATION + 1;
   T.condIn = W('s12', 'есть');
 }
 buildCues();
@@ -595,6 +614,7 @@ const CARDS = () => [
   ['cViews', T.viewsIn, T.viewsOut, { top: 220 }],
   ['cBank', T.bank - .05, T.bankOut, { top: 280 }],
   ['cOffer2', T.o2In, T.o2Out, { top: 260 }],
+  ['cPoll', T.pollIn, T.pollOut, { top: 220 }],
 ];
 
 window.getSfx = function () {
@@ -613,7 +633,7 @@ window.getSfx = function () {
   for (let x = T.mil - .3; x < T.mil + .9; x += .09) ev.push({ t: x, k: 'tick' });
   ev.push({ t: T.mil + .9, k: 'coin' });
   ev.push({ t: T.bank, k: 'success' }); ev.push({ t: T.bank + .3, k: 'coin' }); ev.push({ t: T.first, k: 'sparkle' });
-  ev.push({ t: T.o2In, k: 'ding' }); ev.push({ t: T.cond, k: 'buzz' }); ev.push({ t: T.endIn, k: 'pop' });
+  ev.push({ t: T.o2In, k: 'ding' }); ev.push({ t: T.cond, k: 'buzz' }); T.opt.forEach(x => ev.push({ t: x, k: 'pop' })); ev.push({ t: T.endIn, k: 'success' });
   return ev.filter(e => e.t >= 0 && e.t < DURATION);
 };
 window.DURATION = DURATION;
@@ -707,7 +727,7 @@ window.renderAt = function (t) {
   if (id === 's10') { pose = 'phone'; mood = t < T.mil ? 'phone' : t < T.desc ? 'shock' : 'happy'; }
   if (id === 's11') { pose = t < T.bank + .3 ? 'phone' : 'cheer'; mood = t < T.bank ? 'happy' : 'dream'; }
   if (id === 's12') { pose = 'phone'; glow = .25; mood = t < T.cond ? 'phone' : 'shock'; buzz = clamp(1 - Math.abs(t - T.o2In - .3) / .5); }
-  if (t >= T.endIn) mood = 'nervous';
+  if (id === 's13') { mood = t < T.opt[0] ? 'focus' : t < T.endIn ? ['neutral', 'nervous', 'shock', 'tired'][T.opt.filter(x => t >= x).length - 1] : 'happy'; }
   applyChar(t, MOODS[mood], pose, glow, shakeHands, buzz, sc);
 
   // ---------- cards
@@ -734,6 +754,7 @@ window.renderAt = function (t) {
   { const k = clamp((t - T.sendIn) / Math.max(.5, W('s9', 'дедлайна', 0, 'e') - T.sendIn)); $('sendBar').style.width = (k * 100) + '%'; const left = Math.max(0, Math.round(3552 - (t - T.sendIn) * 9)); $('dlLeft').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; $('sendRead').style.opacity = clamp((t - T.silent) / .3); }
   { const k = clamp((t - T.mil + .3) / 1.2); $('viewsN').textContent = Math.round(easeOut(k) * 1000000).toLocaleString('ru-RU'); const h = clamp((t - T.desc) / .25); $('descHi').style.background = `rgba(255,212,59,${h})`; $('descHi').style.transform = `scale(${1 + .15 * Math.sin(Math.PI * h)})`; $('descHi').style.display = 'inline-block'; }
   { $('cond').style.opacity = clamp((t - T.condIn) / .3); $('cond').style.transform = `translateY(${(1 - easeOut(clamp((t - T.condIn) / .3))) * 30}px)`; }
+  { document.querySelectorAll('#cPoll .opt').forEach((o, i) => { const k = clamp((t - T.opt[i] + .05) / .3); const on = t >= T.opt[i] && (i === 3 ? t < T.endIn : t < T.opt[i + 1]); o.style.opacity = k; o.style.transform = `translateX(${(1 - easeOutBack(k)) * -80}px) scale(${on ? 1.04 : 1})`; o.style.background = on ? '#fff3bf' : '#f2f4f8'; }); }
   // confetti
   CONF.forEach(c => { const d = t - T.bank - +c.dataset.d; if (d < 0 || d > 3.2) { c.style.opacity = 0; return; } const y = -60 + +c.dataset.v * d * .9 + 300 * d * d; c.style.opacity = clamp((3.2 - d) / .5); c.style.transform = `translate(${+c.dataset.x + Math.sin(d * 4 + +c.dataset.x) * 40}px, ${y}px) rotate(${+c.dataset.r * d}deg)`; });
   // end tag
@@ -744,7 +765,7 @@ window.renderAt = function (t) {
   const fxDef = [
     [T.hum, T.crash - .05, 'ВЖЖЖЖ', 120, '#fff', 830],
     [T.friday, T.sendIn, 'ПЯТНИЦА', 150, '#FFD43B', 760],
-    [T.q, T.endIn + .1, '?', 330, '#FFD43B', 780],
+    [T.q, S('s12').end, '?', 330, '#FFD43B', 780],
   ];
   for (const [a, b, txt, size, col, top] of fxDef) { const st = cardState(t, a, b); if (st) fxs = { st, txt, size, col, top }; }
   if (fxs) { fx.textContent = fxs.txt; fx.style.fontSize = fxs.size + 'px'; fx.style.color = fxs.col; fx.style.top = fxs.top + 'px'; fx.style.opacity = fxs.st.o; fx.style.transform = `translateY(${fxs.st.y}px) scale(${fxs.st.s}) rotate(${Math.sin(t * 9) * 3}deg)`; }
