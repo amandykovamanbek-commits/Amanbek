@@ -1,0 +1,3 @@
+video/out/
+*.mp4
+!video/out/*.mp4
