@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # mix.sh silent.mp4 out.mp4 : voice + SFX (-12 dB under voice), two-pass loudnorm to -14 LUFS, mux
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "${EP:-$(dirname "$0")}"
 PRE="[0:a]aresample=48000,apad=pad_dur=3[v];[1:a]volume=0.25[s];[v][s]amix=inputs=2:duration=longest:normalize=0"
 J=$(ffmpeg -hide_banner -i audio/voice.mp3 -i audio/sfx.wav -filter_complex "$PRE,loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json" -f null - 2>&1 | sed -n '/^{/,/^}/p')
 g() { echo "$J" | python3 -c "import json,sys;print(json.load(sys.stdin)['$1'])"; }

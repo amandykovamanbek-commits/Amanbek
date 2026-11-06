@@ -3,7 +3,7 @@ Speech/silence segmentation via ffmpeg silencedetect, phrase boundaries (punctua
 matched to pauses with monotone DP, words inside spans distributed by syllable count.
 usage: python3 align_local.py audio/voice.mp3  -> data/words.js"""
 import re, sys, json, subprocess, pathlib
-here = pathlib.Path(__file__).parent
+here = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else pathlib.Path(__file__).parent
 audio = sys.argv[1]
 html = (here / 'index.html').read_text()
 texts = re.findall(r"\{ id: '\w+',\s*bg: '\w+',\s*text: '([^']+)' \}", html)

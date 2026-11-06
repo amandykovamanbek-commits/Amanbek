@@ -20,6 +20,8 @@ const S = {
   wah: t0 => { let ph = 0, lp = 0; add(t0, .9, t => { const f = (t < .3 ? 233 : t < .55 ? 220 : 196 - 12 * (t - .55)) * (1 + .02 * Math.sin(t * 38)); ph += f / SR; const saw = 2 * (ph % 1) - 1; lp += .12 * (saw - lp); return lp * .22 * Math.min(1, t * 30) * (t > .8 ? (0.9 - t) * 10 : 1); }); },
   buzz: t0 => add(t0, .65, t => Math.tanh(3 * tone(150, t)) * .16 * (.5 + .5 * Math.sign(Math.sin(2 * Math.PI * 9 * t))) * Math.min(1, t * 50)),
   ding: t0 => add(t0, 1.1, t => (tone(1568, t) * .6 + tone(2093, t) * .4 + tone(3136, t) * .15 * Math.exp(-t * 9)) * Math.exp(-t * 4) * .17),
+  error: t0 => { add(t0, .16, t => Math.sign(tone(440, t)) * .1 * Math.min(1, t * 300)); add(t0 + .2, .3, t => Math.sign(tone(330, t)) * .1 * Math.min(1, t * 300) * Math.exp(-t * 4)); },
+  hum: t0 => { let lp = 0; add(t0, 1.4, t => { lp += .02 * (rnd() - lp); const env = Math.min(1, t * 4) * Math.min(1, (1.4 - t) * 4); return (lp * 3 + tone(120, t) * .05 + tone(240, t) * .02) * env * .6; }); },
   success: t0 => [523, 659, 784, 1047].forEach((f, i) => add(t0 + i * .07, .5, t => (tone(f, t) + .3 * tone(2 * f, t)) * Math.exp(-t * 6) * .1)),
 };
 for (const e of events) (S[e.k] || S.pop)(e.t);

@@ -12,7 +12,7 @@ const [mode, a1, a2, a3] = process.argv.slice(2);
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
 page.on('pageerror', e => console.error('PAGE ERROR', e.message));
-await page.goto('file://' + path.join(dir, 'index.html') + '?render');
+await page.goto('file://' + path.join(process.env.EP ? path.resolve(process.env.EP) : dir, 'index.html') + '?render');
 await page.waitForFunction(() => window.READY === true);
 await page.evaluate(() => document.fonts.ready);
 const duration = await page.evaluate(() => window.DURATION);
