@@ -1,3 +1,4 @@
 video/out/
 *.mp4
 !video/out/*.mp4
+!video/part2/out/*.mp4
