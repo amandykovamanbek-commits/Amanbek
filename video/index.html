@@ -171,7 +171,7 @@
   </div>
 
   <div id="cEnd" class="layer" style="opacity:0">
-    <div style="position:absolute;left:0;right:0;top:1250px;text-align:center">
+    <div style="position:absolute;left:0;right:0;top:1640px;text-align:center">
       <span style="display:inline-block;background:#FFD43B;color:#16171d;font-weight:900;font-size:40px;padding:14px 30px;border-radius:40px;box-shadow:0 10px 30px rgba(0,0,0,.35)">ПИШИ В КОММЕНТЫ ↓</span><br>
       <span style="display:inline-block;margin-top:18px;background:#16171d;color:#fff;font-weight:900;font-size:36px;padding:12px 28px;border-radius:40px">ЧАСТЬ 2 — СКОРО</span>
     </div>
@@ -255,7 +255,8 @@ SCENES.forEach((sc, i) => { sc.end = i < SCENES.length - 1 ? SCENES[i + 1].start
 function W(sid, pre, nth = 0, edge = 's') {
   const sc = SCENES.find(s => s.id === sid);
   const p = norm(pre);
-  const hits = sc.tokens.filter(t => t.n.startsWith(p));
+  let hits = sc.tokens.filter(t => t.n === p);
+  if (!hits.length) hits = sc.tokens.filter(t => t.n.startsWith(p));
   if (!hits.length) throw new Error('cue not found ' + sid + ' ' + pre);
   return hits[Math.min(nth, hits.length - 1)][edge];
 }
@@ -703,7 +704,7 @@ window.renderAt = function (t) {
   // ---------- big fx text
   const fx = $('fxText'); let fxs = null;
   const fxDef = [
-    [T.zero, T.zero + 1.6, '0', 300, '#ff4d4f', 820],
+    [T.zero, T.zero + 1.6, '0', 300, '#ff4d4f', 700],
     [T.zero2 + .1, T.dealOut, '0 ₽', 210, '#ff4d4f', 900],
     [T.q, T.endIn + .1, '?', 330, '#FFD43B', 780],
     [T.board, T.board + 1.0, 'К ДОСКЕ!', 120, '#fff', 860],
