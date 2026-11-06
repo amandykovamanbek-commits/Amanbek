@@ -47,6 +47,13 @@ for s in syl: cum.append(cum[-1] + s)
 r = Ts / cum[-1]
 # candidate boundaries after punctuated words; strength by punctuation
 B = [(i + 1, 3 if re.search(r'[.!?…]', w) else 2 if re.search(r'[:»]', w) else 1) for i, w in enumerate(words[:-1]) if re.search(r'[.!?…,:—»]$', w)]
+# optional forced anchor: env FORCE="<word-ending>|<time inside the gap>" (e.g. junction of two clips)
+import os
+FORCE = None
+if os.environ.get('FORCE'):
+    fw, ft = os.environ['FORCE'].rsplit('|', 1)
+    idx = max(i for i, w in enumerate(words) if w.endswith(fw)) + 1
+    FORCE = (idx, float(ft))
 # interior silences (between speech segments)
 gaps = [(speech[k][1], speech[k + 1][0]) for k in range(len(speech) - 1)]
 gp = [rt2sp(a) for a, b in gaps]
@@ -64,6 +71,7 @@ for i in range(nB + 1):
         if j < nG and D[i][j] + skipG(gaps[j]) < D[i][j + 1]: D[i][j + 1] = D[i][j] + skipG(gaps[j]); P[i][j + 1] = (i, j, None)
         if i < nB and j < nG:
             c = abs(cum[B[i][0]] * r - gp[j]) * 1.6
+            if FORCE and B[i][0] == FORCE[0]: c = -50 if gaps[j][0] - .05 <= FORCE[1] <= gaps[j][1] + .05 else 1e6
             if D[i][j] + c < D[i + 1][j + 1]: D[i + 1][j + 1] = D[i][j] + c; P[i + 1][j + 1] = (i, j, (i, j))
 i, j, anchors = nB, nG, []
 while (i, j) != (0, 0):

@@ -703,7 +703,7 @@ window.renderAt = function (t) {
   const fx = $('fxText'); let fxs = null;
   const fxDef = [
     [T.forty, T.buyIn - .05, '40 000 ₽', 150, '#51cf66', 700],
-    [T.cup, T.momSay - .05, '...', 200, '#fff', 620],
+    [T.cup, T.momSay - .05, 'ТИШИНА', 110, '#fff', 660],
     [T.lost, T.waitOut, 'ВСЁ?', 160, '#ff4d4f', 830],
   ];
   for (const [a, b, txt, size, col, top] of fxDef) { const st = cardState(t, a, b); if (st) fxs = { st, txt, size, col, top }; }
