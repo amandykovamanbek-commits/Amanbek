@@ -2,7 +2,7 @@
 usage: python3 align.py transcript_words.json  -> writes data/words.js
 transcript_words.json: list of {"text"|"word", "start", "end"}"""
 import json, re, sys, difflib, pathlib
-here = pathlib.Path(__file__).parent
+here = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else pathlib.Path(__file__).parent
 html = (here / 'index.html').read_text()
 texts = re.findall(r"\{ id: '\w+',\s*bg: '\w+',\s*text: '([^']+)' \}", html)
 norm = lambda w: re.sub(r'[^a-zа-я0-9]', '', w.lower().replace('ё', 'е'))
