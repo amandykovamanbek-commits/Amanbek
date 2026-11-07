@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Зарабатываю на монтаже — часть 5</title>
+<style>
+  html,body{margin:0;background:#000;overflow:hidden}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Inter,'DejaVu Sans',sans-serif;background:#000;transform-origin:0 0}
+  svg#world{position:absolute;left:0;top:0;width:1080px;height:1920px}
+  .layer{position:absolute;left:0;top:0;width:1080px;height:1920px;pointer-events:none}
+  .card{position:absolute;left:540px;top:0;background:#fff;border-radius:34px;box-shadow:0 22px 50px rgba(0,0,0,.28);padding:30px 38px;box-sizing:border-box;opacity:0;color:#16171d}
+  .lbl{font-size:24px;font-weight:800;letter-spacing:2px;color:#8a8f9c;text-transform:uppercase;margin-bottom:10px}
+  .big{font-weight:900;letter-spacing:-2px;line-height:1}
+  #hud{position:absolute;left:36px;right:36px;top:46px;display:flex;gap:16px}
+  .hb{flex:1;background:#fff;border-radius:22px;padding:14px 22px 16px;box-shadow:0 8px 22px rgba(0,0,0,.18)}
+  .hb .k{font-size:19px;font-weight:800;letter-spacing:1.5px;color:#8a8f9c}
+  .hb .v{font-size:46px;font-weight:900;letter-spacing:-1px;margin-top:4px;color:#16171d;white-space:nowrap}
+  .hb.dark{background:#16171d;flex:.8}
+  .hb.dark .k{color:#9aa0ad}.hb.dark .v{color:#fff}
+  #subs{position:absolute;left:40px;right:40px;top:1430px;text-align:center;font-weight:900;font-size:78px;line-height:1.08;letter-spacing:-1px;color:#fff;
+        -webkit-text-stroke:16px #111;paint-order:stroke fill;text-shadow:0 8px 0 rgba(0,0,0,.35)}
+  #subs span{display:inline-block;margin:0 9px;transform-origin:50% 60%}
+  #subs span.on{color:#FFD43B}
+  #fxText{position:absolute;left:0;width:1080px;text-align:center;font-weight:900;opacity:0;-webkit-text-stroke:14px #111;paint-order:stroke fill}
+  #flash{position:absolute;inset:0;background:#fff;opacity:0}
+  #vign{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 55%,rgba(0,0,0,0) 55%,rgba(0,0,0,.38) 100%)}
+  .pill{position:absolute;left:540px;top:0;padding:14px 30px;border-radius:40px;background:#16171d;color:#fff;font-weight:900;font-size:30px;letter-spacing:1.5px;white-space:nowrap;opacity:0}
+  .bar{height:30px;border-radius:15px;background:#e9ebf0;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6c63ff,#4f8cff);border-radius:15px}
+  .bub{background:#4f6bff;color:#fff;font-size:30px;font-weight:700;padding:16px 24px;border-radius:26px 26px 6px 26px;margin:10px 0 10px auto;width:fit-content;max-width:640px}
+  .cnt{flex:1;border-radius:22px;background:#f2f4f8;padding:16px 22px}
+  .cnt .n{font-size:84px;font-weight:900;letter-spacing:-2px;line-height:1}
+  .stamp{position:absolute;border:10px solid #e5383b;color:#e5383b;font-weight:900;border-radius:18px;padding:6px 22px;letter-spacing:2px;background:rgba(255,255,255,.85)}
+  .row{display:flex;justify-content:space-between;font-size:34px;font-weight:700;padding:10px 0;border-bottom:2px solid #eef0f4}
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="world" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div id="vign" class="layer"></div>
+
+  <!-- cards -->
+  <div id="tag" class="pill">ЗАРАБАТЫВАЮ НА МОНТАЖЕ · ЧАСТЬ 5</div>
+
+  <div id="cDemand" class="card" style="width:860px">
+    <div class="lbl">BLITZ · 05:00</div>
+    <div class="bub" style="font-size:44px;font-weight:900;line-height:1.2;margin:0 0 0 auto">Сначала 40 000 ₽.<br>Потом — новое видео.</div>
+    <div style="text-align:right;font-size:26px;font-weight:700;color:#8a8f9c">отправлено ✓</div>
+  </div>
+
+  <div id="cTeam" class="card" style="width:880px;background:#1c1d24;color:#fff">
+    <div style="display:flex;align-items:center;gap:18px">
+      <div style="width:76px;height:76px;border-radius:38px;background:linear-gradient(135deg,#00e0ff,#7a3dff);font-size:38px;font-weight:900;display:flex;align-items:center;justify-content:center;flex:none">B</div>
+      <div><div style="font-size:36px;font-weight:900">BLITZ</div><div style="color:#9aa0ad;font-size:24px;font-weight:700">05:01</div></div>
+    </div>
+    <div id="tm1" style="margin-top:14px;background:#2c2e3a;border-radius:26px 26px 26px 6px;padding:16px 24px;font-size:36px;font-weight:700;line-height:1.2;width:fit-content;opacity:0">Ты чего?</div><div id="tm2" style="margin-top:14px;background:#2c2e3a;border-radius:26px 26px 26px 6px;padding:16px 24px;font-size:36px;font-weight:700;line-height:1.2;width:fit-content;opacity:0;font-size:42px;font-weight:900">Мы же команда</div>
+  </div>
+  <div id="cFlood" class="card" style="width:880px;background:#1c1d24;color:#fff">
+    <div style="display:flex;align-items:center;gap:18px">
+      <div style="width:76px;height:76px;border-radius:38px;background:linear-gradient(135deg,#00e0ff,#7a3dff);font-size:38px;font-weight:900;display:flex;align-items:center;justify-content:center;flex:none">B</div>
+      <div><div style="font-size:36px;font-weight:900">BLITZ <span id="floodN" style="background:#e5383b;border-radius:16px;padding:2px 14px;font-size:28px;margin-left:8px">+0</span></div><div style="color:#9aa0ad;font-size:24px;font-weight:700">в сети</div></div>
+    </div>
+    <div class="fl" style="margin-top:14px;background:#2c2e3a;border-radius:26px 26px 26px 6px;padding:16px 24px;font-size:36px;font-weight:700;line-height:1.2;width:fit-content;opacity:0">Заплачу в пятницу, честно</div><div class="fl" style="margin-top:14px;background:#2c2e3a;border-radius:26px 26px 26px 6px;padding:16px 24px;font-size:36px;font-weight:700;line-height:1.2;width:fit-content;opacity:0">Я тебя в люди вывел</div><div class="fl" style="margin-top:14px;background:#2c2e3a;border-radius:26px 26px 26px 6px;padding:16px 24px;font-size:36px;font-weight:700;line-height:1.2;width:fit-content;opacity:0">Ты меня подставляешь!</div><div class="fl" style="margin-top:14px;background:#2c2e3a;border-radius:26px 26px 26px 6px;padding:16px 24px;font-size:36px;font-weight:700;line-height:1.2;width:fit-content;opacity:0">Ответь. Последний раз прошу</div>
+  </div>
+  <div id="cTip" class="card" style="width:880px;background:#1c1d24;color:#fff">
+    <div style="display:flex;align-items:center;gap:18px">
+      <div style="width:76px;height:76px;border-radius:38px;background:linear-gradient(135deg,#2ec4b6,#3a86ff);font-size:38px;font-weight:900;display:flex;align-items:center;justify-content:center;flex:none">К</div>
+      <div><div style="font-size:36px;font-weight:900">Кирилл</div><div style="color:#9aa0ad;font-size:24px;font-weight:700">бывший монтажёр BLITZ</div></div>
+    </div>
+    <div  style="margin-top:14px;background:#2c2e3a;border-radius:26px 26px 26px 6px;padding:16px 24px;font-size:36px;font-weight:700;line-height:1.2;width:fit-content;font-size:40px;font-weight:800">Главное — не отдавай файл, пока не заплатит.</div>
+  </div>
+  <div id="cCall" class="card" style="width:860px;background:#16171d;color:#fff;text-align:center">
+    <div style="width:130px;height:130px;margin:0 auto;border-radius:65px;background:linear-gradient(135deg,#00e0ff,#7a3dff);font-size:64px;font-weight:900;display:flex;align-items:center;justify-content:center" id="callAv">B</div>
+    <div style="font-size:48px;font-weight:900;margin-top:14px">BLITZ</div>
+    <div style="font-size:28px;color:#9aa0ad;font-weight:700">входящий вызов…</div>
+    <div id="angry" style="opacity:0;margin-top:20px;background:#e5383b;border-radius:24px;padding:18px 24px;font-size:42px;font-weight:900;line-height:1.15">ЗАВТРА ВЫХОД РОЛИКА!<br>БЕЗ ТЕБЯ Я СОРВУ РЕКЛАМУ!</div>
+  </div>
+
+  <div id="cHold" class="card" style="width:860px">
+    <div class="lbl">готовый монтаж</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:42px;font-weight:900">blitz_ep2_FINAL.mp4</div><div style="font-size:30px;font-weight:800;color:#16a34a">готово ✓</div></div>
+    <div style="margin-top:20px;display:flex;gap:16px;align-items:center">
+      <div style="flex:1;background:#e9ebf0;color:#9aa0ad;border-radius:20px;padding:18px;font-size:40px;font-weight:900;text-align:center">🔒 ОТПРАВИТЬ</div>
+      <div id="holdNote" style="flex:1.2;font-size:32px;font-weight:800;color:#e5383b;opacity:0">только после 40 000 ₽</div></div>
+  </div>
+
+  <div id="cTransfer" class="card" style="width:820px;text-align:center">
+    <div class="lbl">перевод от BLITZ · 01:00</div>
+    <div class="big" style="font-size:124px;color:#16a34a;white-space:nowrap">+20 000 ₽</div>
+    <div id="restNote" style="opacity:0;margin:16px auto 0;background:#f2f4f8;border-radius:22px;padding:14px 24px;font-size:38px;font-weight:800;width:fit-content">«Остальное потом»</div>
+  </div>
+
+  <div id="cHalf" class="card" style="width:820px">
+    <div class="lbl">получено</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><div class="big" style="font-size:80px">20 000 ₽</div><div style="font-size:36px;font-weight:800;color:#8a8f9c">из 40 000 ₽</div></div>
+    <div class="bar" style="margin-top:20px;height:40px;border-radius:20px"><i id="halfBar" style="background:linear-gradient(90deg,#f59f00,#ffd43b);border-radius:20px"></i></div>
+    <div style="text-align:right;font-size:44px;font-weight:900;color:#f59f00;margin-top:10px">50%</div>
+  </div>
+
+  <div id="cWarn2" class="card" style="width:880px;background:#1c1d24;color:#fff">
+    <div style="display:flex;align-items:center;gap:18px">
+      <div style="width:76px;height:76px;border-radius:38px;background:linear-gradient(135deg,#2ec4b6,#3a86ff);font-size:38px;font-weight:900;display:flex;align-items:center;justify-content:center;flex:none">К</div>
+      <div><div style="font-size:36px;font-weight:900">Кирилл</div><div style="color:#9aa0ad;font-size:24px;font-weight:700">сейчас</div></div>
+    </div>
+    <div id="w1" style="margin-top:14px;background:#2c2e3a;border-radius:26px 26px 26px 6px;padding:16px 24px;font-size:36px;font-weight:700;line-height:1.2;width:fit-content;opacity:0">Со мной было так же.</div><div id="w2" style="margin-top:14px;background:#2c2e3a;border-radius:26px 26px 26px 6px;padding:16px 24px;font-size:36px;font-weight:700;line-height:1.2;width:fit-content;opacity:0;color:#ff6b6b;font-weight:900;font-size:42px">Отдашь видео — вторую половину не увидишь.</div>
+  </div>
+  <div id="cPoll" class="card" style="width:900px;padding:30px 34px">
+    <div class="lbl">часть 6 · что сделает даня?</div>
+    <div class="opt" style="display:flex;align-items:center;gap:22px;background:#f2f4f8;border-radius:22px;padding:16px 20px;margin-top:14px;opacity:0">
+      <div style="flex:none;width:76px;height:76px;border-radius:20px;background:#4f6bff;color:#fff;font-size:50px;font-weight:900;display:flex;align-items:center;justify-content:center">А</div>
+      <div style="font-size:40px;font-weight:800;line-height:1.15">Отдаст видео за половину</div></div>
+    <div class="opt" style="display:flex;align-items:center;gap:22px;background:#f2f4f8;border-radius:22px;padding:16px 20px;margin-top:14px;opacity:0">
+      <div style="flex:none;width:76px;height:76px;border-radius:20px;background:#16a34a;color:#fff;font-size:50px;font-weight:900;display:flex;align-items:center;justify-content:center">Б</div>
+      <div style="font-size:40px;font-weight:800;line-height:1.15">Отправит видео с водяным знаком</div></div>
+    <div class="opt" style="display:flex;align-items:center;gap:22px;background:#f2f4f8;border-radius:22px;padding:16px 20px;margin-top:14px;opacity:0">
+      <div style="flex:none;width:76px;height:76px;border-radius:20px;background:#e5383b;color:#fff;font-size:50px;font-weight:900;display:flex;align-items:center;justify-content:center">В</div>
+      <div style="font-size:40px;font-weight:800;line-height:1.15">Будет ждать всю сумму</div></div>
+    <div class="opt" style="display:flex;align-items:center;gap:22px;background:#f2f4f8;border-radius:22px;padding:16px 20px;margin-top:14px;opacity:0">
+      <div style="flex:none;width:76px;height:76px;border-radius:20px;background:#f59f00;color:#fff;font-size:50px;font-weight:900;display:flex;align-items:center;justify-content:center">Г</div>
+      <div style="font-size:40px;font-weight:800;line-height:1.15">Вернёт 20 000 и уйдёт</div></div>
+  </div>
+
+  <div id="confetti" class="layer"></div>
+
+  <div id="cEnd" class="layer" style="opacity:0">
+    <div style="position:absolute;left:0;right:0;top:1640px;text-align:center">
+      <span style="display:inline-block;background:#FFD43B;color:#16171d;font-weight:900;font-size:40px;padding:14px 30px;border-radius:40px;box-shadow:0 10px 30px rgba(0,0,0,.35)">ПИШИ БУКВУ В КОММЕНТЫ ↓</span><br>
+      <span style="display:inline-block;margin-top:18px;background:#16171d;color:#fff;font-weight:900;font-size:36px;padding:12px 28px;border-radius:40px">ЧАСТЬ 6 — СКОРО</span>
+    </div>
+  </div>
+
+  <div id="fxText"></div>
+
+  <div id="hud">
+    <div class="hb"><div class="k">БАЛАНС</div><div class="v" id="hBal">0 ₽</div></div>
+    <div class="hb"><div class="k">КЛИЕНТЫ</div><div class="v" id="hCli">0</div></div>
+    <div class="hb dark"><div class="k">ВРЕМЯ</div><div class="v" id="hTime">21:40</div></div>
+  </div>
+
+  <div id="subs"></div>
+  <div id="flash"></div>
+</div>
+
+<script src="data/words.js"></script>
+<script>
+// ============================================================ utils
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const easeOut = k => 1 - Math.pow(1 - k, 3);
+const easeIn = k => k * k * k;
+const easeInOut = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+const easeOutBack = k => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+const decay = (t, t0, rate = 6) => t < t0 ? 0 : Math.exp(-(t - t0) * rate);
+function rng(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+const noise = (t, f, ph = 0) => Math.sin(t * f + ph) * .6 + Math.sin(t * f * 2.31 + ph * 1.7) * .4;
+
+// ============================================================ script
+const SCENES = [
+  { id: 's1',  bg: 'bedNight', text: 'Даня не спит. В пять утра он пишет Блицу: «Сначала сорок тысяч. Потом — новое видео».' },
+  { id: 's2',  bg: 'bedNight', text: 'Блиц отвечает через минуту: «Ты чего? Мы же команда».' },
+  { id: 's3',  bg: 'class',    text: 'На уроке телефон вибрирует без остановки. Блиц обещает, уговаривает, давит.' },
+  { id: 's4',  bg: 'hall',     text: 'На перемене пишет Кирилл: «Главное — не отдавай файл, пока не заплатит».' },
+  { id: 's5',  bg: 'desk',     text: 'Вечером Блиц звонит. «Завтра выход ролика! Без тебя я сорву рекламу!»' },
+  { id: 's6',  bg: 'desk',     text: 'Даня держится: «Сорок тысяч — и видео у тебя через минуту».' },
+  { id: 's7',  bg: 'desk',     text: 'Тишина. Час. Два.' },
+  { id: 's8',  bg: 'bedNight', text: 'В час ночи — дзынь. Перевод: двадцать тысяч. «Остальное потом».' },
+  { id: 's9',  bg: 'bedNight', text: 'Половина. Даня смотрит на готовое видео. На перевод. Снова на видео.' },
+  { id: 's10', bg: 'bedNight', text: 'И тут пишет Кирилл: «Со мной было так же. Отдашь видео — вторую половину не увидишь».' },
+  { id: 's11', bg: 'bedNight', text: 'Что сделает Даня? А — отдаст видео за половину. Б — отправит видео с водяным знаком. В — будет ждать всю сумму. Г — вернёт двадцать тысяч и уйдёт. Пиши букву в комментах!' },
+];
+const norm = w => w.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/g, '');
+
+// tokens (display words) per scene
+const TOK = [];
+SCENES.forEach((sc, si) => {
+  sc.tokens = [];
+  sc.text.split(/\s+/).forEach(w => {
+    if (!norm(w)) return; // dash etc.
+    const tk = { w, n: norm(w), si };
+    sc.tokens.push(tk); TOK.push(tk);
+  });
+});
+
+// timings: window.WORDS = [{s,e}] aligned 1:1 to TOK; else estimate
+(function applyTimings() {
+  const W = window.WORDS;
+  if (W && W.length === TOK.length) {
+    TOK.forEach((tk, i) => { tk.s = W[i].s; tk.e = W[i].e; });
+  } else {
+    let t = 0.35;
+    TOK.forEach((tk, i) => {
+      const d = 0.075 * tk.n.length + 0.1;
+      tk.s = t; tk.e = t + d; t += d + 0.03;
+      if (/[.!?…»]$/.test(tk.w)) t += 0.38; else if (/[,:—]$/.test(tk.w)) t += 0.16;
+      const nx = TOK[i + 1]; if (nx && nx.si !== tk.si) t += 0.12;
+    });
+  }
+})();
+const VO_END = TOK[TOK.length - 1].e;
+const DURATION = window.DURATION_OVERRIDE || VO_END + 2.2;
+SCENES.forEach((sc, i) => {
+  sc.start = i === 0 ? 0 : sc.tokens[0].s - 0.12;
+});
+SCENES.forEach((sc, i) => { sc.end = i < SCENES.length - 1 ? SCENES[i + 1].start : DURATION; });
+// cue lookup: W(sceneId, wordPrefix, nth=0) -> start time
+function W(sid, pre, nth = 0, edge = 's') {
+  const sc = SCENES.find(s => s.id === sid);
+  const p = norm(pre);
+  let hits = sc.tokens.filter(t => t.n === p);
+  if (!hits.length) hits = sc.tokens.filter(t => t.n.startsWith(p));
+  if (!hits.length) throw new Error('cue not found ' + sid + ' ' + pre);
+  return hits[Math.min(nth, hits.length - 1)][edge];
+}
+const S = id => SCENES.find(s => s.id === id);
+
+// subtitle chunks
+const CHUNKS = [];
+(function () {
+  let cur = [];
+  const flush = () => { if (cur.length) CHUNKS.push(cur); cur = []; };
+  TOK.forEach((tk, i) => {
+    const prev = TOK[i - 1];
+    if (cur.length && prev.si !== tk.si) flush();
+    cur.push(tk);
+    const len = cur.reduce((a, t) => a + t.w.length + 1, 0);
+    if (/[.!?…:»]$/.test(tk.w) || /[,—]$/.test(tk.w) && cur.length >= 2 || cur.length >= 3 || len > 17) flush();
+  });
+  flush();
+  CHUNKS.forEach((c, i) => { c.s = c[0].s - 0.05; c.e = i < CHUNKS.length - 1 ? CHUNKS[i + 1][0].s - 0.05 : c[c.length - 1].e + 0.6; });
+})();
+
+// ============================================================ world SVG
+const PAL = {
+  skin: '#F6C9A2', skinD: '#E3A882', hair: '#2B1C17', hood: '#5560E6', hoodD: '#3E47B8', hoodL: '#6A74F0',
+};
+function city(x0, w, yBase, hMin, hMax, color, seed, lights, lightCol) {
+  const r = rng(seed); let s = '', x = x0;
+  while (x < x0 + w) {
+    const bw = 50 + r() * 90, bh = hMin + r() * (hMax - hMin);
+    s += `<rect x="${x.toFixed(1)}" y="${(yBase - bh).toFixed(1)}" width="${bw.toFixed(1)}" height="${(bh + 400).toFixed(1)}" fill="${color}"/>`;
+    if (lights) for (let wy = yBase - bh + 16; wy < yBase - 10; wy += 30) for (let wx = x + 10; wx < x + bw - 16; wx += 24)
+      if (r() < lights) s += `<rect x="${wx.toFixed(1)}" y="${wy.toFixed(1)}" width="11" height="15" fill="${lightCol}"/>`;
+    x += bw + 4 + r() * 10;
+  }
+  return s;
+}
+function windowFrame(x, y, w, h, sky, inner, frame = '#fff') {
+  const id = 'clip' + x + '_' + y;
+  return `<clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath>
+    <g clip-path="url(#${id})">${sky}${inner}</g>
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="${frame}" stroke-width="20"/>
+    <line x1="${x + w / 2}" y1="${y}" x2="${x + w / 2}" y2="${y + h}" stroke="${frame}" stroke-width="14"/>
+    <line x1="${x}" y1="${y + h * .42}" x2="${x + w}" y2="${y + h * .42}" stroke="${frame}" stroke-width="14"/>
+    <rect x="${x - 26}" y="${y + h + 4}" width="${w + 52}" height="22" rx="6" fill="${frame}"/>`;
+}
+function grad(id, stops, x2 = 0, y2 = 1) {
+  return `<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}">${stops.map(([o, c]) => `<stop offset="${o}" stop-color="${c}"/>`).join('')}</linearGradient>`;
+}
+
+function bedroom(name, mode) {
+  const P = {
+    eve:   { wall: '#E9C9A6', wallD: '#D9B48E', sky: [['0', '#ff9a6b'], ['.6', '#ffc58f'], ['1', '#ffe3b0']], city: '#c77a6e', lights: .12, lc: '#ffe9a8', floor: '#B7835C', sun: '<circle cx="880" cy="760" r="46" fill="#fff1c9"/>' },
+    morn:  { wall: '#F1DDBE', wallD: '#E3C9A3', sky: [['0', '#7cc4ff'], ['1', '#d6efff']], city: '#9fc3de', lights: 0, lc: '', floor: '#C08D63', sun: '<circle cx="900" cy="700" r="50" fill="#fff6c8"/>' },
+    night: { wall: '#2B2C52', wallD: '#24254A', sky: [['0', '#0f1638'], ['1', '#2b3270']], city: '#151a3c', lights: .3, lc: '#ffd86b', floor: '#3a2f45', sun: '<circle cx="890" cy="700" r="38" fill="#f4f1d0"/><circle cx="905" cy="690" r="34" fill="#141b44"/>' },
+  }[mode];
+  const sky = `<rect x="690" y="600" width="330" height="460" fill="url(#sky_${name})"/>${P.sun}`;
+  const inner = city(680, 360, 1070, 80, 260, P.city, 7, P.lights, P.lc);
+  const dark = mode === 'night';
+  return {
+    defs: grad('sky_' + name, P.sky) + `<radialGradient id="lamp_${name}"><stop offset="0" stop-color="#ffd27a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient>`,
+    far: `<rect x="-200" y="-200" width="1480" height="2400" fill="${P.wall}"/>
+          <rect x="-200" y="-200" width="1480" height="380" fill="${P.wallD}" opacity=".5"/>
+          ${windowFrame(700, 610, 310, 440, sky, inner, dark ? '#c9c6e0' : '#fff')}`,
+    mid: `<!-- poster -->
+          <g transform="translate(70,650) rotate(-3)"><rect width="230" height="300" rx="10" fill="${dark ? '#3b3f7a' : '#2f3a8f'}"/>
+            <polygon points="85,95 85,205 175,150" fill="#FFD43B"/><text x="115" y="262" text-anchor="middle" font-size="30" font-weight="900" fill="#fff">CREATE</text></g>
+          <!-- shelf -->
+          <rect x="40" y="1060" width="300" height="18" rx="6" fill="${dark ? '#4a3d5a' : '#9b6b48'}"/>
+          <rect x="70" y="990" width="34" height="70" fill="#ff6b6b"/><rect x="108" y="1000" width="28" height="60" fill="#4fc3f7"/><rect x="140" y="980" width="38" height="80" fill="#ffd43b"/>
+          <circle cx="260" cy="1030" r="30" fill="${dark ? '#6c6a9a' : '#7bc47f'}"/>
+          <rect x="-200" y="1580" width="1480" height="600" fill="${P.floor}"/>
+          <rect x="-200" y="1570" width="1480" height="22" fill="${dark ? '#1d1e3b' : '#fff'}" opacity=".8"/>
+          ${dark ? `<circle cx="180" cy="1180" r="260" fill="url(#lamp_${name})"/><rect x="160" y="1140" width="40" height="90" fill="#ffcf6b"/><path d="M130,1140 L230,1140 L205,1080 L155,1080Z" fill="#ffe7a8"/>` : ''}`,
+    near: `<g filter="url(#dofNear)">
+          <rect x="-120" y="1560" width="420" height="420" rx="40" fill="${dark ? '#3f3a6a' : '#7d8fe0'}"/>
+          <rect x="-120" y="1530" width="420" height="80" rx="40" fill="${dark ? '#56508a' : '#a8b6f2'}"/>
+          <rect x="-40" y="1480" width="250" height="90" rx="40" fill="${dark ? '#ddd8f0' : '#fff'}"/></g>`,
+  };
+}
+function street() {
+  let trees = '', houses = '';
+  const r = rng(3);
+  for (let i = 0; i < 9; i++) {
+    const x = i * 330 + 40, h = 300 + r() * 160, c = ['#ffb36b', '#ff8f8f', '#9fd17c', '#8fc1ff'][i % 4];
+    houses += `<rect x="${x}" y="${1520 - h}" width="250" height="${h + 300}" fill="${c}"/><rect x="${x - 10}" y="${1520 - h - 20}" width="270" height="30" fill="#00000022"/>`;
+    for (let wy = 1520 - h + 40; wy < 1460; wy += 90) for (let wx = x + 30; wx < x + 220; wx += 80) houses += `<rect x="${wx}" y="${wy}" width="46" height="56" rx="6" fill="#e9f5ff"/>`;
+  }
+  // school building
+  houses += `<g transform="translate(1180,0)"><rect x="0" y="980" width="760" height="700" fill="#e8835a"/><rect x="0" y="960" width="760" height="40" fill="#c96a45"/>
+    <rect x="270" y="900" width="220" height="80" rx="12" fill="#fff"/><text x="380" y="958" text-anchor="middle" font-size="52" font-weight="900" fill="#c96a45">ШКОЛА</text>
+    ${[0, 1, 2, 3, 4, 5].map(i => [0, 1, 2].map(j => `<rect x="${40 + i * 120}" y="${1030 + j * 140}" width="80" height="96" rx="6" fill="#d9eeff"/>`).join('')).join('')}
+    <rect x="320" y="1420" width="120" height="160" fill="#7a4a35"/></g>`;
+  for (let i = 0; i < 8; i++) {
+    const x = i * 420 + 200;
+    trees += `<rect x="${x - 14}" y="1480" width="28" height="200" fill="#7a5235"/><circle cx="${x}" cy="1440" r="95" fill="#5cb85c"/><circle cx="${x - 55}" cy="1480" r="65" fill="#4fa84f"/><circle cx="${x + 60}" cy="1470" r="70" fill="#67c267"/>`;
+  }
+  let tiles = '';
+  for (let i = 0; i < 40; i++) tiles += `<rect x="${i * 120 - 200}" y="1700" width="112" height="300" fill="#cfd3dc"/>`;
+  return {
+    defs: grad('sky_street', [['0', '#6ec0ff'], ['1', '#d9f0ff']]),
+    far: `<rect x="-300" y="-200" width="1700" height="2400" fill="url(#sky_street)"/><circle cx="850" cy="700" r="70" fill="#fff4c4"/>
+          <g id="clouds"><ellipse cx="200" cy="820" rx="120" ry="40" fill="#fff" opacity=".9"/><ellipse cx="640" cy="880" rx="160" ry="46" fill="#fff" opacity=".8"/><ellipse cx="1000" cy="800" rx="110" ry="36" fill="#fff" opacity=".85"/></g>
+          ${city(-300, 1800, 1300, 120, 330, '#a9cbe6', 11, 0)}`,
+    mid: `<g id="streetMid">${houses}<rect x="-300" y="1640" width="4000" height="70" fill="#b9bec9"/></g>`,
+    near: `<g id="streetNear" filter="url(#dofNear)"><rect x="-300" y="1690" width="4000" height="400" fill="#aeb3bf"/>${tiles}<g>${trees}</g></g>`,
+  };
+}
+function classroom() {
+  return {
+    defs: '',
+    far: `<rect x="-200" y="-200" width="1480" height="2400" fill="#EDE3CC"/>
+          <rect x="-200" y="1380" width="1480" height="800" fill="#6FA27A"/><rect x="-200" y="1370" width="1480" height="16" fill="#4f7d59"/>
+          <circle cx="160" cy="300" r="60" fill="#fff" stroke="#444" stroke-width="8"/><line x1="160" y1="300" x2="160" y2="262" stroke="#333" stroke-width="7"/><line x1="160" y1="300" x2="190" y2="310" stroke="#333" stroke-width="6"/>`,
+    mid: `<rect x="40" y="640" width="1000" height="560" rx="16" fill="#8b5e3c"/><rect x="62" y="662" width="956" height="516" rx="8" fill="#2f5e48"/>
+          <g fill="none" stroke="#e8f1ea" stroke-width="7" stroke-linecap="round" opacity=".9">
+            <text x="120" y="780" font-size="78" font-weight="700" fill="#e8f1ea" stroke="none" font-style="italic">sin²x + cos²x = 1</text>
+            <text x="760" y="1130" font-size="54" font-weight="700" fill="#e8f1ea" stroke="none" font-style="italic" opacity=".7">(a + b)²</text>
+            <path d="M120,1110 C200,1060 260,1150 330,1100"/>
+          </g>
+          <rect x="70" y="1180" width="940" height="22" rx="6" fill="#6e4a30"/><rect x="200" y="1170" width="60" height="14" rx="4" fill="#fff"/>`,
+    near: `<g filter="url(#dofNear)">
+          <circle cx="90" cy="1830" r="150" fill="#3b2b25"/><rect x="-60" y="1880" width="300" height="200" rx="60" fill="#e05b5b"/>
+          <circle cx="1010" cy="1860" r="140" fill="#d9a35f"/><rect x="860" y="1900" width="300" height="200" rx="60" fill="#5bb0e0"/></g>`,
+  };
+}
+function desk() {
+  return {
+    defs: grad('sky_desk', [['0', '#0d1233'], ['1', '#28306b']]) +
+      `<radialGradient id="screenGlow"><stop offset="0" stop-color="#7fb2ff" stop-opacity=".55"/><stop offset="1" stop-color="#7fb2ff" stop-opacity="0"/></radialGradient>`,
+    far: `<rect x="-200" y="-200" width="1480" height="2400" fill="#23264A"/>
+          ${windowFrame(60, 600, 300, 420, '<rect x="60" y="600" width="300" height="420" fill="url(#sky_desk)"/><circle cx="270" cy="690" r="34" fill="#f6f1cf"/>', city(50, 330, 1030, 90, 260, '#121637', 21, .35, '#ffd86b'), '#bfc0dd')}`,
+    mid: `<g id="fairy">${Array.from({ length: 14 }, (_, i) => `<circle cx="${i * 82 + 10}" cy="${440 + Math.sin(i * .9) * 26 + (i % 2) * 14}" r="9" fill="#ffd86b"/>`).join('')}</g>
+          <path d="M0,430 ${Array.from({ length: 14 }, (_, i) => `L${i * 82 + 10},${440 + Math.sin(i * .9) * 26 + (i % 2) * 14}`).join(' ')}" stroke="#555a80" stroke-width="3" fill="none"/>
+          <g transform="translate(760,680) rotate(3)"><rect width="230" height="300" rx="10" fill="#e64980"/><text x="115" y="170" text-anchor="middle" font-size="64" font-weight="900" fill="#fff">EDIT</text><text x="115" y="230" text-anchor="middle" font-size="28" font-weight="800" fill="#ffd3e6">MODE</text></g>
+          <rect x="-200" y="1580" width="1480" height="600" fill="#1a1b36"/>`,
+    near: `<g id="deskNear"><rect x="-100" y="1660" width="1280" height="400" fill="#5b4636"/><rect x="-100" y="1640" width="1280" height="34" fill="#715843"/>
+          <g transform="translate(610,1360)"><rect width="380" height="290" rx="18" fill="#a6abb8"/><rect x="10" y="10" width="360" height="270" rx="12" fill="#b9bfcc"/>
+            <circle cx="190" cy="140" r="38" fill="#fff" opacity=".6"/><rect x="40" y="40" width="70" height="40" rx="8" fill="#ffd43b" transform="rotate(-10 75 60)"/><rect x="270" y="200" width="60" height="60" rx="30" fill="#ff6b9a"/>
+            <rect x="-30" y="280" width="440" height="22" rx="8" fill="#8e94a3"/></g>
+          <g filter="url(#dofNear)"><rect x="90" y="1520" width="96" height="150" rx="14" fill="#2fbf71"/><rect x="90" y="1520" width="96" height="30" rx="10" fill="#c7c7c7"/><text x="138" y="1615" text-anchor="middle" font-size="30" font-weight="900" fill="#fff">⚡</text>
+          <rect x="230" y="1570" width="110" height="96" rx="12" fill="#fff"/><path d="M340,1590 q40,10 0,50" stroke="#fff" stroke-width="14" fill="none"/></g></g>`,
+  };
+}
+function hall() {
+  let lockers = '';
+  for (let i = 0; i < 12; i++) {
+    const x = i * 150 - 240, c = i % 3 === 1 ? '#3f6fd1' : '#4c7bd9';
+    lockers += `<rect x="${x}" y="1000" width="140" height="640" rx="6" fill="${c}"/><rect x="${x + 100}" y="1290" width="12" height="60" rx="4" fill="#d9e4ff"/>
+      ${[0, 1, 2].map(j => `<rect x="${x + 30}" y="${1040 + j * 22}" width="80" height="8" rx="4" fill="#2f57ad"/>`).join('')}`;
+  }
+  let tiles = '';
+  for (let i = 0; i < 16; i++) tiles += `<rect x="${i * 160 - 400}" y="1660" width="80" height="400" fill="#d6dae3"/>`;
+  return {
+    defs: '',
+    far: `<rect x="-200" y="-200" width="1480" height="2400" fill="#CFE3F2"/>
+          ${[0, 1, 2].map(i => `<rect x="${i * 380 - 40}" y="560" width="280" height="300" rx="10" fill="#9fd0ff" stroke="#fff" stroke-width="16"/>`).join('')}
+          <rect x="-200" y="960" width="1480" height="40" fill="#a9c4da"/>`,
+    mid: `${lockers}<rect x="-200" y="1640" width="1480" height="500" fill="#e6e9ef"/>`,
+    near: `<g filter="url(#dofNear)">${tiles}<rect x="760" y="1500" width="420" height="600" rx="80" fill="#ff9f43" opacity=".95"/><circle cx="960" cy="1440" r="120" fill="#3b2b25"/></g>`,
+  };
+}
+
+function kitchen(eve) {
+  let tiles = '';
+  for (let y = 560; y < 1500; y += 70) for (let x = -200; x < 1280; x += 70) tiles += `<rect x="${x}" y="${y}" width="66" height="66" fill="#d2ebdd"/>`;
+  return {
+    defs: grad('sky_kit' + (eve ? 'E' : ''), eve ? [['0', '#ff8a5c'], ['.6', '#ffb37a'], ['1', '#ffd9a8']] : [['0', '#8fd0ff'], ['1', '#e3f4ff']]),
+    far: `<rect x="-200" y="-200" width="1480" height="2400" fill="#bfe0cd"/>${tiles}
+          ${windowFrame(690, 620, 300, 400, `<rect x="690" y="620" width="300" height="400" fill="url(#sky_kit${eve ? 'E' : ''})"/><circle cx="900" cy="${eve ? 900 : 700}" r="44" fill="#fff6c8"/>`, city(680, 330, 1030, 60, 200, eve ? '#c77a6e' : '#a6cbe3', 9, eve ? .15 : 0, '#ffe9a8'), '#fff')}${eve ? '<rect x="-200" y="-200" width="1480" height="2400" fill="#ff7a3c" opacity=".12"/>' : ''}`,
+    mid: `<rect x="-60" y="560" width="400" height="300" rx="14" fill="#f4f1ea"/><rect x="-60" y="560" width="400" height="300" rx="14" fill="none" stroke="#d9d3c4" stroke-width="6"/>
+          <line x1="140" y1="570" x2="140" y2="850" stroke="#d9d3c4" stroke-width="6"/><circle cx="120" cy="720" r="9" fill="#b9b2a1"/><circle cx="160" cy="720" r="9" fill="#b9b2a1"/>
+          <rect x="-60" y="1180" width="420" height="40" fill="#8b5e3c"/><rect x="-60" y="1220" width="420" height="400" fill="#f4f1ea"/>
+          <rect x="40" y="1110" width="70" height="70" rx="10" fill="#ff8a65"/><path d="M200,1180 l30,-80 h40 l30,80z" fill="#cfd8dc"/>
+          <g id="steam${eve ? 'E' : ''}" stroke="#fff" stroke-width="8" fill="none" stroke-linecap="round" opacity=".7"><path d="M240,1090 q-15,-30 0,-60 q15,-30 0,-60"/></g>
+          <rect x="-200" y="1600" width="1480" height="600" fill="#e7d2b4"/>`,
+    near: `<g filter="url(#dofNear)"><rect x="-100" y="1700" width="1280" height="400" rx="20" fill="#ffffff"/><rect x="-100" y="1690" width="1280" height="30" fill="#f0e2cc"/>
+          <ellipse cx="260" cy="1720" rx="150" ry="40" fill="#fff" stroke="#ddd" stroke-width="6"/><rect x="190" y="1650" width="140" height="80" rx="18" fill="#f2b56b"/>
+          <rect x="790" y="1600" width="120" height="130" rx="18" fill="#ff6b6b"/><path d="M910,1625 q45,15 0,70" stroke="#ff6b6b" stroke-width="16" fill="none"/></g>`,
+  };
+}
+function cafe() {
+  return {
+    defs: grad('sky_cafe', [['0', '#9fd4ff'], ['1', '#e6f5ff']]),
+    far: `<rect x="-200" y="-200" width="1480" height="2400" fill="#6b4a3a"/><rect x="-200" y="-200" width="1480" height="2400" fill="#8a5f48" opacity=".55"/>
+          ${windowFrame(640, 560, 400, 520, '<rect x="640" y="560" width="400" height="520" fill="url(#sky_cafe)"/>', city(630, 430, 1080, 120, 360, '#a6cbe3', 41, 0) + '<rect x="640" y="1000" width="400" height="80" fill="#9aa3ad"/><circle cx="760" cy="980" r="22" fill="#e5383b"/><text x="760" y="990" text-anchor="middle" font-size="28" font-weight="900" fill="#fff">М</text>', '#3b2a22')}`,
+    mid: `<rect x="40" y="560" width="400" height="300" rx="12" fill="#1f2a24"/><text x="240" y="630" text-anchor="middle" font-size="44" font-weight="900" fill="#fff">КОФЕ</text>
+          <g font-size="28" font-weight="700" fill="#d9e6dc"><text x="80" y="690">Капучино</text><text x="360" y="690">190</text><text x="80" y="740">Латте</text><text x="360" y="740">210</text><text x="80" y="790">Какао</text><text x="360" y="790">170</text></g>
+          ${Array.from({ length: 5 }, (_, i) => `<line x1="${120 + i * 210}" y1="380" x2="${120 + i * 210}" y2="480" stroke="#2b1d16" stroke-width="4"/><path d="M${90 + i * 210},520 l30,-44 30,44z" fill="#ffcf6b"/><circle cx="${120 + i * 210}" cy="540" r="50" fill="#ffd27a" opacity=".22"/>`).join('')}
+          <rect x="-200" y="1180" width="1480" height="40" fill="#3b2a22"/><rect x="-200" y="1220" width="1480" height="300" fill="#4e362a"/>
+          <rect x="60" y="1080" width="140" height="100" rx="12" fill="#c0c6cf"/><rect x="80" y="1100" width="100" height="40" rx="6" fill="#2b2d36"/>
+          <rect x="-200" y="1500" width="1480" height="700" fill="#5a3f30"/>`,
+    near: `<g filter="url(#dofNear)"><rect x="-120" y="1680" width="1320" height="70" rx="24" fill="#d9a26c"/><rect x="-120" y="1740" width="1320" height="300" fill="#b9824f"/>
+          <rect x="150" y="1600" width="110" height="100" rx="16" fill="#fff"/><path d="M260,1620 q40,10 0,55" stroke="#fff" stroke-width="14" fill="none"/>
+          <rect x="760" y="1590" width="120" height="110" rx="16" fill="#f4f1ea"/>
+          <circle cx="980" cy="1480" r="135" fill="#2ec4b6" opacity=".25"/><circle cx="990" cy="1470" r="120" fill="#2a2a33"/><rect x="820" y="1560" width="360" height="500" rx="90" fill="#4a4e69"/>
+          <circle cx="90" cy="1500" r="120" fill="#1f1a24"/><rect x="-80" y="1590" width="330" height="500" rx="90" fill="#ff9f43"/></g>`,
+  };
+}
+function canteen() {
+  let trays = '';
+  for (let i = 0; i < 6; i++) trays += `<rect x="${i * 190 - 40}" y="1090" width="160" height="30" rx="8" fill="#c9d1de"/><circle cx="${i * 190 + 40}" cy="1075" r="${26 + (i % 2) * 6}" fill="${['#ffb74d', '#81c784', '#e57373'][i % 3]}"/>`;
+  return {
+    defs: '',
+    far: `<rect x="-200" y="-200" width="1480" height="2400" fill="#F7E9C8"/>
+          ${[0, 1, 2].map(i => `<rect x="${i * 380 - 20}" y="560" width="300" height="320" rx="12" fill="#bfe3ff" stroke="#fff" stroke-width="16"/>`).join('')}
+          <rect x="-200" y="900" width="1480" height="20" fill="#e3cf9f"/>`,
+    mid: `<rect x="-200" y="1120" width="1480" height="380" fill="#9fb3c8"/><rect x="-200" y="1110" width="1480" height="22" fill="#e9eef4"/>${trays}
+          <rect x="60" y="930" width="280" height="80" rx="12" fill="#fff"/><text x="200" y="985" text-anchor="middle" font-size="40" font-weight="900" fill="#e8835a">МЕНЮ</text>
+          <rect x="-200" y="1500" width="1480" height="700" fill="#e6d6b8"/>`,
+    near: `<g filter="url(#dofNear)"><rect x="-120" y="1700" width="1320" height="60" rx="20" fill="#d08a4e"/><rect x="-120" y="1750" width="1320" height="300" fill="#b9733d"/>
+          <rect x="120" y="1640" width="260" height="70" rx="14" fill="#e0e5ec"/><circle cx="210" cy="1640" r="48" fill="#ffcc80"/><rect x="290" y="1600" width="60" height="70" rx="10" fill="#fff"/>
+          <circle cx="960" cy="1500" r="130" fill="#1f1a24"/><rect x="800" y="1580" width="340" height="500" rx="90" fill="#ff9f43"/></g>`,
+  };
+}
+function bus() {
+  const outside = city(0, 1600, 1150, 120, 420, '#9cc0dc', 31, .05, '#e9f5ff') + city(1600, 1600, 1150, 120, 420, '#9cc0dc', 31, .05, '#e9f5ff');
+  let poles = '', straps = '';
+  for (let i = 0; i < 4; i++) poles += `<rect x="${i * 380 - 60}" y="400" width="60" height="900" fill="#d5dbe5"/>`;
+  for (let i = 0; i < 6; i++) straps += `<g class="strap" data-x="${i * 220 + 40}" transform="translate(${i * 220 + 40},480)"><rect x="-5" y="0" width="10" height="90" fill="#59606e"/><circle cx="0" cy="115" r="28" fill="none" stroke="#e8b84a" stroke-width="12"/></g>`;
+  return {
+    defs: grad('sky_bus', [['0', '#76c3ff'], ['1', '#dff2ff']]),
+    far: `<rect x="-300" y="-200" width="1700" height="2400" fill="url(#sky_bus)"/><g id="busCity">${outside}</g>
+          <g id="busTrees">${Array.from({ length: 12 }, (_, i) => `<circle cx="${i * 300}" cy="1180" r="80" fill="#5cb85c"/><rect x="${i * 300 - 12}" y="1180" width="24" height="150" fill="#7a5235"/>`).join('')}</g>`,
+    mid: `<rect x="-200" y="-200" width="1480" height="600" fill="#e8ecf2"/>${poles}<rect x="-200" y="1260" width="1480" height="900" fill="#6d7fa3"/><rect x="-200" y="1250" width="1480" height="24" fill="#c9d1de"/>
+          <rect x="-200" y="470" width="1480" height="16" rx="8" fill="#9aa3b2"/>${straps}`,
+    near: `<g filter="url(#dofNear)"><rect x="-80" y="1560" width="300" height="500" rx="50" fill="#f08a3c"/><rect x="-80" y="1540" width="300" height="70" rx="30" fill="#ffa95c"/>
+          <rect x="860" y="1580" width="300" height="500" rx="50" fill="#3c8af0"/><rect x="860" y="1560" width="300" height="70" rx="30" fill="#5ca3ff"/></g>`,
+  };
+}
+
+const BG = {
+  bedEve: bedroom('bedEve', 'eve'), bedMorn: bedroom('bedMorn', 'morn'), bedNight: bedroom('bedNight', 'night'),
+  class: classroom(), hall: hall(), desk: desk(),
+};
+
+// ============================================================ character
+const MOODS = {
+  neutral: { b: [0, 0, 0], open: 1, gx: 0, gy: 0, mouth: 'smile', blush: .35 },
+  happy:   { b: [-6, 6, -6], open: 1, gx: 0, gy: 0, mouth: 'grin', blush: .6 },
+  dream:   { b: [-10, 10, -10], open: 1, gx: 6, gy: -12, mouth: 'grin', blush: .7, sparkle: 1 },
+  focus:   { b: [10, -10, 4], open: .8, gx: 8, gy: 8, mouth: 'smirk', blush: .3 },
+  tired:   { b: [-8, 8, 4], open: .45, gx: 0, gy: 6, mouth: 'flat', blush: .2, bags: 1 },
+  shock:   { b: [-14, 14, -18], open: 1.18, gx: 0, gy: 0, mouth: 'o', blush: .2, small: 1 },
+  sad:     { b: [-16, 16, 0], open: .85, gx: 0, gy: 10, mouth: 'sad', blush: .2 },
+  nervous: { b: [-12, 12, -8], open: 1.05, gx: -6, gy: 0, mouth: 'wavy', blush: .3, sweat: 1 },
+  phone:   { b: [4, -4, 2], open: .9, gx: 4, gy: 18, mouth: 'smile', blush: .35 },
+};
+const MOUTH = {
+  smile: { d: 'M-40,88 Q0,124 40,88', fill: 'none' },
+  grin:  { d: 'M-58,80 Q0,160 58,80 Z', fill: '#7a2a2e' },
+  smirk: { d: 'M-34,102 Q10,114 42,90', fill: 'none' },
+  flat:  { d: 'M-30,104 L30,104', fill: 'none' },
+  o:     { d: 'M-24,104 a24,30 0 1,0 48,0 a24,30 0 1,0 -48,0', fill: '#7a2a2e' },
+  sad:   { d: 'M-38,116 Q0,84 38,116', fill: 'none' },
+  wavy:  { d: 'M-42,104 q10.5,-12 21,0 t21,0 t21,0 t21,0', fill: 'none' },
+};
+function hairSVG() {
+  // curly hair made of overlapping circles
+  let s = `<path d="M-158,10 C-178,-150 -70,-212 10,-200 C110,-200 182,-130 158,10 C140,-50 110,-80 70,-92 C30,-70 -20,-90 -60,-80 C-100,-70 -140,-40 -158,10 Z" fill="${PAL.hair}"/>`;
+  const pts = [[-150, -40, 44], [-140, -100, 48], [-100, -150, 52], [-40, -180, 54], [25, -186, 54], [90, -160, 52], [138, -110, 48], [155, -50, 42], [-80, -105, 40], [-10, -125, 42], [60, -115, 40]];
+  pts.forEach(([x, y, r]) => s += `<circle cx="${x}" cy="${y}" r="${r}" fill="${PAL.hair}"/>`);
+  s += `<path d="M10,-220 C30,-270 90,-262 74,-226" stroke="${PAL.hair}" stroke-width="18" fill="none" stroke-linecap="round"/>`;
+  s += `<path d="M-90,-170 C-60,-190 -20,-195 10,-190" stroke="#4a342b" stroke-width="10" fill="none" stroke-linecap="round" opacity=".8"/>`;
+  return s;
+}
+function arm(id, side) {
+  // side: -1 left, +1 right. Pivot at shoulder (0,0). upper arm + forearm with elbow at (0,170)
+  return `<g id="${id}"><rect x="-34" y="-20" width="68" height="200" rx="34" fill="${PAL.hood}"/>
+      <g id="${id}F" transform="translate(0,170)"><rect x="-31" y="-14" width="62" height="180" rx="31" fill="${PAL.hood}"/>
+        <rect x="-32" y="140" width="64" height="30" rx="12" fill="${PAL.hoodD}"/>
+        <circle cx="0" cy="190" r="34" fill="${PAL.skin}"/>
+        ${side > 0 ? `<g id="phone" transform="translate(-6,170) rotate(0)" opacity="0"><rect x="-44" y="-86" width="88" height="160" rx="16" fill="#1b1c22"/><rect id="phoneScr" x="-36" y="-76" width="72" height="140" rx="10" fill="#7fb2ff"/>
+            <g id="buzz" opacity="0" stroke="#fff" stroke-width="7" stroke-linecap="round"><path d="M-70,-60 l-18,-10 M-70,-20 l-22,0 M-70,20 l-18,10 M70,-60 l18,-10 M70,-20 l22,0 M70,20 l18,10"/></g></g>
+          <circle cx="-16" cy="196" r="20" fill="${PAL.skin}"/>` : ''}
+      </g></g>`;
+}
+function charSVG() {
+  return `<g id="charRoot">
+   <ellipse cx="0" cy="770" rx="300" ry="40" fill="#000" opacity=".12"/>
+   <g id="body">
+    <ellipse cx="0" cy="205" rx="160" ry="62" fill="${PAL.hoodD}"/>
+    <path d="M-215,270 Q-235,205 -150,188 L150,188 Q235,205 215,270 L240,820 L-240,820 Z" fill="${PAL.hood}"/>
+    <path d="M-120,560 L120,560 L150,690 L-150,690 Z" fill="${PAL.hoodD}" opacity=".55"/>
+    <path d="M-215,270 Q-235,205 -150,188 L-120,188 Q-190,230 -180,820 L-240,820 Z" fill="${PAL.hoodL}" opacity=".35"/>
+    <rect x="58" y="300" width="84" height="62" rx="14" fill="#FFD43B"/><polygon points="88,314 88,348 118,331" fill="${PAL.hoodD}"/>
+    <rect x="-46" y="110" width="92" height="100" fill="${PAL.skinD}"/>
+    <path d="M-48,205 L-58,350 M48,205 L58,350" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+    <rect x="-66" y="342" width="16" height="30" rx="6" fill="#fff"/><rect x="50" y="342" width="16" height="30" rx="6" fill="#fff"/>
+    <!-- headphones around neck -->
+    <path d="M-128,180 Q0,282 128,180" stroke="#24262f" stroke-width="20" fill="none" stroke-linecap="round"/>
+    <g><rect x="-182" y="146" width="66" height="96" rx="28" fill="#24262f"/><rect x="-170" y="158" width="44" height="72" rx="20" fill="#e9ebf2"/></g>
+    <g><rect x="116" y="146" width="66" height="96" rx="28" fill="#24262f"/><rect x="126" y="158" width="44" height="72" rx="20" fill="#e9ebf2"/></g>
+   </g>
+   <g id="armL" transform="translate(-205,245) rotate(8)">${arm('aL', -1)}</g>
+   <g id="armR" transform="translate(205,245) rotate(-8)">${arm('aR', 1)}</g>
+   <g id="head">
+    <circle cx="-150" cy="18" r="32" fill="${PAL.skin}"/><circle cx="150" cy="18" r="32" fill="${PAL.skin}"/>
+    <circle cx="-150" cy="18" r="16" fill="${PAL.skinD}"/><circle cx="150" cy="18" r="16" fill="${PAL.skinD}"/>
+    <ellipse cx="0" cy="10" rx="152" ry="166" fill="${PAL.skin}"/>
+    <ellipse id="glow" cx="0" cy="40" rx="170" ry="180" fill="#7fb2ff" opacity="0"/>
+    ${hairSVG()}
+    <g id="blush"><ellipse cx="-98" cy="70" rx="26" ry="14" fill="#F2928A"/><ellipse cx="98" cy="70" rx="26" ry="14" fill="#F2928A"/></g>
+    <g id="bags" opacity="0" stroke="#c98f76" stroke-width="5" fill="none" stroke-linecap="round"><path d="M-82,50 Q-58,62 -34,50"/><path d="M34,50 Q58,62 82,50"/></g>
+    <g id="eyeL" transform="translate(-58,8)"><ellipse rx="31" ry="36" fill="#fff"/><g id="pupL"><circle r="16" fill="#1f1a24"/><circle cx="6" cy="-6" r="5.5" fill="#fff"/></g></g>
+    <g id="eyeR" transform="translate(58,8)"><ellipse rx="31" ry="36" fill="#fff"/><g id="pupR"><circle r="16" fill="#1f1a24"/><circle cx="6" cy="-6" r="5.5" fill="#fff"/></g></g>
+    <rect id="lidL" x="-96" y="-34" width="76" height="0" fill="${PAL.skin}"/><rect id="lidR" x="20" y="-34" width="76" height="0" fill="${PAL.skin}"/>
+    <!-- glasses -->
+    <g stroke="#1f2130" stroke-width="8" fill="#fff" fill-opacity=".07">
+      <circle cx="-58" cy="8" r="52"/><circle cx="58" cy="8" r="52"/>
+      <path d="M-8,0 Q0,-8 8,0" fill="none"/><path d="M-110,0 L-146,-6 M110,0 L146,-6" fill="none"/>
+    </g>
+    <path d="M-30,-28 L-12,-12" stroke="#fff" stroke-width="6" opacity=".5" stroke-linecap="round"/><path d="M86,-28 L104,-12" stroke="#fff" stroke-width="6" opacity=".5" stroke-linecap="round"/>
+    <rect id="browL" x="-92" y="-70" width="68" height="17" rx="8" fill="${PAL.hair}"/>
+    <rect id="browR" x="24" y="-70" width="68" height="17" rx="8" fill="${PAL.hair}"/>
+    <path d="M-4,40 Q4,62 14,50" stroke="${PAL.skinD}" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path id="mouth" d="" stroke="#5a2024" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <path id="sweat" d="M150,-70 q-22,36 0,46 q22,-10 0,-46 Z" fill="#7cc8ff" opacity="0"/>
+    <g id="sparkle" opacity="0" fill="#FFD43B"><path d="M-130,-110 l8,22 22,8 -22,8 -8,22 -8,-22 -22,-8 22,-8z"/><path d="M140,-120 l6,16 16,6 -16,6 -6,16 -6,-16 -16,-6 16,-6z"/></g>
+   </g>
+  </g>`;
+}
+
+// build world
+(function buildWorld() {
+  const svg = $('world');
+  let defs = `<filter id="dofNear" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5"/></filter>
+    <filter id="dofFar" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="1.6"/></filter>
+    <filter id="whip" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur id="whipBlur" stdDeviation="0 0"/></filter>`;
+  let body = '<g id="whipG" filter="url(#whip)">';
+  for (const [k, b] of Object.entries(BG)) {
+    defs += b.defs;
+    body += `<g id="bg_${k}" style="display:none"><g class="L" data-p=".35" filter="url(#dofFar)">${b.far}</g><g class="L" data-p=".7">${b.mid}</g></g>`;
+  }
+  body += `<g class="L" data-p="1" id="charLayer"><g id="charPos">${charSVG()}</g></g>`;
+  for (const [k, b] of Object.entries(BG)) body += `<g id="nr_${k}" style="display:none"><g class="L" data-p="1.35">${b.near}</g></g>`;
+  body += '</g>';
+  svg.innerHTML = `<defs>${defs}</defs>${body}`;
+})();
+const LAYERS = [...document.querySelectorAll('#world .L')].map(g => ({ g, p: +g.dataset.p }));
+
+// ============================================================ timeline cues
+const T = {};
+function buildCues() {
+  T.tagIn = 0.1; T.tagOut = W('s1', 'пишет');
+  T.demIn = W('s1', 'сначала') - .1; T.demOut = S('s1').end;
+  T.teamIn = S('s2').start + .05; T.tm1 = W('s2', 'ты'); T.tm2 = W('s2', 'мы'); T.teamOut = S('s2').end;
+  T.vibe = W('s3', 'вибрирует'); T.floodIn = T.vibe - .1; T.fl = [W('s3', 'вибрирует') + .3, W('s3', 'обещает'), W('s3', 'уговаривает'), W('s3', 'давит')]; T.floodOut = S('s3').end;
+  T.tipIn = W('s4', 'главное') - .1; T.tipOut = S('s4').end;
+  T.callIn = W('s5', 'звонит') - .1; T.angry = W('s5', 'завтра'); T.callOut = S('s5').end;
+  T.holdIn = S('s6').start + .05; T.holdNote = W('s6', 'сорок'); T.holdOut = S('s7').end;
+  T.q = [W('s7', 'тишина'), W('s7', 'час'), W('s7', 'два')];
+  T.ding = W('s8', 'дзынь'); T.trIn = W('s8', 'перевод') - .1; T.rest = W('s8', 'остальное'); T.trOut = S('s8').end;
+  T.halfIn = S('s9').start + .05; T.halfOut = S('s9').end;
+  T.wIn = W('s10', 'пишет') - .1; T.w1 = W('s10', 'со'); T.w2 = W('s10', 'отдашь'); T.wOut = S('s10').end;
+  T.pollIn = S('s11').start + .05; T.opt = [W('s11', 'а'), W('s11', 'б'), W('s11', 'в'), W('s11', 'г')]; T.endIn = W('s11', 'пиши'); T.pollOut = DURATION + 1;
+}
+buildCues();
+
+const PUNCH = () => [T.demIn, T.tm2, T.vibe, T.angry, T.holdNote, ...T.q, T.ding, T.halfIn, T.w2];
+
+const CARDS = () => [
+  ['tag', T.tagIn, T.tagOut, { top: 250 }],
+  ['cDemand', T.demIn, T.demOut, { top: 260 }],
+  ['cTeam', T.teamIn, T.teamOut, { top: 260 }],
+  ['cFlood', T.floodIn, T.floodOut, { top: 220 }],
+  ['cTip', T.tipIn, T.tipOut, { top: 270 }],
+  ['cCall', T.callIn, T.callOut, { top: 230 }],
+  ['cHold', T.holdIn, T.holdOut, { top: 270 }],
+  ['cTransfer', T.trIn, T.trOut, { top: 270 }],
+  ['cHalf', T.halfIn, T.halfOut, { top: 270 }],
+  ['cWarn2', T.wIn, T.wOut, { top: 260 }],
+  ['cPoll', T.pollIn, T.pollOut, { top: 220 }],
+];
+
+window.getSfx = function () {
+  const ev = [];
+  CARDS().forEach(([id, a]) => ev.push({ t: a, k: 'pop' }));
+  SCENES.forEach((sc, i) => { if (i && sc.bg !== SCENES[i - 1].bg) ev.push({ t: sc.start - .08, k: 'whoosh' }); });
+  ev.push({ t: W('s1', 'видео', 0, 'e'), k: 'send' });
+  ev.push({ t: T.tm1, k: 'ding' });
+  T.fl.forEach(x => ev.push({ t: x, k: 'buzz' }));
+  ev.push({ t: T.tipIn, k: 'ding' });
+  for (let k = 0; k < 3; k++) ev.push({ t: T.callIn + k * .7, k: 'buzz' });
+  ev.push({ t: T.angry, k: 'hit' });
+  ev.push({ t: T.holdNote, k: 'stamp' });
+  T.q.forEach(x => ev.push({ t: x, k: 'tick' }));
+  ev.push({ t: T.ding, k: 'ding' }); ev.push({ t: T.trIn + .1, k: 'coin' }); ev.push({ t: T.rest, k: 'wah' });
+  ev.push({ t: T.wIn, k: 'buzz' }); ev.push({ t: T.w2, k: 'hit' });
+  T.opt.forEach(x => ev.push({ t: x, k: 'pop' })); ev.push({ t: T.endIn, k: 'success' });
+  return ev.filter(e => e.t >= 0 && e.t < DURATION);
+};
+window.DURATION = DURATION;
+
+// ============================================================ render
+function setT(el, s) { el.setAttribute('transform', s); }
+let lastBg = null;
+
+function cardState(t, a, b) {
+  const pi = clamp((t - a) / .42), po = clamp((t - b) / .26);
+  if (t < a || po >= 1) return null;
+  const s = easeOutBack(pi) * (1 - .18 * easeIn(po));
+  return { s: Math.max(s, .001), o: clamp((t - a) / .1) * (1 - po), y: (1 - easeOut(pi)) * 110 - 70 * easeIn(po), blur: (1 - easeOut(pi)) * 10 + po * 6, pi };
+}
+
+window.renderAt = function (t) {
+  const si = Math.max(0, SCENES.findIndex(s => t >= s.start && t < s.end)) || (t >= DURATION ? SCENES.length - 1 : 0);
+  const sc = SCENES[si >= 0 ? si : SCENES.length - 1];
+  const lt = t - sc.start;
+
+  // ---------- background swap
+  if (lastBg !== sc.bg) {
+    for (const k in BG) { $('bg_' + k).style.display = k === sc.bg ? '' : 'none'; $('nr_' + k).style.display = k === sc.bg ? '' : 'none'; }
+    lastBg = sc.bg;
+  }
+
+  // ---------- whip transition (directional motion blur + slide)
+  let whipX = 0, whipBlur = 0;
+  SCENES.forEach((s2, i) => {
+    if (!i || s2.bg === SCENES[i - 1].bg) return;
+    const d = t - s2.start;
+    if (d > -.16 && d < .2) { const k = d < 0 ? (d + .16) / .16 : 1 - d / .2; whipBlur = Math.max(whipBlur, easeInOut(clamp(k)) * 60); whipX += (d < 0 ? -1 : 1) * easeIn(clamp(k)) * (d < 0 ? 260 : 220); }
+  });
+  $('whipBlur').setAttribute('stdDeviation', `${whipBlur.toFixed(1)} 0`);
+
+  // ---------- camera
+  let zoom = 1.04 + .05 * clamp(lt / Math.max(1, sc.end - sc.start)) + .01 * noise(t, .5);
+  let camX = noise(t, .33) * 22 + Math.sin(si * 1.7) * 18, camY = noise(t, .27, 2) * 14, rot = noise(t, .21, 4) * .8;
+  PUNCH().forEach(tp => { const d = decay(t, tp, 5); zoom += .06 * d; rot += 1.4 * d * Math.sin(tp * 7); });
+  if (sc.id === 's5' && t >= T.angry) { camX += Math.sin(t * 61) * 5; camY += Math.cos(t * 53) * 5; }
+  camX += whipX;
+  const cx = 540, cy = 1150;
+  LAYERS.forEach(({ g, p }) => {
+    const z = 1 + (zoom - 1) * p;
+    setT(g, `translate(${cx + camX * p} ${cy + camY * p}) rotate(${rot * p * .6}) scale(${z}) translate(${-cx} ${-cy})`);
+  });
+
+  // street scroll
+  if (sc.bg === 'street') {
+    $('streetMid').setAttribute('transform', `translate(${-lt * 170 - 200} 0)`);
+    $('streetNear').setAttribute('transform', `translate(${-(lt * 330) % 1260} 0)`);
+    $('clouds').setAttribute('transform', `translate(${-lt * 20} 0)`);
+  }
+  if (false) $('steam').setAttribute('transform', `translate(${Math.sin(t * 2) * 6} ${-((t * 20) % 20)})`);
+  if (sc.bg === 'kitchenEve') $('steamE').setAttribute('transform', `translate(${Math.sin(t * 2) * 6} ${-((t * 20) % 20)})`);
+  $('fairy') && document.querySelectorAll('#fairy circle').forEach((c, i) => c.setAttribute('opacity', .55 + .45 * Math.sin(t * 3 + i * 1.3)));
+
+  // ---------- character
+  let mood = 'neutral', pose = 'idle', glow = 0, shakeHands = 0, buzz = 0;
+  const id = sc.id;
+  if (id === 's1') { pose = 'phone'; glow = .25; mood = t < T.demIn ? 'tired' : 'focus'; }
+  if (id === 's2') { pose = 'phone'; glow = .25; mood = t < T.tm2 ? 'nervous' : 'focus'; buzz = clamp(1 - Math.abs(t - T.tm1 - .2) / .5); }
+  if (id === 's3') { pose = 'phone'; mood = t < T.fl[2] ? 'nervous' : 'shock'; buzz = Math.max(...T.fl.map(x => clamp(1 - Math.abs(t - x - .2) / .4))); }
+  if (id === 's4') { pose = 'phone'; mood = 'focus'; }
+  if (id === 's5') { pose = 'phone'; glow = .35; mood = t < T.angry ? 'nervous' : 'shock'; buzz = t < T.angry ? .6 : 0; shakeHands = t >= T.angry ? 1 : 0; }
+  if (id === 's6') { glow = .35; mood = 'focus'; }
+  if (id === 's7') { glow = .35; mood = t < T.q[1] ? 'focus' : 'tired'; }
+  if (id === 's8') { pose = 'phone'; glow = .25; mood = t < T.ding ? 'tired' : t < T.rest ? 'happy' : 'sad'; buzz = clamp(1 - Math.abs(t - T.ding - .2) / .5); }
+  if (id === 's9') { pose = 'phone'; glow = .25; mood = 'nervous'; }
+  if (id === 's10') { pose = 'phone'; glow = .25; mood = t < T.w2 ? 'focus' : 'shock'; buzz = clamp(1 - Math.abs(t - T.wIn - .3) / .5); }
+  if (id === 's11') { mood = t < T.opt[0] ? 'focus' : t < T.endIn ? ['sad', 'happy', 'focus', 'shock'][T.opt.filter(x => t >= x).length - 1] : 'happy'; }
+  applyChar(t, MOODS[mood], pose, glow, shakeHands, buzz, sc);
+
+  // ---------- cards
+  CARDS().forEach(([cid, a, b, o]) => {
+    const el = $(cid), st = cardState(t, a, b);
+    if (!st) { el.style.opacity = 0; return; }
+    let extraR = Math.sin(t * 1.3 + a) * .7, extraY = Math.sin(t * 1.7 + a) * 5, sc2 = st.s;
+    if (o.stamp) { const k = clamp((t - a) / .22); sc2 = lerp(2.4, 1, easeOut(k)) * (st.s > 0 ? 1 : 0); extraR += lerp(-14, -4, easeOut(k)); }
+    if (cid === 'cAlarm' && t < a + 1.6) extraR += Math.sin(t * 70) * 4 * (1 - (t - a) / 1.6);
+    if (cid === 'cMystery') { const b2 = buzz; extraR += Math.sin(t * 80) * 3 * b2; extraY += Math.sin(t * 65) * 6 * b2; }
+    el.style.opacity = st.o;
+    el.style.transform = `translate(-50%, ${o.top + st.y + extraY}px) scale(${sc2}) rotate(${extraR}deg)`;
+    el.style.filter = st.blur > .3 ? `blur(${st.blur.toFixed(1)}px)` : 'none';
+  });
+  // card internals
+  [['tm1', T.tm1], ['tm2', T.tm2], ['w1', T.w1], ['w2', T.w2]].forEach(([eid, a]) => { const k = clamp((t - a + .05) / .3); $(eid).style.opacity = k; $(eid).style.transform = `translateY(${(1 - easeOut(k)) * 30}px)`; });
+  document.querySelectorAll('#cFlood .fl').forEach((b, i) => { const k = clamp((t - T.fl[i]) / .25); b.style.opacity = k; b.style.transform = `translateX(${(1 - easeOutBack(k)) * -60}px)`; });
+  $('floodN').textContent = '+' + Math.round(clamp((t - T.floodIn) / Math.max(.5, T.floodOut - T.floodIn)) * 23);
+  { const k = clamp((t - T.angry) / .25); $('angry').style.opacity = k; $('angry').style.transform = `scale(${lerp(1.4, 1, easeOut(k))}) rotate(${Math.sin(t * 50) * 1.5 * k}deg)`; $('callAv').style.transform = `scale(${1 + .08 * Math.sin(t * 12)})`; }
+  { const k = clamp((t - T.holdNote) / .25); $('holdNote').style.opacity = k; }
+  { const k = clamp((t - T.rest) / .3); $('restNote').style.opacity = k; $('restNote').style.transform = `translateY(${(1 - easeOut(k)) * 20}px)`; }
+  { const k = clamp((t - T.halfIn - .2) / .8); $('halfBar').style.width = (easeOut(k) * 50) + '%'; }
+  { document.querySelectorAll('#cPoll .opt').forEach((o, i) => { const k = clamp((t - T.opt[i] + .05) / .3); const on = t >= T.opt[i] && (i === 3 ? t < T.endIn : t < T.opt[i + 1]); o.style.opacity = k; o.style.transform = `translateX(${(1 - easeOutBack(k)) * -80}px) scale(${on ? 1.04 : 1})`; o.style.background = on ? '#fff3bf' : '#f2f4f8'; }); }
+  { const k = clamp((t - T.endIn) / .4); $('cEnd').style.opacity = k; $('cEnd').style.transform = `translateY(${(1 - easeOutBack(k)) * 60}px)`; }
+
+  // ---------- big fx text
+  const fx = $('fxText'); let fxs = null;
+  const fxDef = [
+    [T.q[0], T.q[1], 'ТИШИНА', 120, '#fff', 660],
+    [T.q[1], T.q[2], 'ЧАС', 160, '#fff', 640],
+    [T.q[2], S('s7').end, 'ДВА', 160, '#fff', 640],
+    [T.halfIn, T.halfOut, '50%', 150, '#f59f00', 760],
+  ];
+  for (const [a, b, txt, size, col, top] of fxDef) { const st = cardState(t, a, b); if (st) fxs = { st, txt, size, col, top }; }
+  if (fxs) { fx.textContent = fxs.txt; fx.style.fontSize = fxs.size + 'px'; fx.style.color = fxs.col; fx.style.top = fxs.top + 'px'; fx.style.opacity = fxs.st.o; fx.style.transform = `translateY(${fxs.st.y}px) scale(${fxs.st.s}) rotate(${Math.sin(t * 9) * 3}deg)`; }
+  else fx.style.opacity = 0;
+
+  // ---------- HUD
+  const times = [['s1', 'ПН 05:00'], ['s2', 'ПН 05:01'], ['s3', 'ПН 10:20'], ['s4', 'ПН 11:05'], ['s5', 'ПН 21:30'], ['s6', 'ПН 21:32'], ['s8', 'ВТ 01:00'], ['s9', 'ВТ 01:02'], ['s10', 'ВТ 01:05']];
+  let tm = 'ПН 05:00'; times.forEach(([sid, v]) => { if (t >= S(sid).start) tm = v; });
+  if (id === 's7') { const k = clamp((t - S('s7').start) / (S('s7').end - S('s7').start)); const m = Math.round(21 * 60 + 40 + k * 3 * 60) % 1440; tm = `${m < 600 ? 'ВТ' : 'ПН'} ${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; }
+  $('hTime').textContent = tm; $('hTime').style.fontSize = '40px';
+  $('hCli').textContent = '2';
+  $('hBal').parentNode.querySelector('.k').textContent = 'ПОЛУЧЕНО';
+  const got = t >= T.trIn + .2; $('hBal').textContent = got ? '20 000 ₽' : '0 ₽';
+  const bf = decay(t, T.trIn + .2, 1.5); $('hBal').style.color = got ? '#f59f00' : '#e5383b'; $('hBal').style.transform = `scale(${1 + .3 * bf})`; $('hBal').style.transformOrigin = '0 50%';
+
+  // ---------- subtitles
+  const ch = CHUNKS.find(c => t >= c.s && t < c.e);
+  const subs = $('subs');
+  if (!ch || t > VO_END + .5) { subs.innerHTML = ''; subs._c = null; }
+  else {
+    if (subs._c !== ch) { subs.innerHTML = ch.map(tk => `<span>${tk.w.replace(/[«»]/g, '')}</span>`).join(' '); subs._c = ch; }
+    const sp = subs.children; const k = clamp((t - ch.s) / .16);
+    subs.style.transform = `translateY(${(1 - easeOut(k)) * 26}px) scale(${.9 + .1 * easeOutBack(k)})`; subs.style.opacity = clamp((t - ch.s) / .08);
+    ch.forEach((tk, i) => { const on = t >= tk.s - .03 && (i === ch.length - 1 || t < ch[i + 1].s - .03); sp[i].className = on ? 'on' : ''; const kk = on ? clamp((t - tk.s + .03) / .12) : 0; sp[i].style.transform = `scale(${1 + .1 * Math.sin(Math.PI * kk) + (on ? .04 : 0)})`; });
+  }
+
+  // flash on punches of big events
+  $('flash').style.opacity = .55 * Math.max(decay(t, T.angry, 9), decay(t, T.ding, 8), decay(t, T.w2, 9));
+  // fade in/out
+  const fadeOut = clamp((t - (DURATION - .35)) / .35);
+  $('stage').style.filter = fadeOut > 0 ? `brightness(${1 - fadeOut})` : 'none';
+};
+
+function applyChar(t, m, pose, glow, shakeHands, buzz, sc) {
+  // blink
+  const bp = (t + 0.37) % 3.1; const blink = bp < .13 ? Math.sin(bp / .13 * Math.PI) : 0;
+  const open = m.open * (1 - blink * .92);
+  const walk = pose === 'walk';
+  const bob = walk ? -Math.abs(Math.sin(t * 7)) * 22 : pose === 'cheer' ? -Math.abs(Math.sin(t * 9)) * 30 : sc.bg === 'bus' ? Math.sin(t * 5.3) * 6 + Math.sin(t * 13) * 2 : Math.sin(t * 2.2) * 4;
+  const sway = walk ? Math.sin(t * 7) * 2.5 : noise(t, .8) * 1.4;
+  setT($('charPos'), `translate(540 ${1170 + bob}) rotate(${sway * .4})`);
+  setT($('head'), `translate(0 ${Math.sin(t * 2.2 + .5) * 3}) rotate(${sway + (pose === 'phone' ? 4 : 0)} 0 120)`);
+  setT($('body'), `scale(1 ${1 + Math.sin(t * 2.2) * .008})`);
+  // eyes
+  const eyeS = m.small ? .82 : 1;
+  ['L', 'R'].forEach((s, i) => {
+    const ex = i ? 58 : -58;
+    setT($('eye' + s), `translate(${ex} 8) scale(${eyeS * (m.small ? 1.1 : 1)} ${open})`);
+    setT($('pup' + s), `translate(${m.gx + noise(t, .9, i) * 2} ${m.gy}) scale(${m.small ? .7 : 1})`);
+    const lidH = Math.max(0, (1 - Math.min(open, 1)) * 72);
+    $('lid' + s).setAttribute('height', lidH.toFixed(1));
+  });
+  const [bl, br, by] = m.b;
+  setT($('browL'), `translate(0 ${by + (m.small ? -6 : 0)}) rotate(${bl} -58 -62)`);
+  setT($('browR'), `translate(0 ${by + (m.small ? -6 : 0)}) rotate(${br} 58 -62)`);
+  const mo = MOUTH[m.mouth]; $('mouth').setAttribute('d', mo.d); $('mouth').setAttribute('fill', mo.fill);
+  $('blush').setAttribute('opacity', m.blush);
+  $('bags').setAttribute('opacity', m.bags ? 1 : 0);
+  $('sweat').setAttribute('opacity', m.sweat ? 1 : 0); setT($('sweat'), `translate(0 ${m.sweat ? (t * 30) % 30 : 0})`);
+  $('sparkle').setAttribute('opacity', m.sparkle ? .6 + .4 * Math.sin(t * 8) : 0);
+  $('glow').setAttribute('opacity', glow * (.85 + .15 * Math.sin(t * 13)));
+  // arms
+  const swing = walk ? Math.sin(t * 7) * 14 : Math.sin(t * 2.2) * 1.5;
+  setT($('armL'), `translate(-205 245) rotate(${8 + swing})`); setT($('aLF'), `translate(0 170) rotate(${walk ? 10 : 4})`);
+  if (pose === 'phone') {
+    const jit = shakeHands ? Math.sin(t * 55) * 3 : 0;
+    const bz = buzz ? Math.sin(t * 90) * 6 * buzz : 0;
+    setT($('armR'), `translate(205 245) rotate(${22 + jit})`);
+    setT($('aRF'), `translate(0 170) rotate(${112 + jit * 1.5 + bz})`);
+    $('phone').setAttribute('opacity', 1);
+    setT($('phone'), `translate(-6 172) rotate(${-134 - jit})`);
+    $('buzz').setAttribute('opacity', buzz > .05 ? buzz : 0);
+    $('phoneScr').setAttribute('fill', sc.bg === 'bedNight' ? '#ffe9a8' : '#7fb2ff');
+  } else if (pose === 'cheer') {
+    const w = Math.sin(t * 9) * 8;
+    setT($('armL'), `translate(-205 245) rotate(${150 + w})`); setT($('aLF'), `translate(0 170) rotate(${-20})`);
+    setT($('armR'), `translate(205 245) rotate(${-150 - w})`); setT($('aRF'), `translate(0 170) rotate(${20})`);
+    $('phone').setAttribute('opacity', 0); $('buzz').setAttribute('opacity', 0);
+  } else {
+    setT($('armR'), `translate(205 245) rotate(${-8 - swing})`); setT($('aRF'), `translate(0 170) rotate(${walk ? -10 : -4})`);
+    $('phone').setAttribute('opacity', 0);
+  }
+}
+
+window.READY = true;
+// preview mode: play in real time when opened directly
+if (!/render/.test(location.search)) {
+  const fit = () => { const s = Math.min(innerWidth / 1080, innerHeight / 1920); $('stage').style.transform = `scale(${s})`; };
+  fit(); addEventListener('resize', fit);
+  const t0 = performance.now();
+  const loop = () => { renderAt(((performance.now() - t0) / 1000) % DURATION); requestAnimationFrame(loop); };
+  loop();
+}
+</script>
+</body>
+</html>
