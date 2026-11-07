@@ -5,3 +5,4 @@ video/out/
 !video/part3/out/*.mp4
 !video/part4/out/*.mp4
 !video/part5/out/*.mp4
+!video/part6/out/*.mp4
