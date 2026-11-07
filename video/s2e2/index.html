@@ -788,6 +788,7 @@ window.renderAt = function (t) {
   { const k = clamp((t - T.d1) / .3); $('d1').style.opacity = k; const k2 = clamp((t - T.d50) / .25); $('d50').style.opacity = k2; $('d50').style.transform = `scale(${lerp(1.6, 1, easeOut(k2))})`; }
   { const k = clamp((t - T.vs) / .3); $('vs').style.opacity = k; $('zero').style.opacity = clamp((t - T.zero) / .2); }
   { const left = Math.max(0, 86400 - Math.floor((t - T.dayIn) * 2400)); $('dayT').textContent = `${String(Math.floor(left / 3600)).padStart(2, '0')}:${String(Math.floor(left / 60) % 60).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`; }
+  if (t >= S('s10').start) { const st = cardState(t, S('s10').start, T.hqOut), el = $('cHQ'); if (st) { el.style.opacity = st.o; el.style.transform = `translate(-50%, ${250 + st.y}px) scale(${st.s})`; el.style.filter = 'none'; } }
   document.querySelectorAll('#cHQ .hq').forEach((r, i) => { const k = clamp((t - T.hq[i]) / .25); r.style.opacity = k; r.style.transform = `translateX(${(1 - easeOut(k)) * -40}px)`; });
   { const st = cardState(t, T.shotsIn, T.shotsOut); $('cShots').style.opacity = st ? st.o : 0;
     document.querySelectorAll('#cShots .shot').forEach((sh, i) => { const k = clamp((t - T.shotsIn - .2 - i * .35) / .3); sh.style.opacity = k; sh.style.marginTop = ((1 - easeOutBack(k)) * 80) + 'px'; }); }
