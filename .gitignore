@@ -7,3 +7,4 @@ video/out/
 !video/part5/out/*.mp4
 !video/part6/out/*.mp4
 !video/s2e1/out/*.mp4
+!video/s2e2/out/*.mp4
