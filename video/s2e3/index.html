@@ -696,7 +696,7 @@ function buildCues() {
   T.shout = W('s13', 'чистый'); T.logoIn = W('s13', 'логотип') - .2; T.logoOut = S('s13').end;
   T.workIn = S('s14').start + .05; T.workOut = S('s14').end;
   T.hoodSmile = W('s15', 'улыбается');
-  T.pollIn = S('s16').start + .05; T.opt = [W('s16', 'а'), W('s16', 'б'), W('s16', 'в'), W('s16', 'г')]; T.endIn = W('s16', 'пиши'); T.pollOut = DURATION + 1;
+  T.pollIn = S('s16').start + .05; T.opt = [W('s16', 'а'), W('s16', 'б'), W('s16', 'в', 1), W('s16', 'г')]; T.endIn = W('s16', 'пиши'); T.pollOut = DURATION + 1;
 }
 buildCues();
 
