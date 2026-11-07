@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Ера лох</title>
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #07080f; }
+  #stage { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: hidden; }
+  #cam { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+  svg { position: absolute; left: 0; top: 0; }
+  text { font-family: "Inter", "Inter Display", sans-serif; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="cam"><svg id="world" width="1080" height="1920" viewBox="0 0 1080 1920"></svg></div>
+  <svg id="hud" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+</div>
+<script src="data.js"></script>
+<script src="sfx.js"></script>
+<script src="camlife.js"></script>
+<script src="film.js"></script>
+</body>
+</html>
