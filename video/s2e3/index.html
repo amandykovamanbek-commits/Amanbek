@@ -837,7 +837,7 @@ window.renderAt = function (t) {
     $('hoodSmile').setAttribute('d', `M-36,128 Q0,${140 + 22 * k} 36,${128 - 8 * k}`);
     $('hoodGlow').setAttribute('opacity', .5 + .1 * Math.sin(t * 6));
     setT($('hoodThumb'), `translate(0 ${-((t * 60) % 120) + 40})`);
-    setT($('hoodRoot'), `translate(540 ${1170 + Math.sin(t * 1.5) * 4}) scale(${1 + .04 * clamp((t - S('s15').start) / 6)})`);
+    setT($('hoodRoot'), `translate(540 ${960 + Math.sin(t * 1.5) * 4}) scale(${1.15 + .05 * clamp((t - S('s15').start) / 6)})`);
   }
 
   // ---------- cards
