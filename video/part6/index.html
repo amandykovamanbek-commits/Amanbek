@@ -155,7 +155,8 @@
 
   <div id="cEnd" class="layer" style="opacity:0">
     <div style="position:absolute;left:0;right:0;top:1640px;text-align:center">
-      <span style="display:inline-block;background:#FFD43B;color:#16171d;font-weight:900;font-size:40px;padding:14px 30px;border-radius:40px;box-shadow:0 10px 30px rgba(0,0,0,.35)">ПОДПИСЫВАЙСЯ — БУДУТ НОВЫЕ ИСТОРИИ</span>
+      <span style="display:inline-block;background:#FFD43B;color:#16171d;font-weight:900;font-size:40px;padding:14px 30px;border-radius:40px;box-shadow:0 10px 30px rgba(0,0,0,.35)">КТО ТАМ? ПИШИ В КОММЕНТЫ ↓</span><br>
+      <span style="display:inline-block;margin-top:18px;background:#16171d;color:#fff;font-weight:900;font-size:36px;padding:12px 28px;border-radius:40px">2 СЕЗОН — СКОРО</span>
     </div>
   </div>
 
@@ -203,6 +204,8 @@ const SCENES = [
   { id: 's14', bg: 'deskNew',  text: 'Однажды вечером мама тихо заходит в комнату и долго смотрит, как он работает. «Я тобой горжусь, сынок».' },
   { id: 's15', bg: 'bedEve',   text: 'Даня улыбается. Он больше не мечтает о двухстах тысячах за месяц. Он знает: деньги приходят к тем, кто работает каждый день.' },
   { id: 's16', bg: 'bedEve',   text: 'Это была история Дани. Пятнадцать лет. Монтажёр. Спасибо, что был с нами все шесть частей!' },
+  { id: 's17', bg: 'deskNew',  text: 'Но это ещё не всё. Через неделю, поздно вечером — стук в дверь.' },
+  { id: 's18', bg: 'doorway',  text: '«Я открою, мам!» Даня открывает дверь... и застывает.' },
 ];
 const norm = w => w.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/g, '');
 
@@ -408,6 +411,25 @@ function store() {
           <g transform="translate(820,1560) rotate(-12)"><rect width="120" height="160" rx="18" fill="#ffd43b"/><rect x="10" y="40" width="100" height="40" rx="8" fill="#e5383b"/><text x="60" y="70" text-anchor="middle" font-size="26" font-weight="900" fill="#fff">ЧИПСЫ</text></g></g>`,
   };
 }
+function doorway() {
+  return {
+    defs: `<radialGradient id="aptLight" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#ffe2a8"/><stop offset="1" stop-color="#e9b77d"/></radialGradient>`,
+    far: `<rect x="-200" y="-200" width="1480" height="2400" fill="url(#aptLight)"/>
+          <rect x="620" y="760" width="16" height="260" fill="#8b5e3c"/><circle cx="628" cy="760" r="18" fill="#6e4a30"/><path d="M600,800 q-40,60 10,150 h50 q40,-90 -10,-150z" fill="#4c7bd9"/>
+          <rect x="300" y="700" width="180" height="120" rx="10" fill="#fff" opacity=".7"/><rect x="315" y="715" width="150" height="90" rx="6" fill="#9fd0ff"/>
+          <circle cx="540" cy="560" r="160" fill="#fff6d8" opacity=".55"/>`,
+    mid: `<rect x="-200" y="1560" width="1480" height="700" fill="#b98a5e"/>`,
+    near: `<g><path d="M-200,-200 H1280 V2200 H-200 Z M230,640 V2000 H850 V640 Z" fill="#3a3f4b" fill-rule="evenodd"/>
+          <path d="M-200,-200 H1280 V2200 H-200 Z M230,640 V2000 H850 V640 Z" fill="#000" opacity=".35" fill-rule="evenodd"/>
+          <rect x="200" y="610" width="680" height="40" fill="#5a3f30"/><rect x="200" y="610" width="40" height="1400" fill="#5a3f30"/><rect x="840" y="610" width="40" height="1400" fill="#5a3f30"/>
+          <rect x="910" y="900" width="90" height="150" rx="10" fill="#c9ccd6"/><circle cx="955" cy="950" r="16" fill="#e5383b"/>
+          <g id="doorPanel"><rect x="240" y="650" width="600" height="1360" fill="#7a4e34"/>
+            <rect x="290" y="720" width="500" height="520" rx="12" fill="none" stroke="#5e3a26" stroke-width="14"/><rect x="290" y="1300" width="500" height="620" rx="12" fill="none" stroke="#5e3a26" stroke-width="14"/>
+            <circle cx="540" cy="820" r="18" fill="#c9a24a"/><circle cx="540" cy="820" r="8" fill="#222"/>
+            <rect x="490" y="900" width="100" height="70" rx="8" fill="#c9a24a"/><text x="540" y="950" text-anchor="middle" font-size="44" font-weight="900" fill="#5e3a26">24</text>
+            <rect x="760" y="1280" width="50" height="20" rx="10" fill="#c9a24a"/><circle cx="770" cy="1290" r="18" fill="#c9a24a"/></g></g>`,
+  };
+}
 function hall() {
   let lockers = '';
   for (let i = 0; i < 12; i++) {
@@ -497,7 +519,7 @@ function bus() {
 
 const BG = {
   bedEve: bedroom('bedEve', 'eve'), bedMorn: bedroom('bedMorn', 'morn'), bedNight: bedroom('bedNight', 'night'),
-  class: classroom(), hall: hall(), store: store(), deskNew: desk(true),
+  class: classroom(), hall: hall(), store: store(), deskNew: desk(true), doorway: doorway(),
 };
 
 // ============================================================ character
@@ -623,11 +645,12 @@ function buildCues() {
   T.cliIn = W('s13', 'через') - .1; T.five = W('s13', 'пять'); T.cliOut = S('s13').end;
   T.mom = W('s14', 'я'); T.momIn = T.mom - .1; T.momOut = S('s14').end; T.momEnter = W('s14', 'мама');
   T.drIn = W('s15', 'больше') - .1; T.drOut = S('s15').end;
-  T.finIn = S('s16').start + .05; T.endIn = W('s16', 'спасибо'); T.finOut = DURATION + 1;
+  T.finIn = S('s16').start + .05; T.thanks = W('s16', 'спасибо'); T.finOut = S('s17').start;
+  T.knock = W('s17', 'стук'); T.shout = W('s18', 'я'); T.open = W('s18', 'открывает'); T.freeze = W('s18', 'застывает'); T.endIn = T.freeze + .5;
 }
 buildCues();
 
-const PUNCH = () => [T.wm, T.boom, T.rg[2], T.calm, T.blk, T.kirIn, T.buy, T.fast, T.five, T.mom, T.finIn];
+const PUNCH = () => [T.wm, T.boom, T.rg[2], T.calm, T.blk, T.kirIn, T.buy, T.fast, T.five, T.mom, T.finIn, T.knock, T.freeze];
 
 const CARDS = () => [
   ['tag', T.tagIn, T.tagOut, { top: 250 }],
@@ -666,6 +689,8 @@ window.getSfx = function () {
   ev.push({ t: T.five, k: 'coin' });
   ev.push({ t: T.mom, k: 'sparkle' });
   ev.push({ t: T.finIn, k: 'success' }); ev.push({ t: T.finIn + .2, k: 'sparkle' });
+  for (let k = 0; k < 3; k++) ev.push({ t: T.knock + k * .28, k: 'knock' });
+  ev.push({ t: T.open, k: 'creak' }); ev.push({ t: T.freeze, k: 'hit' }); ev.push({ t: T.endIn, k: 'buzz' });
   return ev.filter(e => e.t >= 0 && e.t < DURATION);
 };
 window.DURATION = DURATION;
@@ -748,7 +773,9 @@ window.renderAt = function (t) {
   if (id === 's13') { pose = 'phone'; mood = t < T.five ? 'neutral' : 'happy'; }
   if (id === 's14') { glow = .3; mood = t < T.mom ? 'focus' : 'happy'; }
   if (id === 's15') mood = t < W('s15', 'знает') ? 'happy' : 'dream';
-  if (id === 's16') { pose = t >= T.endIn ? 'cheer' : 'idle'; mood = 'happy'; }
+  if (id === 's16') { pose = t >= T.thanks ? 'cheer' : 'idle'; mood = 'happy'; }
+  if (id === 's17') { glow = .3; mood = t < T.knock ? 'focus' : 'shock'; }
+  if (id === 's18') { mood = t < T.freeze ? 'neutral' : 'shock'; }
   applyChar(t, MOODS[mood], pose, glow, shakeHands, buzz, sc);
 
   // ---------- cards
@@ -777,6 +804,7 @@ window.renderAt = function (t) {
   { const k = clamp((t - T.fast) / .3); $('loadCmp').style.opacity = k; }
   document.querySelectorAll('#cCli .cl').forEach((c, i) => { const k = clamp((t - T.cliIn - .3 - i * .25) / .25); c.style.opacity = k; c.style.transform = `scale(${easeOutBack(k)})`; });
   CONF.forEach(c => { const t0 = t < T.finIn ? T.buy : T.finIn; const d = t - t0 - +c.dataset.d; if (d < 0 || d > 3.2 || (t0 === T.buy && sc.id !== 's9')) { c.style.opacity = 0; return; } const y = -60 + +c.dataset.v * d * .9 + 300 * d * d; c.style.opacity = clamp((3.2 - d) / .5); c.style.transform = `translate(${+c.dataset.x + Math.sin(d * 4 + +c.dataset.x) * 40}px, ${y}px) rotate(${+c.dataset.r * d}deg)`; });
+  if (sc.bg === 'doorway') { const k = easeInOut(clamp((t - T.open) / .9)); $('doorPanel').setAttribute('transform', `translate(240 0) scale(${Math.max(.02, 1 - k)} 1) translate(-240 0)`); }
   { const k = clamp((t - T.endIn) / .4); $('cEnd').style.opacity = k; $('cEnd').style.transform = `translateY(${(1 - easeOutBack(k)) * 60}px)`; }
 
   // ---------- big fx text
@@ -784,13 +812,15 @@ window.renderAt = function (t) {
   const fxDef = [
     [T.calm, T.cm[0] - .05, 'СПОКОЙНО', 110, '#fff', 680],
     [T.fast, T.subsOut, '0:03', 150, '#51cf66', 860],
+    [T.knock, S('s17').end, 'ТУК-ТУК-ТУК', 120, '#fff', 700],
+    [T.freeze + .1, DURATION + 1, '?!', 300, '#FFD43B', 330],
   ];
   for (const [a, b, txt, size, col, top] of fxDef) { const st = cardState(t, a, b); if (st) fxs = { st, txt, size, col, top }; }
   if (fxs) { fx.textContent = fxs.txt; fx.style.fontSize = fxs.size + 'px'; fx.style.color = fxs.col; fx.style.top = fxs.top + 'px'; fx.style.opacity = fxs.st.o; fx.style.transform = `translateY(${fxs.st.y}px) scale(${fxs.st.s}) rotate(${Math.sin(t * 9) * 3}deg)`; }
   else fx.style.opacity = 0;
 
   // ---------- HUD
-  const times = [['s1', 'ВТ 01:00'], ['s2', 'ВТ 01:05'], ['s4', 'ВТ 01:09'], ['s5', 'ВТ 01:11'], ['s6', 'ВТ 07:15'], ['s7', 'ВТ 11:05'], ['s8', 'СБ 12:00'], ['s10', 'СБ 18:40'], ['s11', 'ПН 10:20'], ['s12', 'ПН 19:00'], ['s13', 'МЕСЯЦ СПУСТЯ'], ['s14', 'ПТ 20:30'], ['s15', 'ПТ 21:10']];
+  const times = [['s1', 'ВТ 01:00'], ['s2', 'ВТ 01:05'], ['s4', 'ВТ 01:09'], ['s5', 'ВТ 01:11'], ['s6', 'ВТ 07:15'], ['s7', 'ВТ 11:05'], ['s8', 'СБ 12:00'], ['s10', 'СБ 18:40'], ['s11', 'ПН 10:20'], ['s12', 'ПН 19:00'], ['s13', 'МЕСЯЦ СПУСТЯ'], ['s14', 'ПТ 20:30'], ['s15', 'ПТ 21:10'], ['s17', 'ПТ 22:47'], ['s18', 'ПТ 22:48']];
   let tm = 'ВТ 01:00'; times.forEach(([sid, v]) => { if (t >= S(sid).start) tm = v; });
   $('hTime').textContent = tm; $('hTime').style.fontSize = tm.length > 9 ? '30px' : '40px';
   $('hCli').textContent = t >= T.five ? '5' : t >= T.blk ? '1' : '2';
@@ -815,7 +845,7 @@ window.renderAt = function (t) {
   }
 
   // flash on punches of big events
-  $('flash').style.opacity = .55 * Math.max(decay(t, T.boom, 9), decay(t, T.buy, 7), decay(t, T.finIn, 7));
+  $('flash').style.opacity = .55 * Math.max(decay(t, T.boom, 9), decay(t, T.buy, 7), decay(t, T.finIn, 7), decay(t, T.freeze, 8));
   // fade in/out
   const fadeOut = clamp((t - (DURATION - .35)) / .35);
   $('stage').style.filter = fadeOut > 0 ? `brightness(${1 - fadeOut})` : 'none';

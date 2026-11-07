@@ -22,6 +22,8 @@ const S = {
   ding: t0 => add(t0, 1.1, t => (tone(1568, t) * .6 + tone(2093, t) * .4 + tone(3136, t) * .15 * Math.exp(-t * 9)) * Math.exp(-t * 4) * .17),
   error: t0 => { add(t0, .16, t => Math.sign(tone(440, t)) * .1 * Math.min(1, t * 300)); add(t0 + .2, .3, t => Math.sign(tone(330, t)) * .1 * Math.min(1, t * 300) * Math.exp(-t * 4)); },
   hum: t0 => { let lp = 0; add(t0, 1.4, t => { lp += .02 * (rnd() - lp); const env = Math.min(1, t * 4) * Math.min(1, (1.4 - t) * 4); return (lp * 3 + tone(120, t) * .05 + tone(240, t) * .02) * env * .6; }); },
+  knock: t0 => { let ph = 0; add(t0, .16, t => { ph += 2 * Math.PI * (160 - 300 * t) / SR; return Math.sin(ph) * Math.exp(-t * 30) * .7 + rnd() * Math.exp(-t * 120) * .25; }); },
+  creak: t0 => { let ph = 0; add(t0, .9, t => { ph += 2 * Math.PI * (220 + 90 * Math.sin(t * 7) + 60 * t) / SR; const saw = 2 * ((ph / (2 * Math.PI)) % 1) - 1; return saw * .05 * Math.sin(Math.PI * t / .9) * (0.6 + 0.4 * Math.sin(t * 90)); }); },
   success: t0 => [523, 659, 784, 1047].forEach((f, i) => add(t0 + i * .07, .5, t => (tone(f, t) + .3 * tone(2 * f, t)) * Math.exp(-t * 6) * .1)),
 };
 for (const e of events) (S[e.k] || S.pop)(e.t);
