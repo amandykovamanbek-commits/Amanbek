@@ -135,7 +135,7 @@ function BrainrotService.grab(player, entry)
 	if def.rarity >= 7 then
 		Net.announce(player.DisplayName .. " схватил " .. def.name .. "!", "divine")
 	else
-		Net.notify(player, "Неси " .. def.name .. " на свою базу!", "info")
+		Net.notify(player, "Неси " .. def.name .. " на свою базу!", "grab")
 	end
 end
 
@@ -195,7 +195,7 @@ local function deliver(player, profile)
 	PlotService.refresh(player)
 	DataService.sync(player)
 	local def = Config.Creatures[id]
-	Net.notify(player, def.name .. " теперь на базе! +" .. Config.formatMoney(def.income) .. "/сек", "success")
+	Net.notify(player, def.name .. " теперь на базе! +" .. Config.formatMoney(def.income) .. "/сек", "deliver")
 	if isNew then
 		Net.notify(player, "📖 Новое существо в Индексе: " .. def.name .. "!", "announce")
 	end
@@ -278,7 +278,7 @@ function BrainrotService.init()
 					local had = profile.carrying ~= nil
 					BrainrotService.drop(player)
 					BrainrotService.teleportHome(player)
-					Net.notify(player, had and "Упал в воду! Существо вернулось на остров." or "Упал в воду!", "error")
+					Net.notify(player, had and "Упал в воду! Существо вернулось на остров." or "Упал в воду!", "splash")
 				elseif profile.carrying and PlotService.isInside(player, root.Position) then
 					deliver(player, profile)
 				end

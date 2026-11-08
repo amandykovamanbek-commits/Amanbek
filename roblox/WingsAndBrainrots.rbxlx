@@ -1,4 +1,4 @@
-<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4"><Meta name="ExplicitAutoJoints">true</Meta><Item class="Workspace" referent="RBX00000021"><Properties><string name="Name">Workspace</string><bool name="StreamingEnabled">false</bool></Properties></Item><Item class="ReplicatedStorage" referent="RBX00000003"><Properties><string name="Name">ReplicatedStorage</string></Properties><Item class="Folder" referent="RBX00000002"><Properties><string name="Name">Shared</string></Properties><Item class="ModuleScript" referent="RBX00000001"><Properties><string name="Name">Config</string><ProtectedString name="Source"><![CDATA[-- Config: весь баланс игры в одном месте.
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4"><Meta name="ExplicitAutoJoints">true</Meta><Item class="Workspace" referent="RBX00000022"><Properties><string name="Name">Workspace</string><bool name="StreamingEnabled">false</bool></Properties></Item><Item class="ReplicatedStorage" referent="RBX00000003"><Properties><string name="Name">ReplicatedStorage</string></Properties><Item class="Folder" referent="RBX00000002"><Properties><string name="Name">Shared</string></Properties><Item class="ModuleScript" referent="RBX00000001"><Properties><string name="Name">Config</string><ProtectedString name="Source"><![CDATA[-- Config: весь баланс игры в одном месте.
 -- Меняй цифры здесь — сервер и клиент читают этот же модуль.
 
 local Config = {}
@@ -97,19 +97,19 @@ Config.Rarities = {
 
 -- rarity = номер редкости, income = $/сек, weight = шанс среди своей редкости
 Config.Creatures = {
-	frog_slipper = { icon = "🐸", name = "Лягушонок-Тапок", rarity = 1, income = 1, weight = 70 },
-	dumpling = { icon = "🥟", name = "Пельмешек", rarity = 1, income = 2, weight = 30 },
-	cactus_runner = { icon = "🌵", name = "Кактус-Бегун", rarity = 2, income = 8, weight = 70 },
-	mushroom_hedgehog = { icon = "🦔", name = "Грибной Ёжик", rarity = 2, income = 12, weight = 30 },
-	jelly_teapot = { icon = "🍵", name = "Медузий Чайник", rarity = 3, income = 40, weight = 70 },
-	banana_crab = { icon = "🦀", name = "Банановый Краб", rarity = 3, income = 65, weight = 30 },
-	fire_hamster = { icon = "🐹", name = "Огненный Хомяк", rarity = 4, income = 220, weight = 70 },
-	cloud_sheep = { icon = "🐑", name = "Облачная Овечка", rarity = 4, income = 320, weight = 30 },
-	owl_king = { icon = "🦉", name = "Совиный Король", rarity = 5, income = 1100, weight = 70 },
-	rocket_penguin = { icon = "🐧", name = "Ракетный Пингвин", rarity = 5, income = 1700, weight = 30 },
-	crystal_whale = { icon = "🐋", name = "Кристальный Кит", rarity = 6, income = 6500, weight = 70 },
-	shadow_fox = { icon = "🦊", name = "Теневой Лис", rarity = 6, income = 9500, weight = 30 },
-	sun_dragon = { icon = "🐉", name = "Солнечный Дракоша", rarity = 7, income = 75000, weight = 100 },
+	frog_slipper = { icon = "🐸", name = "Тапочелло Ранокки", rarity = 1, income = 1, weight = 70 },
+	dumpling = { icon = "🥟", name = "Пельменино Пухлини", rarity = 1, income = 2, weight = 30 },
+	cactus_runner = { icon = "🌵", name = "Кактусо Кроссовини", rarity = 2, income = 8, weight = 70 },
+	mushroom_hedgehog = { icon = "🦔", name = "Грибуччо Ежинелли", rarity = 2, income = 12, weight = 30 },
+	jelly_teapot = { icon = "🍵", name = "Чайнико Медузини", rarity = 3, income = 40, weight = 70 },
+	banana_crab = { icon = "🦀", name = "Банано Граббини", rarity = 3, income = 65, weight = 30 },
+	fire_hamster = { icon = "🐹", name = "Хомякко Фуокино", rarity = 4, income = 220, weight = 70 },
+	cloud_sheep = { icon = "🐑", name = "Нуволина Овеччина", rarity = 4, income = 320, weight = 30 },
+	owl_king = { icon = "🦉", name = "Гуфо Императоре", rarity = 5, income = 1100, weight = 70 },
+	rocket_penguin = { icon = "🐧", name = "Пингвино Реактивино", rarity = 5, income = 1700, weight = 30 },
+	crystal_whale = { icon = "🐋", name = "Балена Кристаллина", rarity = 6, income = 6500, weight = 70 },
+	shadow_fox = { icon = "🦊", name = "Вольпе Омбрини", rarity = 6, income = 9500, weight = 30 },
+	sun_dragon = { icon = "🐉", name = "Драгонцелло Солярио", rarity = 7, income = 75000, weight = 100 },
 }
 
 Config.SellSeconds = 60          -- цена продажи = доход * 60
@@ -180,6 +180,26 @@ function Config.productAmount(productKey, incomePerSecond)
 	end
 	return math.max(def.minAmount, math.floor(incomePerSecond * def.seconds))
 end
+
+---------------------------------------------------------------------
+-- Звуки. Свои звуки лежат в папке sounds/ (их сделал tools/make_sounds.py).
+-- Загрузи их в Roblox (View -> Asset Manager -> Bulk Import) и вставь ID в id.
+-- Пока id = "", играет запасной встроенный звук Roblox (fallback) с другим тоном.
+---------------------------------------------------------------------
+Config.Sounds = {
+	Click = { id = "", fallback = "rbxasset://sounds/action_jump_land.mp3", pitch = 2.2, volume = 0.4 },
+	Coin = { id = "", fallback = "rbxasset://sounds/electronicpingshort.wav", pitch = 1.3, volume = 0.6 },
+	Collect = { id = "", fallback = "rbxasset://sounds/electronicpingshort.wav", pitch = 1.6, volume = 0.7 },
+	Buy = { id = "", fallback = "rbxasset://sounds/electronicpingshort.wav", pitch = 1.9, volume = 0.7 },
+	Error = { id = "", fallback = "rbxasset://sounds/action_jump_land.mp3", pitch = 0.5, volume = 0.6 },
+	Grab = { id = "", fallback = "rbxasset://sounds/action_get_up.mp3", pitch = 1.5, volume = 0.7 },
+	Deliver = { id = "", fallback = "rbxasset://sounds/electronicpingshort.wav", pitch = 1.0, volume = 0.8 },
+	Flap = { id = "", fallback = "rbxasset://sounds/action_swim.mp3", pitch = 1.5, volume = 0.35 },
+	Splash = { id = "", fallback = "rbxasset://sounds/impact_water.mp3", pitch = 1.0, volume = 0.8 },
+	Divine = { id = "", fallback = "rbxasset://sounds/electronicpingshort.wav", pitch = 0.7, volume = 1.0 },
+	LevelUp = { id = "", fallback = "rbxasset://sounds/electronicpingshort.wav", pitch = 2.2, volume = 0.7 },
+	Music = { id = "", fallback = "", pitch = 1, volume = 0.25 },
+}
 
 ---------------------------------------------------------------------
 -- Форматирование денег: 1500 -> "$1.5K"
@@ -511,7 +531,7 @@ function BrainrotService.grab(player, entry)
 	if def.rarity >= 7 then
 		Net.announce(player.DisplayName .. " схватил " .. def.name .. "!", "divine")
 	else
-		Net.notify(player, "Неси " .. def.name .. " на свою базу!", "info")
+		Net.notify(player, "Неси " .. def.name .. " на свою базу!", "grab")
 	end
 end
 
@@ -571,7 +591,7 @@ local function deliver(player, profile)
 	PlotService.refresh(player)
 	DataService.sync(player)
 	local def = Config.Creatures[id]
-	Net.notify(player, def.name .. " теперь на базе! +" .. Config.formatMoney(def.income) .. "/сек", "success")
+	Net.notify(player, def.name .. " теперь на базе! +" .. Config.formatMoney(def.income) .. "/сек", "deliver")
 	if isNew then
 		Net.notify(player, "📖 Новое существо в Индексе: " .. def.name .. "!", "announce")
 	end
@@ -654,7 +674,7 @@ function BrainrotService.init()
 					local had = profile.carrying ~= nil
 					BrainrotService.drop(player)
 					BrainrotService.teleportHome(player)
-					Net.notify(player, had and "Упал в воду! Существо вернулось на остров." or "Упал в воду!", "error")
+					Net.notify(player, had and "Упал в воду! Существо вернулось на остров." or "Упал в воду!", "splash")
 				elseif profile.carrying and PlotService.isInside(player, root.Position) then
 					deliver(player, profile)
 				end
@@ -1228,6 +1248,85 @@ SPECS.sun_dragon = {
 }
 
 ---------------------------------------------------------------------
+-- Стиль «брейнрот»: многим существам — человеческие ноги в кроссовках
+-- и аксессуары. legs = { длина, цвет кожи, цвет кроссовок, расстояние между ног }
+---------------------------------------------------------------------
+local STYLE = {
+	frog_slipper = { legs = { 2.2, rgb(255, 210, 170), rgb(60, 140, 255), 0.8 }, shades = { 0, 1.5, -1.6, 2.6 } },
+	dumpling = { legs = { 1.8, rgb(250, 220, 190), rgb(255, 60, 80), 0.9 }, chef = { 0, 1.9, 0.1 } },
+	mushroom_hedgehog = { legs = { 1.6, rgb(240, 200, 160), rgb(80, 220, 120), 0.8 } },
+	banana_crab = { shades = { 0, 1.6, -1.45, 2.0 }, chain = { 0, 0.1, -1.4 } },
+	fire_hamster = { legs = { 2.0, rgb(255, 200, 170), rgb(255, 255, 255), 1.0 }, shades = { 0, 0.75, -1.85, 2.0 } },
+	cloud_sheep = { headphones = { 0, 1.0, -2.3, 2.2 } },
+	owl_king = { legs = { 2.0, rgb(255, 180, 60), rgb(255, 205, 40), 0.8 }, scepter = { 2.4, 0, -0.6 } },
+	rocket_penguin = { chain = { 0, 0.3, -1.6 } },
+	crystal_whale = { tinyWings = { 1.8, 1.4, 0.2 } },
+	shadow_fox = { scarf = { 0, 0.3, -1.8 } },
+	sun_dragon = { chain = { 0, 0.4, -2.2 } },
+}
+
+local function addStyle(id, p, s)
+	local st = STYLE[id]
+	if not st then
+		return 0
+	end
+	local legLen = 0
+	local spec = SPECS[id]
+	if st.legs then
+		legLen = st.legs[1]
+		local skin, shoe, gap = st.legs[2], st.legs[3], st.legs[4]
+		local top = -spec.foot
+		for _, sx in ipairs({ -1, 1 }) do
+			local x = sx * gap
+			p("C", V(legLen, 0.55, 0.55), V(x, top - legLen / 2, 0), skin, nil, UP)
+			p("K", V(0.9, 0.55, 1.6), V(x, top - legLen - 0.05, -0.35), shoe)
+			p("K", V(1.0, 0.22, 1.7), V(x, top - legLen - 0.4, -0.35), WHITE)
+			p("K", V(0.92, 0.12, 0.35), V(x, top - legLen + 0.15, -0.9), WHITE)
+		end
+	end
+	if st.shades then
+		local x, y, z, w = st.shades[1], st.shades[2], st.shades[3], st.shades[4]
+		p("K", V(w, 0.18, 0.15), V(x, y + 0.15, z), BLACK)
+		p("K", V(w * 0.42, w * 0.25, 0.15), V(x - w * 0.24, y, z - 0.03), BLACK, GLASS, nil, 0.1)
+		p("K", V(w * 0.42, w * 0.25, 0.15), V(x + w * 0.24, y, z - 0.03), BLACK, GLASS, nil, 0.1)
+	end
+	if st.chef then
+		local x, y, z = st.chef[1], st.chef[2], st.chef[3]
+		p("C", V(1.0, 1.6, 1.6), V(x, y, z), WHITE, nil, UP)
+		p("B", V(2.2, 1.4, 2.2), V(x, y + 1.0, z), WHITE)
+	end
+	if st.chain then
+		local x, y, z = st.chain[1], st.chain[2], st.chain[3]
+		for k = -2, 2 do
+			p("B", V(0.35, 0.35, 0.35), V(x + k * 0.38, y + math.abs(k) * 0.18, z), rgb(255, 210, 40), METAL)
+		end
+		p("B", V(0.7, 0.7, 0.3), V(x, y - 0.35, z - 0.05), rgb(255, 210, 40), NEON)
+	end
+	if st.headphones then
+		local x, y, z, w = st.headphones[1], st.headphones[2], st.headphones[3], st.headphones[4]
+		p("K", V(w, 0.25, 0.4), V(x, y + 0.9, z), rgb(255, 60, 140))
+		p("C", V(0.5, 1.0, 1.0), V(x - w / 2, y, z), rgb(255, 60, 140))
+		p("C", V(0.5, 1.0, 1.0), V(x + w / 2, y, z), rgb(255, 60, 140))
+	end
+	if st.scepter then
+		local x, y, z = st.scepter[1], st.scepter[2], st.scepter[3]
+		p("C", V(4, 0.3, 0.3), V(x, y, z), rgb(255, 205, 40), METAL, UP)
+		p("B", V(0.9, 0.9, 0.9), V(x, y + 2.2, z), rgb(80, 220, 255), NEON)
+	end
+	if st.tinyWings then
+		local x, y, z = st.tinyWings[1], st.tinyWings[2], st.tinyWings[3]
+		for _, sx in ipairs({ -1, 1 }) do
+			p("K", V(2.4, 0.2, 1.4), V(sx * x, y, z), WHITE, NEON, A(0, 0, sx * 30), 0.1)
+		end
+	end
+	if st.scarf then
+		local x, y, z = st.scarf[1], st.scarf[2], st.scarf[3]
+		p("C", V(0.7, 2.2, 2.2), V(x, y, z), rgb(230, 40, 60), FABRIC, UP)
+		p("K", V(0.6, 1.6, 0.25), V(x + 0.6, y - 0.9, z - 0.9), rgb(230, 40, 60), FABRIC)
+	end
+	return legLen
+end
+
 local function makePart(model, shape, size, cf, color, material, transparency)
 	local p
 	if shape == "W" then
@@ -1274,8 +1373,13 @@ function CreatureFactory.scaleFor(id)
 end
 
 -- высота центра тела над точкой, где стоит существо
+local function legLength(id)
+	local st = STYLE[id]
+	return st and st.legs and st.legs[1] or 0
+end
+
 function CreatureFactory.footOffset(id)
-	return SPECS[id].foot * CreatureFactory.scaleFor(id)
+	return (SPECS[id].foot + legLength(id)) * CreatureFactory.scaleFor(id)
 end
 
 -- Создаёт модель существа, стоящего на cframe.
@@ -1289,7 +1393,8 @@ function CreatureFactory.build(id, cframe)
 	model.Name = def.name
 	model:SetAttribute("CreatureId", id)
 
-	local origin = cframe * CFrame.new(0, spec.foot * s, 0)
+	local lift = spec.foot + legLength(id)
+	local origin = cframe * CFrame.new(0, lift * s, 0)
 	local b = spec.body
 	-- body = { форма, размер, цвет, материал?, поворот?, прозрачность? }
 	local bodyCf = origin
@@ -1318,6 +1423,7 @@ function CreatureFactory.build(id, cframe)
 	end
 
 	spec.build(p, eye)
+	addStyle(id, p, s)
 
 	if spec.fire then
 		local fire = Instance.new("Fire")
@@ -1347,11 +1453,19 @@ function CreatureFactory.build(id, cframe)
 		sparkles.Parent = body
 	end
 
+	-- столб света редкости (как маяк), у редких и выше
+	if def.rarity >= 3 then
+		local beam = makePart(model, "C", V(60, 1.2 + def.rarity * 0.3, 1.2 + def.rarity * 0.3), origin * CFrame.new(0, 30 - lift * s, 0) * UP, rarity.color, NEON, 0.75)
+		beam.CastShadow = false
+		beam.Name = "RarityBeam"
+		weld(body, beam)
+	end
+
 	-- табличка: имя, редкость, доход
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Info"
 	gui.Size = UDim2.fromOffset(190, 62)
-	gui.StudsOffset = Vector3.new(0, spec.foot * s + 2.5, 0)
+	gui.StudsOffset = Vector3.new(0, lift * s + 2.5, 0)
 	gui.MaxDistance = 130
 	gui.LightInfluence = 0
 	gui.Adornee = body
@@ -2717,6 +2831,13 @@ Net.Notify = remote("RemoteEvent", "Notify") -- сервер -> клиент: в
 Net.OpenPanel = remote("RemoteEvent", "OpenPanel") -- сервер -> клиент: открыть окно станции
 Net.Request = remote("RemoteFunction", "Request") -- клиент -> сервер: покупки и продажа
 
+-- локальный «звонок» для звуков на клиенте (каждый клиент использует его у себя)
+if not ReplicatedStorage:FindFirstChild("PlaySfx") then
+	local sfx = Instance.new("BindableEvent")
+	sfx.Name = "PlaySfx"
+	sfx.Parent = ReplicatedStorage
+end
+
 function Net.notify(player, text, kind)
 	Net.Notify:FireClient(player, text, kind or "info")
 end
@@ -2891,7 +3012,7 @@ function PlotService.checkCollect(player, position)
 	if total > 0 then
 		PlotService.updateLabels(player)
 		DataService.sync(player)
-		Net.notify(player, "+" .. Config.formatMoney(total), "success")
+		Net.notify(player, "+" .. Config.formatMoney(total), "money")
 	end
 end
 
@@ -3071,7 +3192,7 @@ function UpgradeService.sellAll(player)
 end
 
 return UpgradeService
-]]></ProtectedString></Properties></Item></Item></Item><Item class="StarterPlayer" referent="RBX00000020"><Properties><string name="Name">StarterPlayer</string></Properties><Item class="StarterPlayerScripts" referent="RBX00000019"><Properties><string name="Name">StarterPlayerScripts</string></Properties><Item class="LocalScript" referent="RBX00000016"><Properties><string name="Name">CreatureAnimator</string><ProtectedString name="Source"><![CDATA[-- CreatureAnimator: существа рядом с игроком подпрыгивают и покачиваются.
+]]></ProtectedString></Properties></Item></Item></Item><Item class="StarterPlayer" referent="RBX00000021"><Properties><string name="Name">StarterPlayer</string></Properties><Item class="StarterPlayerScripts" referent="RBX00000020"><Properties><string name="Name">StarterPlayerScripts</string></Properties><Item class="LocalScript" referent="RBX00000016"><Properties><string name="Name">CreatureAnimator</string><ProtectedString name="Source"><![CDATA[-- CreatureAnimator: существа рядом с игроком подпрыгивают и покачиваются.
 -- Анимация только на клиенте: сервер не нагружается.
 
 local RunService = game:GetService("RunService")
@@ -3169,6 +3290,8 @@ local flightTime = 0
 local airTime = 0
 local velocityConstraint, attachment
 local wingWelds = {}
+local lastFlap = 0
+local sfxEvent = ReplicatedStorage:WaitForChild("PlaySfx", 10)
 
 local function stats()
 	local speedLevel = player:GetAttribute("SpeedLevel") or 0
@@ -3293,6 +3416,11 @@ RunService.RenderStepped:Connect(function(dt)
 			end
 			local move = humanoid.MoveDirection
 			velocityConstraint.VectorVelocity = Vector3.new(move.X * speed, vy, move.Z * speed)
+			-- звук взмаха
+			if holding and sfxEvent and os.clock() - lastFlap > 0.35 then
+				lastFlap = os.clock()
+				sfxEvent:Fire("Flap")
+			end
 			-- взмахи крыльев
 			local amp = holding and 0.7 or 0.25
 			local freq = holding and 14 or 5
@@ -3318,7 +3446,61 @@ RunService.RenderStepped:Connect(function(dt)
 	player:SetAttribute("StaminaMax", maxStamina)
 	player:SetAttribute("Flying", flying)
 end)
-]]></ProtectedString><bool name="Disabled">false</bool></Properties></Item><Item class="LocalScript" referent="RBX00000018"><Properties><string name="Name">UIController</string><ProtectedString name="Source"><![CDATA[-- UIController: интерфейс в стиле ярких симуляторов.
+]]></ProtectedString><bool name="Disabled">false</bool></Properties></Item><Item class="LocalScript" referent="RBX00000018"><Properties><string name="Name">SoundController</string><ProtectedString name="Source"><![CDATA[-- SoundController: звуки эффектов и фоновая музыка (только у игрока).
+-- Другие скрипты зовут звук через ReplicatedStorage.PlaySfx:Fire("Coin").
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundService = game:GetService("SoundService")
+
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+
+local event = ReplicatedStorage:WaitForChild("PlaySfx", 10)
+if not event then
+	event = Instance.new("BindableEvent")
+	event.Name = "PlaySfx"
+	event.Parent = ReplicatedStorage
+end
+
+local folder = Instance.new("Folder")
+folder.Name = "GameSounds"
+folder.Parent = SoundService
+
+local sounds = {}
+for key, def in pairs(Config.Sounds) do
+	local id = def.id ~= "" and ("rbxassetid://" .. def.id) or def.fallback
+	if id ~= "" then
+		local s = Instance.new("Sound")
+		s.Name = key
+		s.SoundId = id
+		s.Volume = def.volume or 0.6
+		-- запасной звук звучит иначе за счёт тона; свой звук играет как есть
+		s.PlaybackSpeed = def.id ~= "" and 1 or (def.pitch or 1)
+		s.Parent = folder
+		sounds[key] = s
+	end
+end
+
+local lastPlayed = {}
+event.Event:Connect(function(key)
+	local s = sounds[key]
+	if not s then
+		return
+	end
+	local now = os.clock()
+	if lastPlayed[key] and now - lastPlayed[key] < 0.05 then
+		return
+	end
+	lastPlayed[key] = now
+	SoundService:PlayLocalSound(s)
+end)
+
+-- музыка по кругу
+local music = sounds.Music
+if music then
+	music.Looped = true
+	music:Play()
+end
+]]></ProtectedString><bool name="Disabled">false</bool></Properties></Item><Item class="LocalScript" referent="RBX00000019"><Properties><string name="Name">UIController</string><ProtectedString name="Source"><![CDATA[-- UIController: интерфейс в стиле ярких симуляторов.
 -- Деньги сверху, меню слева, таймер справа, стамина снизу,
 -- окна магазинов с карточками, вкладками и анимациями.
 
@@ -3334,6 +3516,12 @@ local Request = Remotes:WaitForChild("Request")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+local sfxEvent = ReplicatedStorage:WaitForChild("PlaySfx", 10)
+local function sfx(key)
+	if sfxEvent then
+		sfxEvent:Fire(key)
+	end
+end
 
 local FONT = Enum.Font.FredokaOne
 local TITLE_FONT = Enum.Font.LuckiestGuy
@@ -3444,7 +3632,10 @@ local function button(props, onClick)
 	btn.MouseButton1Up:Connect(function()
 		TweenService:Create(scale, TweenInfo.new(0.12, Enum.EasingStyle.Back), { Scale = 1 }):Play()
 	end)
-	btn.MouseButton1Click:Connect(onClick)
+	btn.MouseButton1Click:Connect(function()
+		sfx("Click")
+		onClick()
+	end)
 	return btn
 end
 
@@ -3567,10 +3758,43 @@ local TOASTS = {
 	error = { rgb(255, 110, 110), rgb(200, 40, 50) },
 	announce = { rgb(200, 140, 255), rgb(130, 70, 240) },
 	divine = { rgb(255, 230, 110), rgb(255, 140, 40) },
+	money = { rgb(110, 230, 110), rgb(40, 170, 70) },
+	grab = { rgb(255, 220, 90), rgb(255, 150, 40) },
+	deliver = { rgb(110, 230, 110), rgb(40, 170, 70) },
+	splash = { rgb(110, 190, 255), rgb(50, 110, 240) },
 }
+local TOAST_SFX = { error = "Error", divine = "Divine", money = "Collect", grab = "Grab", deliver = "Deliver", splash = "Splash", announce = "LevelUp" }
+
+-- большая надпись «+$123», которая взлетает и тает
+local function moneyPop(text)
+	local pop = label({
+		Parent = gui,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.45),
+		Size = UDim2.fromOffset(300, 70),
+		Text = text,
+		Font = TITLE_FONT,
+		TextColor3 = rgb(140, 255, 120),
+		StrokeT = 4,
+		ZIndex = 20,
+	})
+	local sc = new("UIScale", { Parent = pop, Scale = 0.4 })
+	TweenService:Create(sc, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Scale = 1.15 }):Play()
+	TweenService:Create(pop, TweenInfo.new(1.1, Enum.EasingStyle.Quad), { Position = UDim2.fromScale(0.5, 0.3), TextTransparency = 1 }):Play()
+	task.delay(1.2, function()
+		pop:Destroy()
+	end)
+end
 
 local function toast(text, kind)
 	if not text or text == "" then
+		return
+	end
+	if TOAST_SFX[kind] then
+		sfx(TOAST_SFX[kind])
+	end
+	if kind == "money" then
+		moneyPop(text)
 		return
 	end
 	local colors = TOASTS[kind] or TOASTS.info
@@ -3599,6 +3823,11 @@ local function sendRequest(action, arg)
 		return Request:InvokeServer(action, arg)
 	end)
 	if ok and type(result) == "table" then
+		if result.ok and string.sub(action, 1, 3) == "Buy" then
+			sfx("Buy")
+		elseif result.ok and string.sub(action, 1, 4) == "Sell" then
+			sfx("Coin")
+		end
 		toast(result.msg, result.ok and "success" or "error")
 	end
 end

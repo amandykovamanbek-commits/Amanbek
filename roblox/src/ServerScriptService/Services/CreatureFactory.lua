@@ -442,6 +442,85 @@ SPECS.sun_dragon = {
 }
 
 ---------------------------------------------------------------------
+-- Стиль «брейнрот»: многим существам — человеческие ноги в кроссовках
+-- и аксессуары. legs = { длина, цвет кожи, цвет кроссовок, расстояние между ног }
+---------------------------------------------------------------------
+local STYLE = {
+	frog_slipper = { legs = { 2.2, rgb(255, 210, 170), rgb(60, 140, 255), 0.8 }, shades = { 0, 1.5, -1.6, 2.6 } },
+	dumpling = { legs = { 1.8, rgb(250, 220, 190), rgb(255, 60, 80), 0.9 }, chef = { 0, 1.9, 0.1 } },
+	mushroom_hedgehog = { legs = { 1.6, rgb(240, 200, 160), rgb(80, 220, 120), 0.8 } },
+	banana_crab = { shades = { 0, 1.6, -1.45, 2.0 }, chain = { 0, 0.1, -1.4 } },
+	fire_hamster = { legs = { 2.0, rgb(255, 200, 170), rgb(255, 255, 255), 1.0 }, shades = { 0, 0.75, -1.85, 2.0 } },
+	cloud_sheep = { headphones = { 0, 1.0, -2.3, 2.2 } },
+	owl_king = { legs = { 2.0, rgb(255, 180, 60), rgb(255, 205, 40), 0.8 }, scepter = { 2.4, 0, -0.6 } },
+	rocket_penguin = { chain = { 0, 0.3, -1.6 } },
+	crystal_whale = { tinyWings = { 1.8, 1.4, 0.2 } },
+	shadow_fox = { scarf = { 0, 0.3, -1.8 } },
+	sun_dragon = { chain = { 0, 0.4, -2.2 } },
+}
+
+local function addStyle(id, p, s)
+	local st = STYLE[id]
+	if not st then
+		return 0
+	end
+	local legLen = 0
+	local spec = SPECS[id]
+	if st.legs then
+		legLen = st.legs[1]
+		local skin, shoe, gap = st.legs[2], st.legs[3], st.legs[4]
+		local top = -spec.foot
+		for _, sx in ipairs({ -1, 1 }) do
+			local x = sx * gap
+			p("C", V(legLen, 0.55, 0.55), V(x, top - legLen / 2, 0), skin, nil, UP)
+			p("K", V(0.9, 0.55, 1.6), V(x, top - legLen - 0.05, -0.35), shoe)
+			p("K", V(1.0, 0.22, 1.7), V(x, top - legLen - 0.4, -0.35), WHITE)
+			p("K", V(0.92, 0.12, 0.35), V(x, top - legLen + 0.15, -0.9), WHITE)
+		end
+	end
+	if st.shades then
+		local x, y, z, w = st.shades[1], st.shades[2], st.shades[3], st.shades[4]
+		p("K", V(w, 0.18, 0.15), V(x, y + 0.15, z), BLACK)
+		p("K", V(w * 0.42, w * 0.25, 0.15), V(x - w * 0.24, y, z - 0.03), BLACK, GLASS, nil, 0.1)
+		p("K", V(w * 0.42, w * 0.25, 0.15), V(x + w * 0.24, y, z - 0.03), BLACK, GLASS, nil, 0.1)
+	end
+	if st.chef then
+		local x, y, z = st.chef[1], st.chef[2], st.chef[3]
+		p("C", V(1.0, 1.6, 1.6), V(x, y, z), WHITE, nil, UP)
+		p("B", V(2.2, 1.4, 2.2), V(x, y + 1.0, z), WHITE)
+	end
+	if st.chain then
+		local x, y, z = st.chain[1], st.chain[2], st.chain[3]
+		for k = -2, 2 do
+			p("B", V(0.35, 0.35, 0.35), V(x + k * 0.38, y + math.abs(k) * 0.18, z), rgb(255, 210, 40), METAL)
+		end
+		p("B", V(0.7, 0.7, 0.3), V(x, y - 0.35, z - 0.05), rgb(255, 210, 40), NEON)
+	end
+	if st.headphones then
+		local x, y, z, w = st.headphones[1], st.headphones[2], st.headphones[3], st.headphones[4]
+		p("K", V(w, 0.25, 0.4), V(x, y + 0.9, z), rgb(255, 60, 140))
+		p("C", V(0.5, 1.0, 1.0), V(x - w / 2, y, z), rgb(255, 60, 140))
+		p("C", V(0.5, 1.0, 1.0), V(x + w / 2, y, z), rgb(255, 60, 140))
+	end
+	if st.scepter then
+		local x, y, z = st.scepter[1], st.scepter[2], st.scepter[3]
+		p("C", V(4, 0.3, 0.3), V(x, y, z), rgb(255, 205, 40), METAL, UP)
+		p("B", V(0.9, 0.9, 0.9), V(x, y + 2.2, z), rgb(80, 220, 255), NEON)
+	end
+	if st.tinyWings then
+		local x, y, z = st.tinyWings[1], st.tinyWings[2], st.tinyWings[3]
+		for _, sx in ipairs({ -1, 1 }) do
+			p("K", V(2.4, 0.2, 1.4), V(sx * x, y, z), WHITE, NEON, A(0, 0, sx * 30), 0.1)
+		end
+	end
+	if st.scarf then
+		local x, y, z = st.scarf[1], st.scarf[2], st.scarf[3]
+		p("C", V(0.7, 2.2, 2.2), V(x, y, z), rgb(230, 40, 60), FABRIC, UP)
+		p("K", V(0.6, 1.6, 0.25), V(x + 0.6, y - 0.9, z - 0.9), rgb(230, 40, 60), FABRIC)
+	end
+	return legLen
+end
+
 local function makePart(model, shape, size, cf, color, material, transparency)
 	local p
 	if shape == "W" then
@@ -488,8 +567,13 @@ function CreatureFactory.scaleFor(id)
 end
 
 -- высота центра тела над точкой, где стоит существо
+local function legLength(id)
+	local st = STYLE[id]
+	return st and st.legs and st.legs[1] or 0
+end
+
 function CreatureFactory.footOffset(id)
-	return SPECS[id].foot * CreatureFactory.scaleFor(id)
+	return (SPECS[id].foot + legLength(id)) * CreatureFactory.scaleFor(id)
 end
 
 -- Создаёт модель существа, стоящего на cframe.
@@ -503,7 +587,8 @@ function CreatureFactory.build(id, cframe)
 	model.Name = def.name
 	model:SetAttribute("CreatureId", id)
 
-	local origin = cframe * CFrame.new(0, spec.foot * s, 0)
+	local lift = spec.foot + legLength(id)
+	local origin = cframe * CFrame.new(0, lift * s, 0)
 	local b = spec.body
 	-- body = { форма, размер, цвет, материал?, поворот?, прозрачность? }
 	local bodyCf = origin
@@ -532,6 +617,7 @@ function CreatureFactory.build(id, cframe)
 	end
 
 	spec.build(p, eye)
+	addStyle(id, p, s)
 
 	if spec.fire then
 		local fire = Instance.new("Fire")
@@ -561,11 +647,19 @@ function CreatureFactory.build(id, cframe)
 		sparkles.Parent = body
 	end
 
+	-- столб света редкости (как маяк), у редких и выше
+	if def.rarity >= 3 then
+		local beam = makePart(model, "C", V(60, 1.2 + def.rarity * 0.3, 1.2 + def.rarity * 0.3), origin * CFrame.new(0, 30 - lift * s, 0) * UP, rarity.color, NEON, 0.75)
+		beam.CastShadow = false
+		beam.Name = "RarityBeam"
+		weld(body, beam)
+	end
+
 	-- табличка: имя, редкость, доход
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Info"
 	gui.Size = UDim2.fromOffset(190, 62)
-	gui.StudsOffset = Vector3.new(0, spec.foot * s + 2.5, 0)
+	gui.StudsOffset = Vector3.new(0, lift * s + 2.5, 0)
 	gui.MaxDistance = 130
 	gui.LightInfluence = 0
 	gui.Adornee = body

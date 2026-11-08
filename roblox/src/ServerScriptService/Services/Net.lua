@@ -25,6 +25,13 @@ Net.Notify = remote("RemoteEvent", "Notify") -- сервер -> клиент: в
 Net.OpenPanel = remote("RemoteEvent", "OpenPanel") -- сервер -> клиент: открыть окно станции
 Net.Request = remote("RemoteFunction", "Request") -- клиент -> сервер: покупки и продажа
 
+-- локальный «звонок» для звуков на клиенте (каждый клиент использует его у себя)
+if not ReplicatedStorage:FindFirstChild("PlaySfx") then
+	local sfx = Instance.new("BindableEvent")
+	sfx.Name = "PlaySfx"
+	sfx.Parent = ReplicatedStorage
+end
+
 function Net.notify(player, text, kind)
 	Net.Notify:FireClient(player, text, kind or "info")
 end

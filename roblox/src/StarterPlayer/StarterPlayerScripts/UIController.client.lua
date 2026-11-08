@@ -14,6 +14,12 @@ local Request = Remotes:WaitForChild("Request")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+local sfxEvent = ReplicatedStorage:WaitForChild("PlaySfx", 10)
+local function sfx(key)
+	if sfxEvent then
+		sfxEvent:Fire(key)
+	end
+end
 
 local FONT = Enum.Font.FredokaOne
 local TITLE_FONT = Enum.Font.LuckiestGuy
@@ -124,7 +130,10 @@ local function button(props, onClick)
 	btn.MouseButton1Up:Connect(function()
 		TweenService:Create(scale, TweenInfo.new(0.12, Enum.EasingStyle.Back), { Scale = 1 }):Play()
 	end)
-	btn.MouseButton1Click:Connect(onClick)
+	btn.MouseButton1Click:Connect(function()
+		sfx("Click")
+		onClick()
+	end)
 	return btn
 end
 
@@ -247,10 +256,43 @@ local TOASTS = {
 	error = { rgb(255, 110, 110), rgb(200, 40, 50) },
 	announce = { rgb(200, 140, 255), rgb(130, 70, 240) },
 	divine = { rgb(255, 230, 110), rgb(255, 140, 40) },
+	money = { rgb(110, 230, 110), rgb(40, 170, 70) },
+	grab = { rgb(255, 220, 90), rgb(255, 150, 40) },
+	deliver = { rgb(110, 230, 110), rgb(40, 170, 70) },
+	splash = { rgb(110, 190, 255), rgb(50, 110, 240) },
 }
+local TOAST_SFX = { error = "Error", divine = "Divine", money = "Collect", grab = "Grab", deliver = "Deliver", splash = "Splash", announce = "LevelUp" }
+
+-- большая надпись «+$123», которая взлетает и тает
+local function moneyPop(text)
+	local pop = label({
+		Parent = gui,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.45),
+		Size = UDim2.fromOffset(300, 70),
+		Text = text,
+		Font = TITLE_FONT,
+		TextColor3 = rgb(140, 255, 120),
+		StrokeT = 4,
+		ZIndex = 20,
+	})
+	local sc = new("UIScale", { Parent = pop, Scale = 0.4 })
+	TweenService:Create(sc, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Scale = 1.15 }):Play()
+	TweenService:Create(pop, TweenInfo.new(1.1, Enum.EasingStyle.Quad), { Position = UDim2.fromScale(0.5, 0.3), TextTransparency = 1 }):Play()
+	task.delay(1.2, function()
+		pop:Destroy()
+	end)
+end
 
 local function toast(text, kind)
 	if not text or text == "" then
+		return
+	end
+	if TOAST_SFX[kind] then
+		sfx(TOAST_SFX[kind])
+	end
+	if kind == "money" then
+		moneyPop(text)
 		return
 	end
 	local colors = TOASTS[kind] or TOASTS.info
@@ -279,6 +321,11 @@ local function sendRequest(action, arg)
 		return Request:InvokeServer(action, arg)
 	end)
 	if ok and type(result) == "table" then
+		if result.ok and string.sub(action, 1, 3) == "Buy" then
+			sfx("Buy")
+		elseif result.ok and string.sub(action, 1, 4) == "Sell" then
+			sfx("Coin")
+		end
 		toast(result.msg, result.ok and "success" or "error")
 	end
 end

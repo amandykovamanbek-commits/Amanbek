@@ -20,6 +20,8 @@ local flightTime = 0
 local airTime = 0
 local velocityConstraint, attachment
 local wingWelds = {}
+local lastFlap = 0
+local sfxEvent = ReplicatedStorage:WaitForChild("PlaySfx", 10)
 
 local function stats()
 	local speedLevel = player:GetAttribute("SpeedLevel") or 0
@@ -144,6 +146,11 @@ RunService.RenderStepped:Connect(function(dt)
 			end
 			local move = humanoid.MoveDirection
 			velocityConstraint.VectorVelocity = Vector3.new(move.X * speed, vy, move.Z * speed)
+			-- звук взмаха
+			if holding and sfxEvent and os.clock() - lastFlap > 0.35 then
+				lastFlap = os.clock()
+				sfxEvent:Fire("Flap")
+			end
 			-- взмахи крыльев
 			local amp = holding and 0.7 or 0.25
 			local freq = holding and 14 or 5

@@ -97,19 +97,19 @@ Config.Rarities = {
 
 -- rarity = номер редкости, income = $/сек, weight = шанс среди своей редкости
 Config.Creatures = {
-	frog_slipper = { icon = "🐸", name = "Лягушонок-Тапок", rarity = 1, income = 1, weight = 70 },
-	dumpling = { icon = "🥟", name = "Пельмешек", rarity = 1, income = 2, weight = 30 },
-	cactus_runner = { icon = "🌵", name = "Кактус-Бегун", rarity = 2, income = 8, weight = 70 },
-	mushroom_hedgehog = { icon = "🦔", name = "Грибной Ёжик", rarity = 2, income = 12, weight = 30 },
-	jelly_teapot = { icon = "🍵", name = "Медузий Чайник", rarity = 3, income = 40, weight = 70 },
-	banana_crab = { icon = "🦀", name = "Банановый Краб", rarity = 3, income = 65, weight = 30 },
-	fire_hamster = { icon = "🐹", name = "Огненный Хомяк", rarity = 4, income = 220, weight = 70 },
-	cloud_sheep = { icon = "🐑", name = "Облачная Овечка", rarity = 4, income = 320, weight = 30 },
-	owl_king = { icon = "🦉", name = "Совиный Король", rarity = 5, income = 1100, weight = 70 },
-	rocket_penguin = { icon = "🐧", name = "Ракетный Пингвин", rarity = 5, income = 1700, weight = 30 },
-	crystal_whale = { icon = "🐋", name = "Кристальный Кит", rarity = 6, income = 6500, weight = 70 },
-	shadow_fox = { icon = "🦊", name = "Теневой Лис", rarity = 6, income = 9500, weight = 30 },
-	sun_dragon = { icon = "🐉", name = "Солнечный Дракоша", rarity = 7, income = 75000, weight = 100 },
+	frog_slipper = { icon = "🐸", name = "Тапочелло Ранокки", rarity = 1, income = 1, weight = 70 },
+	dumpling = { icon = "🥟", name = "Пельменино Пухлини", rarity = 1, income = 2, weight = 30 },
+	cactus_runner = { icon = "🌵", name = "Кактусо Кроссовини", rarity = 2, income = 8, weight = 70 },
+	mushroom_hedgehog = { icon = "🦔", name = "Грибуччо Ежинелли", rarity = 2, income = 12, weight = 30 },
+	jelly_teapot = { icon = "🍵", name = "Чайнико Медузини", rarity = 3, income = 40, weight = 70 },
+	banana_crab = { icon = "🦀", name = "Банано Граббини", rarity = 3, income = 65, weight = 30 },
+	fire_hamster = { icon = "🐹", name = "Хомякко Фуокино", rarity = 4, income = 220, weight = 70 },
+	cloud_sheep = { icon = "🐑", name = "Нуволина Овеччина", rarity = 4, income = 320, weight = 30 },
+	owl_king = { icon = "🦉", name = "Гуфо Императоре", rarity = 5, income = 1100, weight = 70 },
+	rocket_penguin = { icon = "🐧", name = "Пингвино Реактивино", rarity = 5, income = 1700, weight = 30 },
+	crystal_whale = { icon = "🐋", name = "Балена Кристаллина", rarity = 6, income = 6500, weight = 70 },
+	shadow_fox = { icon = "🦊", name = "Вольпе Омбрини", rarity = 6, income = 9500, weight = 30 },
+	sun_dragon = { icon = "🐉", name = "Драгонцелло Солярио", rarity = 7, income = 75000, weight = 100 },
 }
 
 Config.SellSeconds = 60          -- цена продажи = доход * 60
@@ -180,6 +180,26 @@ function Config.productAmount(productKey, incomePerSecond)
 	end
 	return math.max(def.minAmount, math.floor(incomePerSecond * def.seconds))
 end
+
+---------------------------------------------------------------------
+-- Звуки. Свои звуки лежат в папке sounds/ (их сделал tools/make_sounds.py).
+-- Загрузи их в Roblox (View -> Asset Manager -> Bulk Import) и вставь ID в id.
+-- Пока id = "", играет запасной встроенный звук Roblox (fallback) с другим тоном.
+---------------------------------------------------------------------
+Config.Sounds = {
+	Click = { id = "", fallback = "rbxasset://sounds/action_jump_land.mp3", pitch = 2.2, volume = 0.4 },
+	Coin = { id = "", fallback = "rbxasset://sounds/electronicpingshort.wav", pitch = 1.3, volume = 0.6 },
+	Collect = { id = "", fallback = "rbxasset://sounds/electronicpingshort.wav", pitch = 1.6, volume = 0.7 },
+	Buy = { id = "", fallback = "rbxasset://sounds/electronicpingshort.wav", pitch = 1.9, volume = 0.7 },
+	Error = { id = "", fallback = "rbxasset://sounds/action_jump_land.mp3", pitch = 0.5, volume = 0.6 },
+	Grab = { id = "", fallback = "rbxasset://sounds/action_get_up.mp3", pitch = 1.5, volume = 0.7 },
+	Deliver = { id = "", fallback = "rbxasset://sounds/electronicpingshort.wav", pitch = 1.0, volume = 0.8 },
+	Flap = { id = "", fallback = "rbxasset://sounds/action_swim.mp3", pitch = 1.5, volume = 0.35 },
+	Splash = { id = "", fallback = "rbxasset://sounds/impact_water.mp3", pitch = 1.0, volume = 0.8 },
+	Divine = { id = "", fallback = "rbxasset://sounds/electronicpingshort.wav", pitch = 0.7, volume = 1.0 },
+	LevelUp = { id = "", fallback = "rbxasset://sounds/electronicpingshort.wav", pitch = 2.2, volume = 0.7 },
+	Music = { id = "", fallback = "", pitch = 1, volume = 0.25 },
+}
 
 ---------------------------------------------------------------------
 -- Форматирование денег: 1500 -> "$1.5K"

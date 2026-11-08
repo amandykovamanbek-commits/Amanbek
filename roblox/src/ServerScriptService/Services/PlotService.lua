@@ -163,7 +163,7 @@ function PlotService.checkCollect(player, position)
 	if total > 0 then
 		PlotService.updateLabels(player)
 		DataService.sync(player)
-		Net.notify(player, "+" .. Config.formatMoney(total), "success")
+		Net.notify(player, "+" .. Config.formatMoney(total), "money")
 	end
 end
 
