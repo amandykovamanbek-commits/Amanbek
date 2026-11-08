@@ -27,6 +27,10 @@
   .panel .r{display:flex;justify-content:space-between;font-size:32px;font-weight:800;padding:8px 0;border-top:2px solid #262a38}
   .tick{display:flex;align-items:center;gap:18px;font-size:46px;font-weight:900;color:#fff;padding:14px 0}
   .tick b{display:inline-flex;width:62px;height:62px;border-radius:14px;background:#2ecc71;color:#fff;align-items:center;justify-content:center;font-size:44px;border:4px solid #16171d}
+  #cringe{position:absolute;left:40px;top:236px;width:400px;background:rgba(10,12,20,.88);border:4px solid #16171d;border-radius:14px;padding:10px 14px;opacity:0;transform-origin:0 0;font-family:"JetBrains Mono",monospace}
+  #cringe .k{font-size:24px;font-weight:800;letter-spacing:2px;color:#ffd43b}
+  #cringe .bar{height:30px;border-radius:11px;background:#2a2d38;margin-top:6px;overflow:hidden}#cringe .bar i{display:block;height:100%;width:0;border-radius:11px}
+  #cringe .v{position:absolute;right:14px;top:8px;font-size:28px;font-weight:800;color:#fff}
   #subs{position:absolute;left:50px;right:50px;top:1300px;text-align:center;font-weight:900;font-size:80px;line-height:1.06;letter-spacing:0;color:#fff;text-transform:uppercase;
         -webkit-text-stroke:15px #0b0b10;paint-order:stroke fill;text-shadow:0 7px 0 rgba(0,0,0,.45)}
   #subs span{display:inline-block;margin:0 10px;transform-origin:50% 60%}
@@ -41,6 +45,7 @@
   <div id="tc">21:40 · МОСКВА · 40 ЭТ.</div>
   <div id="clock">⏱ В ЛИФТЕ 00:00</div>
   <div id="tag"></div>
+  <div id="cringe"><div class="k">КРИНЖ-МЕТР</div><div class="bar"><i id="cringeFill"></i></div><div class="v" id="cringeVal">0%</div></div>
   <div id="subs"></div>
   <div id="flash"></div>
 </div>
@@ -63,27 +68,26 @@ const setT = (el, s) => el.setAttribute('transform', s);
 // ============================================================ script
 const SCENES = [
   { id: 's1',  bg: 'cabin',   text: 'Что если бы ты застрял в лифте с Егором Кридом?' },
-  { id: 's2',  bg: 'tower',   text: 'Москва. Жилой комплекс, сорок этажей. Ты заходишь в лифт с пакетом из доставки.' },
-  { id: 's3',  bg: 'doors',   text: 'Двери почти закрылись, но в последний момент кто-то просовывает руку. Чёрные очки, цепь и улыбка на миллион.' },
-  { id: 's4',  bg: 'cabin',   text: 'Это Егор Крид. Он кивает: «Привет. Тебе какой этаж?»' },
-  { id: 's5',  bg: 'display', text: 'Двадцать седьмой. Свет моргает. Лифт дёргается... и встаёт.' },
-  { id: 's6',  bg: 'shaft',   text: 'Между двадцать седьмым и двадцать восьмым. Тишина.' },
-  { id: 's7',  bg: 'black',   text: 'Теперь главное — не совершить три ошибки.' },
-  { id: 's8',  bg: 'doors',   text: 'Ошибка номер один — разжимать двери. Под вами шахта глубиной больше восьмидесяти метров.' },
-  { id: 's9',  bg: 'panel',   text: 'Правильно — нажать кнопку вызова и держать три секунды. Динамик шипит: «Диспетчер. Мастер будет через сорок минут».' },
-  { id: 's10', bg: 'cabin',   text: 'Сорок минут. С Егором Кридом. В кабине метр на метр.' },
-  { id: 's11', bg: 'phone',   text: 'Ошибка номер два — тратить заряд. У тебя двенадцать процентов. Сторис и фонарик съедят их за десять минут.' },
-  { id: 's12', bg: 'cabin',   text: 'Крид снимает очки и садится на пол: «Не паникуй. Воздуха хватит, лифт не герметичный».' },
-  { id: 's13', bg: 'cabin',   text: 'Чтобы убить время, он тихо начинает напевать. И тебе хочется подпеть и потанцевать.' },
-  { id: 's14', bg: 'shaft',   text: 'Ошибка номер три — прыгать в застрявшем лифте. Ловители держат, но кабину может снова дёрнуть.' },
-  { id: 's15', bg: 'cabin',   text: 'Тридцать восьмая минута. Свет гаснет.' },
-  { id: 's16', bg: 'cabin',   text: 'Скрип. Кабина проседает на полметра. Крид хватает тебя за плечо: «Спокойно. Это ловители».' },
-  { id: 's17', bg: 'cabin',   text: 'Сверху стук. Голос мастера: «Живые? Сейчас откроем».' },
-  { id: 's18', bg: 'landing', text: 'Двери разъезжаются. На площадке — мастер, консьержка и толпа соседей с телефонами.' },
-  { id: 's19', bg: 'landing', text: 'Крид надевает очки и улыбается: «Ты не паниковал. Держи». И протягивает тебе два билета на свой концерт.' },
-  { id: 's20', bg: 'black',   text: 'Запомни: кнопка вызова, береги заряд и не прыгай. А что бы ты попросил у Крида? Пиши в комментах!' },
+  { id: 's2',  bg: 'tower',   text: 'Москва, сорок этажей. Ты заходишь в лифт с пакетом из доставки.' },
+  { id: 's3',  bg: 'doors',   text: 'Двери закрываются, и вдруг кто-то эффектно просовывает руку. Двери её прищемляют.' },
+  { id: 's4',  bg: 'cabin',   text: 'Это Егор Крид. Он поправляет очки: «Не бойся. Я просто милый ублюдок».' },
+  { id: 's5',  bg: 'display', text: 'Двадцать седьмой этаж. Свет моргает. Лифт дёргается... и встаёт.' },
+  { id: 's6',  bg: 'cabin',   text: 'Крид снимает очки: «Похоже, даже лифт не может от меня оторваться». И смеётся. Один.' },
+  { id: 's7',  bg: 'panel',   text: 'Ты жмёшь кнопку вызова. Динамик шипит: «Мастер будет через сорок минут».' },
+  { id: 's8',  bg: 'cabin',   text: 'Сорок минут. С Егором Кридом. В кабине метр на метр.' },
+  { id: 's9',  bg: 'cabin',   text: 'Пятая минута. Крид шутит: «Знаешь, почему лифт застрял? Не выдержал моей харизмы». Кринж-метр — семьдесят процентов.' },
+  { id: 's10', bg: 'cabin',   text: 'Десятая минута. Крид решает показать, какой он крутой. Облокачивается на поручень... и поручень отваливается.' },
+  { id: 's11', bg: 'cabin',   text: 'Двадцатая минута. Крид сидит на полу и молча смотрит в стену. Тишина.' },
+  { id: 's12', bg: 'cabin',   text: 'И вдруг он выдыхает: «Фух. Я чуть не спел новую песню». Хотя он даже рот не открывал.' },
+  { id: 's13', bg: 'cabin',   text: 'Тридцатая минута. Крид хочет вылезти через люк, как в боевике. Прыгает... и бьётся головой о потолок.' },
+  { id: 's14', bg: 'shaft',   text: 'Лифт дёргается вниз на полметра. Кринж-метр — сто процентов. Ты уже готов сам звонить в МЧС.' },
+  { id: 's15', bg: 'cabin',   text: 'Сверху стук. Голос мастера: «Живые? Сейчас откроем».' },
+  { id: 's16', bg: 'landing', text: 'Двери разъезжаются. На площадке — мастер, консьержка и толпа соседей с телефонами.' },
+  { id: 's17', bg: 'landing', text: 'Крид надевает очки, эффектно выходит... и спотыкается о твой пакет. Всё это снимают сорок телефонов.' },
+  { id: 's18', bg: 'landing', text: 'Он встаёт, поправляет цепь: «Это был перформанс». И протягивает тебе два билета на свой концерт.' },
+  { id: 's19', bg: 'black',   text: 'А ты бы пошёл? Пиши в комментах!' },
 ];
-const SPEAKER = { s4: 'k', s9: 'd', s12: 'k', s16: 'k', s17: 'd', s19: 'k' };
+const SPEAKER = { s4: 'k', s6: 'k', s7: 'd', s9: 'k', s12: 'k', s15: 'd', s18: 'k' };
 const norm = w => w.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/g, '');
 
 const TOK = [];
@@ -135,8 +139,8 @@ const CHUNKS = [];
   flush();
   CHUNKS.forEach((c, i) => { c.s = c[0].s - 0.05; c.e = i < CHUNKS.length - 1 ? CHUNKS[i + 1][0].s - 0.05 : c[c.length - 1].e + 0.6; });
 })();
-const KEY_Y = ['егором', 'кридом', 'крид', 'крида', 'сорок', 'этажей', 'двадцать', 'седьмой', 'седьмым', 'восьмым', 'кнопку', 'вызова', 'три', 'секунды', 'двенадцать', 'процентов', 'метр', 'заряд', 'очки', 'цепь', 'миллион', 'напевать', 'потанцевать', 'билета', 'концерт', 'комментах', 'тридцать', 'восьмая', 'мастер', 'мастера'];
-const KEY_R = ['застрял', 'встает', 'тишина', 'ошибки', 'ошибка', 'шахта', 'восьмидесяти', 'метров', 'разжимать', 'тратить', 'прыгать', 'гаснет', 'скрип', 'проседает', 'дернуть', 'дергается', 'моргает', 'прыгай'];
+const KEY_Y = ['егором', 'кридом', 'крид', 'сорок', 'этажей', 'двадцать', 'седьмой', 'кнопку', 'вызова', 'метр', 'очки', 'цепь', 'эффектно', 'крутой', 'поручень', 'билета', 'концерт', 'комментах', 'пятая', 'десятая', 'двадцатая', 'тридцатая', 'люк', 'боевике', 'пакет', 'телефонов', 'мастер', 'мастера', 'один', 'семьдесят', 'процентов'];
+const KEY_R = ['застрял', 'встает', 'тишина', 'прищемляют', 'дергается', 'моргает', 'отваливается', 'бьется', 'потолок', 'кринжметр', 'сто', 'мчс', 'спотыкается', 'молча', 'стену'];
 const QCOL = { k: '#FFC83D', d: '#5fd6ff' };
 
 // ============================================================ characters
@@ -156,7 +160,7 @@ function person(p, o) {
   const arm = (side) => `<g id="${p}Arm${side}" transform="translate(${side === 'L' ? -150 : 150},-640) rotate(${side === 'L' ? 12 : -12})">
       <rect x="-32" y="-14" width="64" height="300" rx="32" fill="${o.top}" ${SW}/>
       <circle cx="0" cy="300" r="33" fill="${sk}" ${SW}/>
-      ${side === 'R' && o.bag ? `<g transform="translate(0,318)"><path d="M-26,0 Q0,-40 26,0" fill="none" ${SW}/><rect x="-70" y="0" width="140" height="160" rx="10" fill="#d9a86c" ${SW}/><rect x="-40" y="50" width="80" height="44" rx="8" fill="#2fbf71" ${SW}/></g>` : ''}
+      ${side === 'R' && o.bag ? `<g id="${p}BagHand" transform="translate(0,318)"><path d="M-26,0 Q0,-40 26,0" fill="none" ${SW}/><rect x="-70" y="0" width="140" height="160" rx="10" fill="#d9a86c" ${SW}/><rect x="-40" y="50" width="80" height="44" rx="8" fill="#2fbf71" ${SW}/></g>` : ''}
       ${side === 'R' && o.tickets ? `<g id="${p}Tk" opacity="0" transform="translate(0,300) rotate(170)"><rect x="-40" y="-120" width="90" height="130" rx="10" fill="#FFC83D" ${SW} transform="rotate(-12)"/><rect x="-20" y="-112" width="90" height="130" rx="10" fill="#ffe08a" ${SW} transform="rotate(8)"/></g>` : ''}
     </g>`;
   return `<g id="${p}">
@@ -227,6 +231,11 @@ const MOODS = {
   nervous: { b: [-12, 12, -8], open: 1.05, gx: -6, gy: 0, mouth: 'wavy', blush: .2, sweat: 1 },
   serious: { b: [10, -10, 6], open: .85, gx: -8, gy: 0, mouth: 'flat', blush: 0 },
   sing:    { b: [-8, 8, -8], open: .12, gx: 0, gy: 0, mouth: 'o', blush: .5 },
+  deadpan: { b: [4, -4, 8], open: .5, gx: 0, gy: 4, mouth: 'flat', blush: 0 },
+  laugh:   { b: [-10, 10, -12], open: .1, gx: 0, gy: 0, mouth: 'grin', blush: .7 },
+  ouch:    { b: [-16, 16, -6], open: .08, gx: 0, gy: 0, mouth: 'wavy', blush: .6, sweat: 1 },
+  stare:   { b: [0, 0, 2], open: .95, gx: -14, gy: 2, mouth: 'flat', blush: 0, small: 1 },
+  proud:   { b: [-6, 6, -6], open: .35, gx: 0, gy: 0, mouth: 'smirk', blush: .4 },
   scared:  { b: [-16, 16, -14], open: 1.15, gx: 6, gy: -4, mouth: 'sad', blush: 0, small: 1, sweat: 1 },
 };
 const MOUTH = {
@@ -265,13 +274,13 @@ function cabin() {
     ${panels}
     <rect x="160" y="520" width="760" height="720" rx="14" fill="#a9b6c4" stroke="#5d6673" stroke-width="10"/>
     <path d="M220,1180 L520,560 L620,560 L320,1180 Z M420,1180 L720,560 L760,560 L460,1180 Z" fill="#fff" opacity=".18"/>
-    <rect x="90" y="1250" width="900" height="26" rx="13" fill="#c9d1db" stroke="#5d6673" stroke-width="6"/>
+    <g id="rail"><rect x="90" y="1250" width="900" height="26" rx="13" fill="#c9d1db" stroke="#5d6673" stroke-width="6"/></g>
     <rect x="-600" y="1640" width="2280" height="900" fill="#353941"/>${tread}
     <rect x="-600" y="1630" width="2280" height="20" fill="#5d6673"/>
     <path d="M100,420 L-600,-200 L-600,2400 L100,1640 Z" fill="#2c3139"/><path d="M980,420 L1680,-200 L1680,2400 L980,1640 Z" fill="#2c3139"/>
     <g transform="translate(1012,820)"><rect x="0" y="0" width="56" height="360" rx="8" fill="#9aa4b1" stroke="#4d5560" stroke-width="5"/>
       ${Array.from({ length: 8 }, (_, i) => `<circle cx="28" cy="${36 + i * 40}" r="13" fill="#d8dde4" stroke="#4d5560" stroke-width="3"/>`).join('')}</g>
-    <rect x="300" y="384" width="480" height="30" rx="15" fill="#fff8e0" id="cabLamp"/>
+    <rect x="640" y="250" width="200" height="110" rx="6" fill="#23262d" stroke="#5d6673" stroke-width="6"/><text x="740" y="318" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="30" fill="#8a8f9c">ЛЮК</text><rect x="300" y="384" width="480" height="30" rx="15" fill="#fff8e0" id="cabLamp"/>
     <ellipse id="cabLampGlow" cx="540" cy="420" rx="520" ry="200" fill="#fff8e0" opacity=".12"/>
     <g id="dimG" opacity="0"><path d="M120,1760 H960" stroke="#FFD43B" stroke-width="8" stroke-dasharray="20 12"/><path d="M120,1730 V1790 M960,1730 V1790" stroke="#FFD43B" stroke-width="8"/></g>`;
 }
@@ -388,7 +397,7 @@ function crowd() {
   const r = rng(4); let s = '';
   for (let i = 0; i < 9; i++) {
     const x = -40 + i * 145 + r() * 30, y = 1830 + r() * 60, c = ['#2b2f3a', '#3a2f2b', '#2f3a33', '#33303f'][i % 4];
-    const px = x + (r() - .5) * 60, py = y - 260 - r() * 80;
+    const px = x + (r() - .5) * 60, py = y - 120 - r() * 50;
     s += `<rect x="${x - 110}" y="${y + 60}" width="220" height="300" rx="90" fill="${['#c0392b', '#2d6cdf', '#27ae60', '#8e44ad', '#e67e22'][i % 5]}" ${SW}/><circle cx="${x}" cy="${y}" r="90" fill="${c}" ${SW}/>
       <path d="M${x + 40},${y + 60} L${px},${py + 60}" stroke="#F4C9A3" stroke-width="36" stroke-linecap="round"/>
       <g class="cphone"><rect x="${px - 40}" y="${py - 50}" width="80" height="130" rx="12" fill="#111" ${SW}/><rect class="cflash" x="${px - 30}" y="${py - 40}" width="60" height="110" rx="8" fill="#9fd0ff"/></g>`;
@@ -410,6 +419,8 @@ const BGS = { cabin: cabin(), tower: tower(), doors: doors(), display: display()
      <g id="mastPos" transform="translate(930,1780) scale(.78)">${person('m', MASTER)}</g>
      <g id="kPos">${person('k', KREED)}</g>
      <g id="hPos">${person('h', HERO)}</g>
+     <g id="floorBag" style="display:none" transform="translate(735,1585) scale(.55)"><path d="M-26,0 Q0,-40 26,0" fill="none" stroke="#16161e" stroke-width="7"/><rect x="-70" y="0" width="140" height="160" rx="10" fill="#d9a86c" stroke="#16161e" stroke-width="7"/><rect x="-40" y="50" width="80" height="44" rx="8" fill="#2fbf71" stroke="#16161e" stroke-width="7"/></g>
+     <g id="dizzy" opacity="0">${[0,1,2].map(()=>`<text class="st" font-size="70" fill="#FFD43B" stroke="#16161e" stroke-width="4" text-anchor="middle">★</text>`).join("")}</g>
      <g id="notes" opacity="0">${['♪', '♫', '♪', '♬'].map((n, i) => `<text class="note" font-size="110" font-weight="900" fill="#FFD43B" stroke="${INK}" stroke-width="4">${n}</text>`).join('')}</g>
    </g>
    <g id="fg_landing" style="display:none">${crowd()}</g>
@@ -430,114 +441,123 @@ const BGS = { cabin: cabin(), tower: tower(), doors: doors(), display: display()
 const T = {};
 const WIDE = { cx: 545, cy: 1010, z0: 1.0, z1: 1.05 }, TWO = { cx: 545, cy: 990, z0: 1.18, z1: 1.26 };
 const HCU = { cx: HX, cy: HEADY + 40, z0: 1.9, z1: 2.05 }, KCU = { cx: KX, cy: HEADY + 40, z0: 1.9, z1: 2.05 };
-const HEYE = { cx: HX, cy: HEADY - 4, z0: 3.3, z1: 3.6 }, FULL = { cx: 540, cy: 960, z0: 1.0, z1: 1.06 };
+const HEYE = { cx: HX, cy: HEADY - 4, z0: 3.0, z1: 3.3 }, FULL = { cx: 540, cy: 960, z0: 1.0, z1: 1.06 };
+const KSIT = { cx: KX, cy: HEADY + 330, z0: 1.9, z1: 2.05 };
 let SHOTS = [], OVS = [];
 function buildCues() {
-  T.kIn = W('s3', 'черные'); T.hand = W('s3', 'руку'); T.privet = W('s4', 'привет');
+  T.kIn = W('s4', 'это'); T.effect = W('s3', 'эффектно'); T.hand = W('s3', 'руку'); T.pinch = W('s3', 'прищемляют');
+  T.adjust = W('s4', 'поправляет'); T.cute = W('s4', 'милый');
   T.blink = W('s5', 'моргает'); T.jerk = W('s5', 'дергается'); T.stop = W('s5', 'встает');
-  T.silence = W('s6', 'тишина'); T.three = W('s7', 'три');
-  T.e1 = S('s8').start; T.shaft1 = W('s8', 'шахта'); T.m80 = W('s8', 'восьмидесяти');
-  T.press = W('s9', 'нажать'); T.hold = W('s9', 'держать'); T.hiss = W('s9', 'динамик'); T.disp = W('s9', 'диспетчер');
-  T.meter = W('s10', 'метр');
-  T.e2 = S('s11').start; T.pct = W('s11', 'двенадцать'); T.eat = W('s11', 'съедят');
-  T.glOff = W('s12', 'снимает'); T.sit = W('s12', 'садится'); T.air = W('s12', 'воздуха');
-  T.sing = W('s13', 'напевать'); T.you = W('s13', 'тебе'); T.dance = W('s13', 'потанцевать');
-  T.e3 = S('s14').start; T.catch = W('s14', 'ловители'); T.jolt = W('s14', 'дернуть');
-  T.off = W('s15', 'гаснет'); T.creak = W('s16', 'скрип'); T.drop = W('s16', 'проседает'); T.grab = W('s16', 'хватает');
-  T.knock = W('s17', 'стук'); T.alive = W('s17', 'живые');
-  T.open = S('s18').start; T.crowd = W('s18', 'толпа'); T.mast = W('s18', 'мастер'); T.gran = W('s18', 'консьержка');
-  T.glOn = W('s19', 'надевает'); T.give = W('s19', 'протягивает'); T.tix = W('s19', 'билета');
-  T.c1 = W('s20', 'кнопка'); T.c2 = W('s20', 'береги'); T.c3 = W('s20', 'не', 0); T.ask = W('s20', 'что');
-  T.c3 = W('s20', 'прыгай');
+  T.glOff = W('s6', 'снимает'); T.laugh = W('s6', 'смеется'); T.alone = W('s6', 'один');
+  T.press = W('s7', 'жмешь'); T.hiss = W('s7', 'динамик'); T.disp = W('s7', 'мастер');
+  T.meter = W('s8', 'метр');
+  T.joke = W('s9', 'знаешь'); T.charisma = W('s9', 'харизмы', 0, 'e'); T.c70 = W('s9', 'кринжметр');
+  T.cool = W('s10', 'крутой'); T.lean = W('s10', 'облокачивается'); T.railOff = W('s10', 'отваливается');
+  T.sit = S('s11').start; T.silence = W('s11', 'тишина');
+  T.song = W('s12', 'фух'); T.sang = W('s12', 'чуть'); T.mouth = W('s12', 'хотя');
+  T.action = W('s13', 'боевике'); T.jump = W('s13', 'прыгает'); T.bonk = W('s13', 'бьется');
+  T.jolt = S('s14').start + .15; T.c100 = W('s14', 'сто'); T.mchs = W('s14', 'мчс');
+  T.knock = W('s15', 'стук'); T.alive = W('s15', 'живые');
+  T.open = S('s16').start; T.crowd = W('s16', 'толпа'); T.mast = W('s16', 'мастер'); T.gran = W('s16', 'консьержка');
+  T.glOn = W('s17', 'надевает'); T.walk = W('s17', 'эффектно'); T.trip = W('s17', 'спотыкается'); T.film = W('s17', 'снимают');
+  T.up = S('s18').start; T.perf = W('s18', 'перформанс'); T.give = W('s18', 'протягивает'); T.tix = W('s18', 'билета');
+  T.ask = S('s19').start;
+  T.cringe = [[T.laugh, 35], [T.c70, 70], [T.railOff, 80], [T.mouth, 90], [T.bonk, 95], [T.c100, 100]];
 
   SHOTS = [
     [0, 'cabin', TWO, { red: 1 }], [W('s1', 'кридом') - .05, 'cabin', KCU, { red: 1 }],
     [S('s2').start, 'tower', { cx: 540, cy: 900, z0: 1.0, z1: 1.12 }], [W('s2', 'ты') - .05, 'cabin', { cx: HX + 40, cy: 1080, z0: 1.3, z1: 1.42 }, { noK: 1 }],
-    [S('s3').start, 'doors', FULL, { noK: 1 }], [T.kIn - .05, 'cabin', KCU],
-    [S('s4').start, 'cabin', WIDE], [T.privet - .05, 'cabin', KCU],
+    [S('s3').start, 'doors', FULL, { noK: 1 }],
+    [S('s4').start, 'cabin', WIDE], [T.adjust - .05, 'cabin', KCU], [T.cute - .05, 'cabin', { cx: KX, cy: HEADY + 20, z0: 2.4, z1: 2.6 }],
     [S('s5').start, 'display', FULL], [W('s5', 'лифт') - .05, 'cabin', TWO],
-    [S('s6').start, 'shaft', { cx: 540, cy: 960, z0: 1.15, z1: 1.0 }], [T.silence - .05, 'cabin', HEYE],
-    [S('s7').start, 'black', FULL],
-    [S('s8').start, 'doors', FULL, { pull: 1 }], [T.shaft1 - .05, 'shaft', { cx: 540, cy: 960, cy1: 1700, z0: 1.0, z1: .85 }],
-    [S('s9').start, 'panel', { cx: 540, cy: 1180, cy1: 1000, z0: 1.25, z1: 1.0 }],
-    [S('s10').start, 'cabin', TWO], [T.meter - .05, 'cabin', { cx: 545, cy: 1040, z0: .98, z1: 1.0 }],
-    [S('s11').start, 'phone', FULL],
-    [S('s12').start, 'cabin', KCU], [T.sit - .05, 'cabin', WIDE], [T.air - .05, 'cabin', TWO],
-    [S('s13').start, 'cabin', KCU], [T.you - .05, 'cabin', HCU], [T.dance - .05, 'cabin', WIDE],
-    [S('s14').start, 'shaft', { cx: 540, cy: 900, z0: 1.3, z1: 1.45 }],
-    [S('s15').start, 'cabin', WIDE], [S('s16').start, 'cabin', TWO], [S('s17').start, 'cabin', WIDE],
-    [S('s18').start, 'landing', { cx: 540, cy: 1100, z0: 1.0, z1: 1.08 }],
-    [S('s19').start, 'landing', { cx: 640, cy: 1580 - 800 * .55 + 40, z0: 2.1, z1: 2.25 }], [T.give - .05, 'landing', { cx: 545, cy: 1180, z0: 1.3, z1: 1.38 }],
-    [S('s20').start, 'black', FULL],
+    [S('s6').start, 'cabin', KCU], [T.laugh - .05, 'cabin', WIDE], [T.alone - .05, 'cabin', HEYE],
+    [S('s7').start, 'panel', { cx: 540, cy: 1180, cy1: 1000, z0: 1.25, z1: 1.0 }],
+    [S('s8').start, 'cabin', TWO], [T.meter - .05, 'cabin', { cx: 545, cy: 1040, z0: .98, z1: 1.0 }],
+    [S('s9').start, 'cabin', KCU], [T.c70 - .05, 'cabin', HCU],
+    [S('s10').start, 'cabin', { cx: KX - 40, cy: 1080, z0: 1.35, z1: 1.45 }], [T.railOff - .05, 'cabin', WIDE],
+    [S('s11').start, 'cabin', WIDE], [T.silence - .05, 'cabin', KSIT],
+    [S('s12').start, 'cabin', KSIT], [T.mouth - .05, 'cabin', HEYE],
+    [S('s13').start, 'cabin', WIDE], [T.jump - .05, 'cabin', { cx: 600, cy: 900, z0: 1.15, z1: 1.2 }],
+    [S('s14').start, 'shaft', { cx: 540, cy: 900, z0: 1.3, z1: 1.45 }], [W('s14', 'ты') - .05, 'cabin', HCU],
+    [S('s15').start, 'cabin', WIDE],
+    [S('s16').start, 'landing', { cx: 540, cy: 1100, z0: 1.0, z1: 1.08 }],
+    [S('s17').start, 'landing', { cx: 600, cy: 1200, z0: 1.15, z1: 1.25 }], [T.film - .05, 'landing', { cx: 540, cy: 1150, z0: 1.0, z1: 1.04 }],
+    [S('s18').start, 'landing', { cx: 640, cy: 1580 - 800 * .55 + 40, z0: 2.1, z1: 2.25 }], [T.give - .05, 'landing', { cx: 545, cy: 1180, z0: 1.3, z1: 1.38 }],
+    [S('s19').start, 'black', FULL],
   ];
-  const tagC = { r: ['#ff3b30', '#fff'], g: ['#2ecc71', '#fff'], y: ['#FFD43B', '#16171d'] };
-  T.tags = [[T.e1, S('s8').end, 'ОШИБКА №1 · РАЗЖИМАТЬ ДВЕРИ', 'r'], [S('s9').start, S('s9').end, 'ПРАВИЛЬНО · КНОПКА ВЫЗОВА', 'g'],
-    [T.e2, S('s11').end, 'ОШИБКА №2 · ТРАТИТЬ ЗАРЯД', 'r'], [T.e3, S('s14').end, 'ОШИБКА №3 · ПРЫГАТЬ', 'r']].map(([a, b, s, c]) => [a, b, s, tagC[c]]);
+  T.tags = [];
 
   const pill = (t, s) => `<div class="pill">${t}${s ? `<small>${s}</small>` : ''}</div>`;
+  const gold = (t, fs = 34) => `<div class="pill" style="background:#FFC83D;font-size:${fs}px">${t}</div>`;
   OVS = [
-    // [a, b, html, x(center), y(top), opts]
     [.15, W('s1', 'кридом') - .1, `<div class="badge red">⚠ ЛИФТ ЗАСТРЯЛ</div>`, 540, 330],
     [W('s1', 'кридом'), S('s1').end, pill('ЕГОР КРИД', 'ПЕВЕЦ'), 300, 380],
     [W('s2', 'сорок'), W('s2', 'ты') - .05, `<div class="badge">40 ЭТАЖЕЙ</div>`, 540, 330],
     [W('s2', 'ты'), S('s2').end, pill('ТЫ', 'ДОСТАВКА'), 680, 470],
-    [T.kIn, S('s3').end, pill('ОЧКИ'), 250, 600],
-    [W('s3', 'цепь'), S('s3').end, pill('ЦЕПЬ'), 830, 1080],
-    [W('s3', 'улыбка'), S('s3').end, pill('УЛЫБКА'), 260, 980],
-    [S('s4').start + .1, T.privet - .1, pill('ЕГОР КРИД', 'ПЕВЕЦ'), 770, 380],
-    [W('s4', 'тебе'), S('s4').end, `<div class="pill" style="background:#FFC83D">«Тебе какой этаж?»</div>`, 540, 400],
-    [T.three, S('s7').end, `<div class="plate">3 ОШИБКИ</div>`, 540, 640, { rot: -4 }],
-    [T.m80, S('s8').end, `<div class="badge red">&gt; 80 М</div>`, 540, 760],
-    [T.hold, T.hiss - .05, `<div class="badge">3 СЕК</div>`, 540, 1050],
-    [T.disp, S('s9').end, `<div class="pill" style="background:#5fd6ff">ДИСПЕТЧЕР<small style="color:#16171d">мастер через 40 минут</small></div>`, 540, 640],
-    [T.meter, S('s10').end, `<div class="badge">1 × 1 М</div>`, 540, 420],
-    [T.eat, S('s11').end, `<div class="badge red">≈ 10 МИН</div>`, 540, 1100],
-    [T.air, S('s13').start - .05, `<div class="panel"><div class="h">БАЛАНС</div>
-        <div class="r" data-t="${T.air}"><span>ВОЗДУХ</span><span style="color:#2ecc71">ХВАТИТ ✓</span></div>
-        <div class="r" data-t="${W('s12', 'лифт')}"><span>КАБИНА</span><span style="color:#2ecc71">НЕ ГЕРМЕТИЧНА</span></div>
-        <div class="r" data-t="${T.air + 1.0}"><span>ЗАРЯД</span><span style="color:#ff3b30">12%</span></div></div>`, 540, 330],
-    [T.catch, S('s14').end, `<div class="pill" style="background:#FFD43B">ЛОВИТЕЛИ</div>`, 540, 640],
-    [T.alive, S('s17').end, `<div class="pill" style="background:#5fd6ff">«Живые? Сейчас откроем»</div>`, 540, 420],
-    [T.mast, S('s18').end, pill('МАСТЕР'), 900, 760],
-    [T.gran, S('s18').end, pill('КОНСЬЕРЖКА'), 180, 820],
-    [T.crowd, S('s18').end, pill('СОСЕДИ', '× 14 ТЕЛЕФОНОВ'), 540, 1180],
-    [T.tix, S('s19').end, `<div style="display:flex;gap:0">
-        <div class="pill" style="background:#FFC83D;font-size:40px;padding:18px 30px;transform:rotate(-8deg)">🎫 КОНЦЕРТ<small style="color:#16171d">ЕГОР КРИД · 1 БИЛЕТ</small></div>
-        <div class="pill" style="background:#ffe08a;font-size:40px;padding:18px 30px;transform:rotate(7deg) translate(-20px,20px)">🎫 КОНЦЕРТ<small style="color:#16171d">ЕГОР КРИД · 2 БИЛЕТ</small></div></div>`, 540, 380],
-    [S('s20').start + .05, DURATION + 1, `<div class="panel" style="width:780px;font-family:Inter"><div class="h" style="font-family:'JetBrains Mono'">ЕСЛИ ЗАСТРЯЛ В ЛИФТЕ</div>
-        <div class="tick" data-t="${T.c1}"><b>✓</b>КНОПКА ВЫЗОВА</div><div class="tick" data-t="${T.c2}"><b>✓</b>БЕРЕГИ ЗАРЯД</div><div class="tick" data-t="${T.c3}"><b>✓</b>НЕ ПРЫГАЙ</div></div>`, 540, 330, { noOut: 1 }],
-    [T.ask, DURATION + 1, `<div class="badge" style="font-size:48px">ЧТО ПОПРОСИЛ БЫ ТЫ? ПИШИ ↓</div>`, 540, 1080, { noOut: 1 }],
+    [T.effect, T.pinch - .05, pill('✨ ЭФФЕКТНО'), 760, 640],
+    [T.pinch, S('s3').end, `<div class="badge red" style="font-size:96px">АЙ!</div>`, 540, 560, { rot: -6 }],
+    [S('s4').start + .1, T.adjust - .1, pill('ЕГОР КРИД', 'ПЕВЕЦ'), 770, 380],
+    [T.cute, S('s4').end, gold('«Я ПРОСТО МИЛЫЙ УБЛЮДОК»', 40), 540, 420, { rot: -2 }],
+    [T.alone, S('s6').end, `<div class="pill" style="background:#2b2f3a;color:#9aa0ad;border-color:#000">🦗 . . .</div>`, 540, 420],
+    [T.disp, S('s7').end, `<div class="pill" style="background:#5fd6ff">ДИСПЕТЧЕР<small style="color:#16171d">мастер через 40 минут</small></div>`, 540, 640],
+    [T.meter, S('s8').end, `<div class="badge">1 × 1 М</div>`, 540, 420],
+    [T.joke, T.c70 - .05, gold('«НЕ ВЫДЕРЖАЛ МОЕЙ ХАРИЗМЫ»'), 540, 560],
+    [T.charisma + .05, T.c70 + .6, `<div class="badge" style="font-size:52px">БА-ДУМ-ТСС 🥁</div>`, 540, 760, { rot: 4 }],
+    [T.cool, T.railOff - .05, pill('😎 РЕЖИМ: КРУТОЙ'), 540, 560],
+    [T.railOff, S('s10').end, `<div class="badge red">ПОРУЧЕНЬ −1</div>`, 540, 560, { rot: -4 }],
+    [T.sang, T.mouth - .05, `<div class="plate" style="background:#fff;color:#16171d;border-color:#16171d;font-size:62px;box-shadow:0 14px 0 rgba(0,0,0,.4)">«Я ЧУТЬ НЕ СПЕЛ<br>НОВУЮ ПЕСНЮ»</div>`, 540, 520, { rot: -3 }],
+    [T.mouth, S('s12').end, pill('* РОТ НЕ ОТКРЫВАЛ', 'НИ РАЗУ'), 540, 560, { rot: 3 }],
+    [T.action, T.bonk - .05, pill('🎬 РЕЖИМ: БОЕВИК'), 540, 1120],
+    [T.bonk, S('s13').end, `<div class="badge red" style="font-size:96px">БОНК!</div>`, 540, 1080, { rot: 6 }],
+    [T.c100, S('s14').end, `<div class="plate" style="font-size:96px">КРИНЖ 100%</div>`, 540, 640, { rot: -4 }],
+    [T.mchs, S('s14').end, pill('📞 МЧС', 'ЗВОНИМ?'), 540, 1100],
+    [T.alive, S('s15').end, `<div class="pill" style="background:#5fd6ff">«Живые? Сейчас откроем»</div>`, 540, 420],
+    [T.mast, S('s16').end, pill('МАСТЕР'), 900, 760],
+    [T.gran, S('s16').end, pill('КОНСЬЕРЖКА'), 180, 820],
+    [T.crowd, S('s16').end, pill('СОСЕДИ', '× 40 ТЕЛЕФОНОВ'), 540, 1180],
+    [T.trip, S('s17').end, `<div class="badge red" style="font-size:96px">ШМЯК!</div>`, 540, 640, { rot: -6 }],
+    [T.film, S('s17').end, `<div class="badge red" style="font-size:48px">🔴 LIVE × 40</div>`, 540, 420],
+    [T.perf, T.tix - .05, gold('«ЭТО БЫЛ ПЕРФОРМАНС»', 42), 540, 420, { rot: -2 }],
+    [T.tix, S('s18').end, `<div style="display:flex;gap:0">
+        <div class="pill" style="background:#FFC83D;font-size:40px;padding:18px 30px;transform:rotate(-8deg)">🎫 КОНЦЕРТ<small style="color:#16171d">ЕГОР КРИД · БИЛЕТ 1</small></div>
+        <div class="pill" style="background:#ffe08a;font-size:40px;padding:18px 30px;transform:rotate(7deg) translate(-20px,20px)">🎫 КОНЦЕРТ<small style="color:#16171d">ЕГОР КРИД · БИЛЕТ 2</small></div></div>`, 540, 380],
+    [S('s19').start + .05, DURATION + 1, `<div class="panel" style="width:800px;font-family:Inter"><div class="h" style="font-family:'JetBrains Mono'">КРИНЖ-ИТОГИ ПОЕЗДКИ</div>
+        <div class="tick" data-t="${S('s19').start + .3}"><b>✓</b>ПРИЩЕМИЛ РУКУ</div><div class="tick" data-t="${S('s19').start + .6}"><b>✓</b>ОТОРВАЛ ПОРУЧЕНЬ</div>
+        <div class="tick" data-t="${S('s19').start + .9}"><b>✓</b>«ЧУТЬ НЕ СПЕЛ»</div><div class="tick" data-t="${S('s19').start + 1.2}"><b>✓</b>БОНК О ПОТОЛОК</div>
+        <div class="tick" data-t="${S('s19').start + 1.5}"><b>✓</b>ШМЯК НА ПУБЛИКУ</div></div>`, 540, 300, { noOut: 1 }],
+    [W('s19', 'пиши'), DURATION + 1, `<div class="badge" style="font-size:48px">А ТЫ БЫ ПОШЁЛ? ПИШИ ↓</div>`, 540, 1120, { noOut: 1 }],
   ];
   $('ovs').innerHTML = OVS.map((o, i) => `<div class="ov" id="ov${i}">${o[2]}</div>`).join('');
   OVS.forEach((o, i) => { o.el = $('ov' + i); o.rows = [...o.el.querySelectorAll('[data-t]')]; });
 }
 buildCues();
-const PUNCH = () => [T.stop, T.three, T.m80, T.press, T.pct, T.jolt, T.drop, T.tix, T.kIn];
+const PUNCH = () => [T.pinch, T.stop, T.cute, T.railOff, T.sang, T.bonk, T.c100, T.trip, T.tix, T.perf];
 
 window.getSfx = function () {
   const ev = [];
   OVS.forEach(o => ev.push({ t: o[0], k: 'pop' }));
-  T.tags.forEach(([a]) => ev.push({ t: a, k: 'error' }));
   for (let i = 1; i < SHOTS.length; i++) if (SHOTS[i][1] !== SHOTS[i - 1][1]) ev.push({ t: SHOTS[i][0] - .1, k: 'whoosh' });
   ev.push({ t: .05, k: 'hum' }); ev.push({ t: .1, k: 'buzz' });
-  ev.push({ t: S('s3').start + .1, k: 'slide' }); ev.push({ t: T.hand, k: 'knock' }); ev.push({ t: T.hand + .25, k: 'slide' });
-  ev.push({ t: T.privet, k: 'ding' });
+  ev.push({ t: S('s3').start + .1, k: 'slide' }); ev.push({ t: T.effect, k: 'sparkle' }); ev.push({ t: T.pinch, k: 'clang' }); ev.push({ t: T.pinch + .05, k: 'hit' });
+  ev.push({ t: T.cute + .3, k: 'sparkle' }); ev.push({ t: W('s4', 'ублюдок', 0, 'e') + .1, k: 'rimshot' });
   for (let x = S('s5').start + .1; x < S('s5').start + 1.3; x += .09) ev.push({ t: x, k: 'tick' });
   ev.push({ t: T.blink, k: 'buzz' }); ev.push({ t: T.jerk, k: 'hit' }); ev.push({ t: T.stop, k: 'thud' }); ev.push({ t: T.stop + .05, k: 'stamp' });
-  ev.push({ t: T.three, k: 'hit' });
-  ev.push({ t: T.e1 + .3, k: 'creak' }); ev.push({ t: T.m80, k: 'stamp' });
-  ev.push({ t: T.press, k: 'click' }); [0, 1, 2].forEach(i => ev.push({ t: T.hold + i * .45, k: 'beep' }));
-  ev.push({ t: T.hiss, k: 'hiss' }); ev.push({ t: T.meter, k: 'stamp' });
-  ev.push({ t: T.pct, k: 'error' }); ev.push({ t: T.eat, k: 'wah' });
-  ev.push({ t: T.sit, k: 'knock' }); ev.push({ t: T.sing, k: 'sparkle' }); ev.push({ t: T.dance, k: 'sparkle' });
-  ev.push({ t: T.jolt, k: 'hit' }); ev.push({ t: T.jolt + .05, k: 'thud' });
-  ev.push({ t: T.off - .1, k: 'buzz' }); ev.push({ t: T.off + .2, k: 'click' });
-  ev.push({ t: T.creak - .05, k: 'creak' }); ev.push({ t: T.drop, k: 'thud' }); ev.push({ t: T.drop + .05, k: 'hit' });
+  ev.push({ t: T.alone, k: 'cricket' });
+  ev.push({ t: T.press, k: 'click' }); ev.push({ t: T.press + .2, k: 'beep' }); ev.push({ t: T.hiss, k: 'hiss' }); ev.push({ t: T.meter, k: 'stamp' });
+  ev.push({ t: T.charisma + .05, k: 'rimshot' }); ev.push({ t: T.charisma + 1.0, k: 'cricket' });
+  ev.push({ t: T.cool, k: 'sparkle' }); ev.push({ t: T.railOff, k: 'clang' }); ev.push({ t: T.railOff + .25, k: 'thud' }); ev.push({ t: T.railOff + .3, k: 'wah' });
+  ev.push({ t: T.silence, k: 'cricket' });
+  ev.push({ t: T.mouth, k: 'rimshot' });
+  ev.push({ t: T.jump, k: 'whoosh' }); ev.push({ t: T.bonk, k: 'clang' }); ev.push({ t: T.bonk + .05, k: 'hit' }); ev.push({ t: T.bonk + .3, k: 'sparkle' });
+  ev.push({ t: T.jolt, k: 'thud' }); ev.push({ t: T.jolt + .05, k: 'hit' }); ev.push({ t: T.c100, k: 'error' });
   [0, .28, .56].forEach(d => ev.push({ t: T.knock + d, k: 'knock' }));
   ev.push({ t: T.open - .05, k: 'slide' }); ev.push({ t: T.open + .1, k: 'ding' });
-  for (let i = 0; i < 9; i++) ev.push({ t: T.crowd + .15 + i * .23, k: 'shutter' });
+  for (let i = 0; i < 6; i++) ev.push({ t: T.crowd + .15 + i * .23, k: 'shutter' });
+  ev.push({ t: T.walk, k: 'sparkle' }); ev.push({ t: T.trip, k: 'thud' }); ev.push({ t: T.trip + .05, k: 'hit' });
+  for (let i = 0; i < 12; i++) ev.push({ t: T.trip + .3 + i * .12, k: 'shutter' });
+  ev.push({ t: T.perf + .6, k: 'rimshot' });
   ev.push({ t: T.tix, k: 'success' }); ev.push({ t: T.tix + .2, k: 'sparkle' });
-  [T.c1, T.c2, T.c3].forEach(x => ev.push({ t: x, k: 'coin' }));
+  for (let i = 0; i < 5; i++) ev.push({ t: S('s19').start + .3 + i * .3, k: 'tick' });
   return ev.filter(e => e.t >= 0 && e.t < DURATION);
 };
 window.DURATION = DURATION;
@@ -557,6 +577,7 @@ window.renderAt = function (t) {
   const lk = clamp((t - s0) / Math.max(.5, s1 - s0));
   const si = Math.max(0, SCENES.findIndex(s => t >= s.start && t < s.end));
   const sc = t >= DURATION - .001 ? SCENES[SCENES.length - 1] : SCENES[si];
+  const between = (a, b) => t >= a && t < b;
 
   if (lastBg !== bg) {
     for (const k in BGS) $('bg_' + k).style.display = k === bg ? '' : 'none';
@@ -567,7 +588,7 @@ window.renderAt = function (t) {
   let z = lerp(cam.z0, cam.z1, easeInOut(lk)), cx = cam.cx, cy = cam.cy1 != null ? lerp(cam.cy, cam.cy1, easeInOut(lk)) : cam.cy;
   let shx = noise(t, .4) * 6, shy = noise(t, .33, 2) * 6, rot = noise(t, .21, 4) * .5;
   PUNCH().forEach(tp => { const d = decay(t, tp, 6); z *= 1 + .06 * d; shx += Math.sin(t * 61) * 14 * d; shy += Math.cos(t * 53) * 14 * d; });
-  const shake = Math.max(decay(t, T.jerk, 4), decay(t, T.stop, 3), decay(t, T.drop, 3), decay(t, T.jolt, 4), t > T.e1 && t < T.shaft1 ? .5 : 0);
+  const shake = Math.max(decay(t, T.jerk, 4), decay(t, T.stop, 3), decay(t, T.jolt, 3), decay(t, T.bonk, 4), decay(t, T.railOff, 4), decay(t, T.pinch, 4), decay(t, T.trip, 4));
   shx += Math.sin(t * 71) * 18 * shake; shy += Math.cos(t * 59) * 18 * shake;
   setT($('cam'), `translate(${540 + shx} ${960 + shy}) rotate(${rot}) scale(${z}) translate(${-cx} ${-cy})`);
 
@@ -575,89 +596,93 @@ window.renderAt = function (t) {
   const showChars = bg === 'cabin' || bg === 'landing';
   $('chars').style.display = showChars ? '' : 'none';
   const land = bg === 'landing';
-  const kSit = t >= T.sit && t < S('s15').start;
-  const dance = t >= T.dance && t < S('s14').start ? Math.abs(Math.sin(t * 9)) : 0;
-  const hBob = -dance * 40 + Math.sin(t * 2.2) * 3;
+  const kSit = between(T.sit, S('s13').start);
   const hs = land ? .55 : CS, hx = land ? 445 : HX, ky = land ? 1580 : FY, kx = land ? 640 : KX;
-  setT($('hPos'), `translate(${hx} ${ky + hBob}) scale(${hs}) rotate(${dance * Math.sin(t * 4.5) * 4})`);
-  setT($('kPos'), `translate(${kx} ${ky}) scale(${hs})`);
+  setT($('hPos'), `translate(${hx} ${ky + Math.sin(t * 2.2) * 3}) scale(${hs})`);
+  // kreed body actions
+  let kdx = 0, kdy = 0, krot = 0;
+  if (between(T.lean, T.railOff)) krot = -8 * easeOut(clamp((t - T.lean) / .4));
+  if (between(T.railOff, T.sit)) { const k = easeOutBack(clamp((t - T.railOff) / .35)); krot = lerp(-8, 24, k); kdy = 140 * k; kdx = 60 * k; }
+  if (between(T.jump, S('s14').start)) {
+    const up = T.bonk - T.jump;
+    if (t < T.bonk) { const k = clamp((t - T.jump) / Math.max(.2, up)); kdy = -330 * Math.sin(k * Math.PI / 2); }
+    else { const k = clamp((t - T.bonk) / .5); kdy = lerp(-330, 0, easeIn(k)); krot = 6 * Math.sin(t * 20) * (1 - k); }
+  }
+  if (land) {
+    if (between(T.walk, T.trip)) kdx = 60 * easeInOut(clamp((t - T.walk) / Math.max(.3, T.trip - T.walk)));
+    if (between(T.trip, T.up + .4)) { const k = easeOutBack(clamp((t - T.trip) / .35)); kdx = 60 + 40 * k; krot = 78 * k; kdy = 40 * k; }
+    if (between(T.up + .4, T.up + 1.0)) { const k = easeOut(clamp((t - T.up - .4) / .6)); kdx = lerp(100, 0, k); krot = lerp(78, 0, k); kdy = lerp(40, 0, k); }
+  }
+  setT($('kPos'), `translate(${kx + kdx * (land ? 1 : CS)} ${ky + kdy}) rotate(${krot}) scale(${hs})`);
   $('kPos').style.display = (t < T.kIn && t >= S('s2').start) || opt.noK ? 'none' : '';
   $('granPos').style.display = $('mastPos').style.display = land ? '' : 'none';
+  $('floorBag').style.display = land && t >= T.open ? '' : 'none';
+  $('hBagHand').style.display = land && t >= T.open ? 'none' : '';
   setT($('hUp'), `translate(0 ${Math.sin(t * 2.2) * 2})`);
-  setT($('kUp'), `translate(0 ${kSit ? 300 : Math.sin(t * 2 + 1) * 2})`);
+  const laughing = between(T.laugh, T.alone + .4);
+  setT($('kUp'), `translate(0 ${kSit ? 300 : Math.sin(t * 2 + 1) * 2 + (laughing ? Math.abs(Math.sin(t * 14)) * -10 : 0)})`);
   $('kLegs').setAttribute('opacity', kSit ? 0 : 1); $('kSitFront').setAttribute('opacity', kSit ? 1 : 0);
-  setT($('hHead'), `translate(0 -800) rotate(${noise(t, .7) * 2 + dance * Math.sin(t * 9) * 6} 0 120)`);
-  setT($('kHead'), `translate(0 -800) rotate(${noise(t, .6, 2) * 1.5 + (t > T.sing && t < S('s13').end ? Math.sin(t * 3) * 6 : 0)} 0 120)`);
+  setT($('hHead'), `translate(0 -800) rotate(${noise(t, .7) * 2} 0 120)`);
+  setT($('kHead'), `translate(0 -800) rotate(${noise(t, .6, 2) * 1.5 + (laughing ? Math.sin(t * 9) * 5 : 0)} 0 120)`);
   // kreed arms
   const give = clamp((t - T.give) / .4);
-  setT($('kArmR'), `translate(150 -640) rotate(${lerp(-12, -128, easeOutBack(give))})`); $('kTk').setAttribute('opacity', give > .5 ? 1 : 0);
-  setT($('kArmL'), `translate(-150 -640) rotate(${12 + Math.sin(t * 2) * 1.5})`);
-  setT($('hArmL'), `translate(-150 -640) rotate(${12 + dance * 120 + Math.sin(t * 2.2) * 1.5})`);
-  setT($('hArmR'), `translate(150 -640) rotate(${-12 - dance * 30})`);
+  const adj = between(T.adjust, T.adjust + 1.2) || between(W('s18', 'поправляет'), W('s18', 'поправляет') + 1.0);
+  const pinchArm = between(T.kIn, T.adjust) ? 1 : 0;
+  setT($('kArmR'), `translate(150 -640) rotate(${t >= T.give ? lerp(-12, -128, easeOutBack(give)) : adj ? -150 + Math.sin(t * 6) * 4 : pinchArm ? -12 + Math.sin(t * 25) * 8 : -12})`);
+  $('kTk').setAttribute('opacity', give > .5 ? 1 : 0);
+  setT($('kArmL'), `translate(-150 -640) rotate(${between(T.railOff, T.sit) ? 70 : between(T.jump, T.bonk) ? 160 : 12 + Math.sin(t * 2) * 1.5})`);
+  setT($('hArmL'), `translate(-150 -640) rotate(${12 + Math.sin(t * 2.2) * 1.5})`);
+  setT($('hArmR'), `translate(150 -640) rotate(-12)`);
   $('kGl').setAttribute('opacity', (t >= T.glOff + .25 && t < T.glOn + .25) ? 0 : 1);
+  // stars after bonk / trip / pinch
+  const dizzy = between(T.bonk + .05, S('s14').start) ? 1 : 0;
+  $('dizzy').setAttribute('opacity', dizzy && bg === 'cabin' ? 1 : 0);
+  if (dizzy) { setT($('dizzy'), `translate(${KX} ${HEADY - 160})`); document.querySelectorAll('#dizzy .st').forEach((s, i) => { const a = t * 4 + i * 2.1; setT(s, `translate(${Math.cos(a) * 130} ${Math.sin(a) * 30})`); }); }
+  // rail
+  const rk = clamp((t - T.railOff) / .5);
+  setT($('rail'), t >= T.railOff ? `translate(${rk * 40} ${easeIn(rk) * 380}) rotate(${rk * 14} 540 1263)` : '');
   // moods
-  const between = (a, b) => t >= a && t < b;
   let hm = 'neutral', km = 'cool';
   const id = sc.id;
   if (id === 's1') { hm = 'nervous'; km = 'cool'; }
-  if (id === 's2') hm = 'neutral';
-  if (id === 's3') { hm = 'shock'; km = 'smileT'; }
-  if (id === 's4') { hm = t < T.privet ? 'shock' : 'happy'; km = 'smileT'; }
-  if (id === 's5') { hm = t < T.blink ? 'neutral' : t < T.stop ? 'nervous' : 'shock'; km = t < T.stop ? 'cool' : 'serious'; }
-  if (id === 's6') { hm = 'scared'; km = 'serious'; }
-  if (id === 's10') { hm = 'nervous'; km = 'cool'; }
-  if (id === 's12') { hm = 'nervous'; km = t < T.sit ? 'serious' : 'smileT'; if (t > T.air) hm = 'neutral'; }
-  if (id === 's13') { hm = t < T.you ? 'neutral' : 'happy'; km = t >= T.sing ? 'sing' : 'smileT'; }
-  if (id === 's15') { hm = 'scared'; km = 'serious'; }
-  if (id === 's18') { hm = 'happy'; km = 'smileT'; }
-  if (id === 's19') { hm = t < T.tix ? 'happy' : 'shock'; km = 'smileT'; if (t > T.tix + .9) hm = 'happy'; }
-  const talkK = TOK.some(tk => tk.q === 'k' && t >= tk.s && t < tk.e);
-  applyMood('h', t, MOODS[hm]); applyMood('k', t, MOODS[km], { talk: talkK });
-  // music notes
-  const singOn = t >= T.sing && t < S('s13').end && bg === 'cabin';
-  $('notes').setAttribute('opacity', singOn ? 1 : 0);
-  if (singOn) document.querySelectorAll('#notes .note').forEach((n, i) => {
-    const d = ((t - T.sing) * .7 + i * .25) % 1;
-    n.setAttribute('x', KX + 80 + Math.sin(d * 6 + i) * 50 + i * 20); n.setAttribute('y', HEADY - 120 - d * 380); n.setAttribute('opacity', Math.sin(Math.PI * d));
-  });
-  // dimension
-  $('dimG').setAttribute('opacity', between(T.meter, S('s10').end) ? 1 : 0);
+  if (id === 's4') { hm = t < T.cute ? 'shock' : 'deadpan'; km = t < T.adjust ? 'ouch' : 'smileT'; }
+  if (id === 's5') { hm = t < T.blink ? 'deadpan' : t < T.stop ? 'nervous' : 'shock'; km = t < T.stop ? 'cool' : 'serious'; }
+  if (id === 's6') { hm = 'deadpan'; km = t < T.laugh ? 'smileT' : 'laugh'; }
+  if (id === 's8') { hm = 'nervous'; km = 'smileT'; }
+  if (id === 's9') { hm = 'deadpan'; km = t < T.charisma + .1 ? 'smileT' : 'laugh'; if (t > T.c70) km = 'smileT'; }
+  if (id === 's10') { hm = t < T.railOff ? 'deadpan' : 'shock'; km = t < T.railOff ? 'cool' : 'shock'; }
+  if (id === 's11') { hm = 'deadpan'; km = 'stare'; }
+  if (id === 's12') { hm = t < T.sang ? 'deadpan' : 'shock'; km = t < T.song ? 'stare' : 'proud'; if (t > T.mouth) hm = 'deadpan'; }
+  if (id === 's13') { hm = t < T.bonk ? 'nervous' : 'shock'; km = t < T.bonk ? 'serious' : 'ouch'; }
+  if (id === 's14') { hm = 'scared'; km = 'ouch'; }
+  if (id === 's15') { hm = 'happy'; km = 'smileT'; }
+  if (id === 's16') { hm = 'happy'; km = 'smileT'; }
+  if (id === 's17') { hm = t < T.trip ? 'neutral' : 'shock'; km = t < T.trip ? 'cool' : 'ouch'; }
+  if (id === 's18') { hm = t < T.tix ? 'deadpan' : 'shock'; km = t < T.perf ? 'cool' : 'smileT'; if (t > T.tix + .9) hm = 'happy'; }
+  const talkK = TOK.some(tk => tk.q === 'k' && t >= tk.s && t < tk.e) && !(id === 's12');
+  applyMood('h', t, MOODS[hm]); applyMood('k', t, MOODS[km], { talk: talkK || laughing });
+  $('notes').setAttribute('opacity', 0);
+  $('dimG').setAttribute('opacity', between(T.meter, S('s8').end) ? 1 : 0);
 
   // ---------- lighting
-  const redOn = (t < S('s2').start) || (t >= T.stop && t < S('s18').start);
+  const redOn = (t < S('s2').start) || (t >= T.stop && t < S('s16').start);
   let flick = 1;
   if (between(T.blink, T.blink + .8)) flick = Math.sin(t * 47) > .2 ? 1 : .35;
   if (between(0, .6)) flick = Math.sin(t * 40) > 0 ? 1 : .5;
-  $('redTint').setAttribute('opacity', redOn && (bg === 'cabin' || bg === 'doors') ? .45 + .08 * Math.sin(t * 3) : 0);
-  const dark = between(T.off + .15, S('s18').start);
-  const darkK = dark ? 1 : between(T.off - .1, T.off + .15) ? (Math.sin(t * 60) > 0 ? .9 : .2) : 0;
-  $('darkOv').setAttribute('opacity', bg === 'cabin' ? darkK * .97 : 0);
-  $('darkFx').setAttribute('opacity', bg === 'cabin' && dark ? 1 : 0);
-  if (dark) {
-    const grabK = easeOut(clamp((t - T.grab) / .4));
-    setT($('dEyesH'), `translate(${HX + (t > T.drop ? noise(t, 9) * 6 : 0)} ${HEADY - 4})`);
-    setT($('dEyesK'), `translate(${KX - 140 * grabK} ${HEADY - 4})`);
-    const sc2 = t > T.drop && t < T.drop + 1.5 ? 1.25 : 1;
-    document.querySelectorAll('#dEyesH .dpup').forEach(p => setT(p, `translate(${8 + noise(t, 4) * 4} 0) scale(${1 / sc2})`));
-    document.querySelectorAll('#dEyesK .dpup').forEach(p => setT(p, `translate(-8 0)`));
-    const bk = clamp((t - T.knock - .5) / .8); $('beam').setAttribute('opacity', bk * (.7 + .1 * Math.sin(t * 8)));
-    $('phLight').setAttribute('opacity', .6 + .2 * Math.sin(t * 2));
-  }
+  $('redTint').setAttribute('opacity', redOn && (bg === 'cabin' || bg === 'doors') ? .3 + .06 * Math.sin(t * 3) : 0);
+  $('darkOv').setAttribute('opacity', 0); $('darkFx').setAttribute('opacity', 0);
   $('cabLamp').setAttribute('fill', redOn ? '#ff4a3a' : '#fff8e0');
   // ---------- per-bg animation
   if (bg === 'tower') { $('towerShaft').setAttribute('opacity', .3 + .3 * Math.sin(t * 4)); }
   if (bg === 'doors') {
-    let gap;
-    if (opt.pull) { gap = .02 + .06 * Math.abs(Math.sin(t * 6)) * clamp((t - T.e1) / .5); $('hHands').setAttribute('opacity', 1); $('kHand').setAttribute('opacity', 0);
-      setT($('hHandL'), `translate(${540 - gap * 340 - 20} 1040)`); setT($('hHandR'), `translate(${540 + gap * 340 + 20} 1040)`); }
-    else {
-      const cl = clamp((t - S('s3').start) / Math.max(.3, T.hand - S('s3').start));
-      gap = lerp(.9, .05, easeInOut(cl));
-      if (t > T.hand) gap = lerp(.05, .9, easeOut(clamp((t - T.hand - .3) / .8)));
-      $('hHands').setAttribute('opacity', 0);
-      const hk = clamp((t - T.hand + .1) / .25); $('kHand').setAttribute('opacity', hk);
-      setT($('kHand'), `translate(540 1000) scale(${lerp(.6, 1, easeOutBack(hk))}) translate(-540 -1000)`);
-    }
+    const cl = clamp((t - S('s3').start) / Math.max(.3, T.hand - S('s3').start));
+    let gap = lerp(.9, .3, easeInOut(cl));
+    if (t > T.hand) gap = lerp(.3, .07, easeIn(clamp((t - T.hand) / Math.max(.3, T.pinch - T.hand))));
+    if (t > T.pinch) gap = .07 + Math.abs(Math.sin(t * 30)) * .01 * decay(t, T.pinch, 3);
+    $('hHands').setAttribute('opacity', 0);
+    const hk = clamp((t - T.hand + .1) / .25); $('kHand').setAttribute('opacity', hk);
+    const sq = t > T.pinch ? 1 - .25 * easeOut(clamp((t - T.pinch) / .15)) : 1;
+    setT($('kHand'), `translate(540 1000) scale(${lerp(.6, 1, easeOutBack(hk)) * sq} ${lerp(.6, 1, easeOutBack(hk))}) rotate(${t > T.pinch ? Math.sin(t * 40) * 6 * decay(t, T.pinch, 2) : 0}) translate(-540 -1000)`);
     setT($('leafL'), `translate(${-gap * 340} 0)`); setT($('leafR'), `translate(${gap * 340} 0)`);
   }
   if (bg === 'display') {
@@ -666,32 +691,22 @@ window.renderAt = function (t) {
     $('dispArrow').setAttribute('opacity', Math.sin(t * 8) > -.3 ? 1 : .2);
   }
   if (bg === 'shaft') {
-    const s14 = t >= S('s14').start;
-    let y = 960;
-    if (s14) y += t > T.jolt ? lerp(0, 60, easeOutBack(clamp((t - T.jolt) / .25))) : 0;
+    let y = 960 + (t > T.jolt ? lerp(0, 120, easeOutBack(clamp((t - T.jolt) / .3))) : 0);
     setT($('shCab'), `translate(0 ${y})`);
-    const jump = s14 && t < T.catch ? Math.abs(Math.sin(t * 8)) * 40 : 0;
-    setT($('miniH'), `translate(470 ${140 - jump}) scale(.3)`); setT($('miniK'), `translate(615 ${140 - jump * .8}) scale(.3)`);
-    $('shArrow').setAttribute('opacity', t >= T.shaft1 && t < S('s8').end ? clamp((t - T.shaft1) / .3) : 0);
-    $('shCatch').setAttribute('opacity', s14 && t >= T.catch ? (Math.sin(t * 10) > -.5 ? 1 : .4) : 0);
+    setT($('miniH'), `translate(470 140) scale(.3)`); setT($('miniK'), `translate(615 140) scale(.3)`);
+    $('shArrow').setAttribute('opacity', 0);
+    $('shCatch').setAttribute('opacity', t > T.jolt + .2 ? (Math.sin(t * 10) > -.5 ? 1 : .4) : 0);
   }
   if (bg === 'panel') {
-    const fk = easeInOut(clamp((t - S('s9').start) / Math.max(.3, T.press - S('s9').start)));
+    const fk = easeInOut(clamp((t - S('s7').start) / Math.max(.3, T.press - S('s7').start)));
     const pressed = t >= T.press && t < T.hiss;
     setT($('finger'), `translate(${lerp(260, 0, fk)} ${lerp(500, 0, fk) + (pressed ? 8 : 0)})`);
-    $('bellRing').setAttribute('stroke-dashoffset', 880 * (1 - clamp((t - T.hold) / 1.35)));
+    $('bellRing').setAttribute('stroke-dashoffset', 880 * (1 - clamp((t - T.press) / Math.max(.3, T.hiss - T.press))));
     $('bellBtn').setAttribute('fill', pressed ? '#ffe28a' : '#FFC83D');
     const talk = t >= T.hiss;
     document.querySelectorAll('.spk').forEach((d, i) => d.setAttribute('fill', talk && Math.sin(t * 14 + i * .7) > -.2 ? '#ff9b2f' : '#2a2d34'));
   }
-  if (bg === 'phone') {
-    const dr = clamp((t - T.eat) / 1.4), pct = lerp(12, 1, easeInOut(dr));
-    const h = 344 * pct / 100 * 2.2;
-    $('batFill').setAttribute('y', 18 + 344 - h); $('batFill').setAttribute('height', h);
-    $('batTxt').textContent = Math.round(pct) + '%';
-    $('batTxt').setAttribute('opacity', t >= T.pct ? (Math.sin(t * 7) > -.4 ? 1 : .4) : .2);
-  }
-  if (land) document.querySelectorAll('.cflash').forEach((f, i) => { const ph = (t * 1.3 + i * .37) % 1; f.setAttribute('fill', t > T.crowd && ph < .08 ? '#ffffff' : '#9fd0ff'); });
+  if (land) document.querySelectorAll('.cflash').forEach((f, i) => { const ph = (t * (t > T.trip ? 4 : 1.3) + i * .37) % 1; f.setAttribute('fill', t > T.crowd && ph < .1 ? '#ffffff' : '#9fd0ff'); });
 
   // ---------- overlays
   OVS.forEach(o => {
@@ -702,23 +717,28 @@ window.renderAt = function (t) {
     o.el.style.transform = `translate(${o[3]}px, ${o[4] + st.y}px) translate(-50%,0) scale(${st.s}) rotate(${r + Math.sin(t * 1.5 + o[0]) * .6}deg)`;
     o.rows.forEach(rw => { const k = clamp((t - +rw.dataset.t) / .25); rw.style.opacity = k; rw.style.transform = `translateX(${(1 - easeOut(k)) * -30}px)`; });
   });
-  // tag
-  const tg = T.tags.find(([a, b]) => t >= a && t < b + .2);
-  if (tg) { const st = popState(t, tg[0], tg[1]); const el = $('tag');
-    if (st) { el.textContent = tg[2]; el.style.background = tg[3][0]; el.style.color = tg[3][1]; el.style.opacity = st.o; el.style.transform = `translateX(-50%) scale(${st.s}) rotate(-1.5deg)`; } else el.style.opacity = 0; }
-  else $('tag').style.opacity = 0;
+  $('tag').style.opacity = 0;
   // timecode
   const stuck = t >= T.stop;
   const tc = $('tc');
-  const showTc = t >= S('s2').start && t < S('s20').start;
-  tc.style.opacity = showTc ? 1 : 0;
-  tc.textContent = t >= S('s18').start ? '22:24 · 27 ЭТАЖ · СВОБОДА' : stuck ? '21:43 · МЕЖДУ 27 И 28' : '21:40 · МОСКВА · 40 ЭТ.';
-  tc.className = stuck && t < S('s18').start ? 'red' : '';
+  tc.style.opacity = t >= S('s2').start && t < S('s19').start ? 1 : 0;
+  tc.textContent = t >= S('s16').start ? '22:24 · 27 ЭТАЖ · СВОБОДА' : stuck ? '21:43 · МЕЖДУ 27 И 28' : '21:40 · МОСКВА · 40 ЭТ.';
+  tc.className = stuck && t < S('s16').start ? 'red' : '';
   // elapsed clock
-  const CK = [[T.stop, 0], [S('s10').start, 60], [S('s12').start, 600], [S('s13').start, 1200], [S('s14').start, 1800], [S('s15').start, 2280], [S('s17').start, 2400], [S('s18').start, 2460]];
+  const CK = [[T.stop, 0], [S('s8').start, 60], [S('s9').start, 300], [S('s10').start, 600], [S('s11').start, 1200], [S('s13').start, 1800], [S('s15').start, 2400], [S('s16').start, 2460]];
   let secs = 0; for (let i = 0; i < CK.length; i++) { if (t >= CK[i][0]) { const nx = CK[i + 1]; secs = nx ? lerp(CK[i][1], nx[1], clamp((t - CK[i][0]) / .8)) : CK[i][1]; } }
-  const ck = $('clock'); ck.style.opacity = t >= S('s10').start && t < S('s20').start ? 1 : 0;
+  const ck = $('clock'); ck.style.opacity = t >= S('s8').start && t < S('s19').start ? 1 : 0;
   ck.textContent = `⏱ В ЛИФТЕ ${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(Math.floor(secs % 60)).padStart(2, '0')}`;
+  // cringe meter
+  let cv = 0; T.cringe.forEach(([a, v], i) => { if (t >= a) { const prev = i ? T.cringe[i - 1][1] : 0; cv = lerp(prev, v, easeOutBack(clamp((t - a) / .5))); } });
+  const cm = $('cringe'); const cmOn = t >= T.laugh && t < S('s19').start && bg !== 'black';
+  cm.style.opacity = cmOn ? 1 : 0;
+  if (cmOn) {
+    $('cringeFill').style.width = clamp(cv, 0, 100) + '%'; $('cringeVal').textContent = Math.round(clamp(cv, 0, 100)) + '%';
+    const bump = Math.max(...T.cringe.map(([a]) => decay(t, a, 5)));
+    cm.style.transform = `scale(${1 + .12 * bump}) rotate(${Math.sin(t * 50) * 3 * bump}deg)`;
+    $('cringeFill').style.background = cv >= 99 ? (Math.sin(t * 12) > 0 ? '#ff3b30' : '#ffd43b') : 'linear-gradient(90deg,#ffd43b,#ff3b30)';
+  }
 
   // ---------- subtitles
   const ch = CHUNKS.find(c => t >= c.s && t < c.e);
@@ -737,8 +757,7 @@ window.renderAt = function (t) {
       sp[i].style.transform = `scale(${1 + .08 * Math.sin(Math.PI * kk)})`;
     });
   }
-  // flash, global brightness
-  $('flash').style.opacity = .5 * Math.max(decay(t, T.stop, 9), decay(t, T.three, 8), decay(t, T.open + .1, 4), decay(t, T.tix, 8));
+  $('flash').style.opacity = .5 * Math.max(decay(t, T.stop, 9), decay(t, T.open + .1, 4), decay(t, T.tix, 8), decay(t, T.trip + .2, 6));
   const fadeOut = clamp((t - (DURATION - .4)) / .4), fadeIn = 1 - clamp(t / .25);
   const br = (bg === 'cabin' || bg === 'display' ? flick : 1) * (1 - fadeOut) * (1 - fadeIn);
   $('stage').style.filter = br < .999 ? `brightness(${br.toFixed(3)})` : 'none';
