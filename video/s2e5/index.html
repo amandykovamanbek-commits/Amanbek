@@ -800,7 +800,7 @@ function buildCues() {
   T.dealIn = W('s14', 'клиентом') - .2; T.pre = W('s14', 'предоплатой'); T.dealOut = S('s15').end;
   T.laugh = W('s15', 'смеются');
   T.thenIn = W('s16', 'старый') - .2; T.th = [W('s16', 'ноутбук'), W('s16', 'двойка'), W('s16', 'пятьдесят')]; T.now = S('s17').start; T.thenOut = W('s17', 'и') - .05;
-  T.finIn = W('s17', 'и'); T.finOut = S('s17').end + .1;
+  T.finIn = W('s17', 'и'); T.finOut = W('s18', 'письмо') - .3;
   T.bigIn = W('s18', 'письмо') - .1; T.ten = W('s18', 'десять'); T.bigOut = DURATION + 1;
   T.endIn = W('s19', 'продать');
 }
