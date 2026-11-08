@@ -12,3 +12,4 @@ video/out/
 !video/s2e4/out/*.mp4
 !video/s2e5/out/*.mp4
 !video/lift/out/*.mp4
+video/lift/out/silent.mp4
