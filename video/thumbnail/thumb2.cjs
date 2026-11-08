@@ -26,8 +26,10 @@ const path = require('node:path');
           <g transform="translate(1110 220) rotate(8)"><rect x="-110" y="-60" width="220" height="120" rx="20" fill="#fff"/>
             <path d="M-80,-35 V-50 H-55 M55,-50 H80 V-35 M80,35 V50 H55 M-55,50 H-80 V35" stroke="#16171d" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M-25,0 L-5,20 L30,-18" stroke="#16a34a" stroke-width="11" fill="none" stroke-linecap="round"/></g>
           ${txt(30, 92, 82, '#fff', 'БЫЛО')}${txt(1250, 92, 82, '#FFD43B', 'СТАЛО', 16, 'text-anchor="end"')}
-          ${pill(330, 600, 620, 92, '#16171d', '#fff', 46, 'СВОЯ СТУДИЯ В 15 ЛЕТ')}
-          ${pill(676, 128, 340, 52, '#16171d', '#fff', 24, '1–2 СЕЗОН · ВСЕ СЕРИИ')}`;
+          <g transform="translate(310 548)"><rect width="660" height="150" rx="26" fill="#16171d"/>
+            <rect x="24" y="22" width="64" height="64" rx="14" fill="#FFD43B"/><polygon points="46,36 46,72 76,54" fill="#16171d"/>
+            <text x="104" y="78" font-size="64" font-weight="900" fill="#FFD43B" textLength="530" lengthAdjust="spacingAndGlyphs">ДАНЯ МОНТАЖЁР</text>
+            <text x="330" y="128" text-anchor="middle" font-size="30" font-weight="900" fill="#fff">своя студия в 15 лет · 1–2 сезон</text></g>`;
       } else {
         html = `<defs><radialGradient id="gD" cx="40%" cy="45%" r="80%"><stop offset="0" stop-color="#3a1d5c"/><stop offset=".6" stop-color="#1a0f2e"/><stop offset="1" stop-color="#07050c"/></radialGradient>
                   <radialGradient id="ph" cx="50%" cy="50%"><stop offset="0" stop-color="#7fd4ff" stop-opacity=".7"/><stop offset="1" stop-color="#7fd4ff" stop-opacity="0"/></radialGradient></defs>
@@ -41,7 +43,10 @@ const path = require('node:path');
             <text x="0" y="22" text-anchor="middle" font-size="78" font-weight="900" fill="#16a34a">10 000 000 ₽</text>
             <text x="0" y="90" text-anchor="middle" font-size="34" font-weight="900" fill="#16171d">за «Чистый кадр»</text></g>
           ${txt(40, 110, 110, '#FFD43B', 'ПРОДАТЬ?', 18)}
-          ${pill(40, 600, 560, 90, '#e5383b', '#fff', 44, '1–2 СЕЗОН · ВСЕ СЕРИИ')}`;
+          <g transform="translate(36 540)"><rect width="600" height="150" rx="26" fill="#16171d"/>
+            <rect x="24" y="24" width="64" height="64" rx="14" fill="#FFD43B"/><polygon points="46,38 46,74 76,56" fill="#16171d"/>
+            <text x="104" y="80" font-size="62" font-weight="900" fill="#FFD43B" textLength="470" lengthAdjust="spacingAndGlyphs">ДАНЯ МОНТАЖЁР</text>
+            <rect x="24" y="100" width="300" height="36" rx="18" fill="#e5383b"/><text x="174" y="126" text-anchor="middle" font-size="22" font-weight="900" fill="#fff">1–2 СЕЗОН · ВСЕ СЕРИИ</text></g>`;
       }
       document.body.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" style="display:block;font-family:Inter">${html}</svg>`;
       document.body.style.margin = '0';
