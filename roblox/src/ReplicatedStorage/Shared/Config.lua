@@ -123,17 +123,21 @@ function Config.sellPrice(creatureId)
 end
 
 ---------------------------------------------------------------------
--- Острова: каждый следующий дальше, промежуток растёт
+-- Зоны-острова: идут ПРЯМОЙ ЛИНИЕЙ вперёд от лобби.
+-- gap = расстояние от края предыдущего острова (или лобби) до этого.
+-- Промежутки растут — нужны крылья и стамина посильнее.
+-- На каждом острове можно приземлиться и восстановить стамину.
 ---------------------------------------------------------------------
 Config.Islands = {
-	{ name = "Цветочный луг", theme = "meadow", distance = 340, angle = 20, radius = 55, rarity = 1, spawns = 5 },
-	{ name = "Конфетный лес", theme = "candy", distance = 580, angle = 75, radius = 58, rarity = 2, spawns = 5 },
-	{ name = "Пальмовый пляж", theme = "tropical", distance = 860, angle = 130, radius = 62, rarity = 3, spawns = 4 },
-	{ name = "Огненный вулкан", theme = "volcano", distance = 1200, angle = 185, radius = 66, rarity = 4, spawns = 4 },
-	{ name = "Ледяной ледник", theme = "ice", distance = 1620, angle = 240, radius = 70, rarity = 5, spawns = 3 },
-	{ name = "Кристальная пещера", theme = "crystal", distance = 2140, angle = 295, radius = 74, rarity = 6, spawns = 3 },
-	{ name = "Небесный храм", theme = "golden", distance = 2860, angle = 350, radius = 80, rarity = 7, spawns = 1 },
+	{ name = "Цветочный луг", theme = "meadow", gap = 90, radius = 55, rarity = 1, spawns = 5 },
+	{ name = "Конфетный лес", theme = "candy", gap = 250, radius = 58, rarity = 2, spawns = 5 },
+	{ name = "Пальмовый пляж", theme = "tropical", gap = 420, radius = 62, rarity = 3, spawns = 4 },
+	{ name = "Огненный вулкан", theme = "volcano", gap = 650, radius = 66, rarity = 4, spawns = 4 },
+	{ name = "Ледяной ледник", theme = "ice", gap = 950, radius = 70, rarity = 5, spawns = 3 },
+	{ name = "Кристальная пещера", theme = "crystal", gap = 1300, radius = 74, rarity = 6, spawns = 3 },
+	{ name = "Небесный храм", theme = "golden", gap = 1800, radius = 80, rarity = 7, spawns = 1 },
 }
+Config.LobbyFrontZ = 90          -- передний край лобби, отсюда начинаются зоны
 
 Config.RespawnMin = 20           -- секунд до нового существа на месте
 Config.RespawnMax = 45

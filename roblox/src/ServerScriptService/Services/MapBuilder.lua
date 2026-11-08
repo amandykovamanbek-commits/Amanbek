@@ -14,9 +14,7 @@ local MapBuilder = {
 }
 
 local GY = Config.GroundY
-local PLATFORM_HALF = 150
 local PLOT_HALF = 32
-local PLOT_DIST = 88
 local rng = Random.new(7)
 
 local PLOT_COLORS = {
@@ -315,7 +313,7 @@ end
 local function buildWater(map)
 	local tile = 2000
 	for ix = -2, 1 do
-		for iz = -2, 1 do
+		for iz = -1, 3 do
 			part(deco({
 				Parent = map,
 				Name = "Water",
@@ -344,10 +342,11 @@ local function buildClouds(map)
 	local folder = Instance.new("Folder")
 	folder.Name = "Clouds"
 	folder.Parent = map
-	for i = 1, 40 do
-		local a = rng:NextNumber(0, math.pi * 2)
-		local d = rng:NextNumber(200, 3000)
-		cloud(folder, Vector3.new(math.cos(a) * d, rng:NextNumber(140, 260), math.sin(a) * d), rng:NextNumber(1.2, 2.4))
+	for i = 1, 50 do
+		local side = i % 2 == 0 and 1 or -1
+		local x = side * rng:NextNumber(150, 1400)
+		local z = rng:NextNumber(-600, 7000)
+		cloud(folder, Vector3.new(x, rng:NextNumber(140, 260), z), rng:NextNumber(1.2, 2.4))
 	end
 end
 
@@ -497,7 +496,7 @@ local function buildFountain(map)
 	emitter.Parent = top
 end
 
-local function buildPlot(map, index, center)
+local function buildPlot(map, index, center, lookTarget)
 	local model = Instance.new("Model")
 	model.Name = "Plot" .. index
 	model.Parent = map
@@ -506,7 +505,7 @@ local function buildPlot(map, index, center)
 	local light2 = color:Lerp(Color3.new(1, 1, 1), 0.55)
 	local white = rgb(255, 255, 255)
 	-- -Z смотрит в центр карты (там вход)
-	local cf = CFrame.lookAt(center, Vector3.new(0, center.Y, 0))
+	local cf = CFrame.lookAt(center, lookTarget)
 
 	-- шахматный пол
 	local tiles = 4
@@ -584,70 +583,98 @@ local function buildPlot(map, index, center)
 	}
 end
 
+-- Лобби: прямоугольная площадь. Сзади ряд из 4 баз, в середине фонтан
+-- и магазины, спереди — арка «ЗОНЫ», откуда начинается линия островов.
+local LOBBY_HALF_X = 165
+local LOBBY_BACK_Z = -112
+
 local function buildStart(map)
 	local y = GY
-	-- остров-основа
-	cyl(map, Vector3.new(0, y - 6, 0), PLATFORM_HALF * 1.32, 12, rgb(110, 205, 90), Enum.Material.Grass)
-	cyl(map, Vector3.new(0, y - 7.4, 0), PLATFORM_HALF * 1.32 + 12, 12, rgb(250, 225, 160), Enum.Material.Sand)
-	cyl(map, Vector3.new(0, y - 18, 0), PLATFORM_HALF * 1.2, 14, rgb(150, 125, 100), Enum.Material.Slate)
+	local front = Config.LobbyFrontZ
+	local depth = front - LOBBY_BACK_Z
+	local midZ = (front + LOBBY_BACK_Z) / 2
+	local path = rgb(255, 235, 200)
 
-	-- дорожки-«плюс» и круг вокруг фонтана
-	block(map, Vector3.new(130, 0.3, 12), CFrame.new(0, y + 0.15, 0), rgb(255, 235, 200), Enum.Material.Pebble)
-	block(map, Vector3.new(12, 0.3, 130), CFrame.new(0, y + 0.15, 0), rgb(255, 235, 200), Enum.Material.Pebble)
-	cyl(map, Vector3.new(0, y + 0.2, 0), 20, 0.4, rgb(255, 235, 200), Enum.Material.Pebble)
-	-- диагональные дорожки к базам
-	for _, sx in ipairs({ -1, 1 }) do
-		for _, sz in ipairs({ -1, 1 }) do
-			local from = Vector3.new(sx * 15, y + 0.15, sz * 15)
-			local to = Vector3.new(sx * (PLOT_DIST - PLOT_HALF * 0.7), y + 0.15, sz * (PLOT_DIST - PLOT_HALF * 0.7))
-			local mid = (from + to) / 2
-			block(map, Vector3.new(10, 0.3, (to - from).Magnitude), CFrame.lookAt(mid, to), rgb(255, 235, 200), Enum.Material.Pebble)
+	-- основа: трава, песчаный пляж, скалы
+	block(map, Vector3.new(LOBBY_HALF_X * 2, 12, depth), CFrame.new(0, y - 6, midZ), rgb(110, 205, 90), Enum.Material.Grass)
+	block(map, Vector3.new(LOBBY_HALF_X * 2 + 24, 12, depth + 24), CFrame.new(0, y - 7.4, midZ), rgb(250, 225, 160), Enum.Material.Sand)
+	block(map, Vector3.new(LOBBY_HALF_X * 2 - 20, 14, depth - 20), CFrame.new(0, y - 18, midZ), rgb(150, 125, 100), Enum.Material.Slate)
+
+	-- дорожки
+	block(map, Vector3.new(LOBBY_HALF_X * 2 - 20, 0.3, 14), CFrame.new(0, y + 0.15, -20), path, Enum.Material.Pebble)
+	block(map, Vector3.new(14, 0.3, 30), CFrame.new(0, y + 0.15, -10), path, Enum.Material.Pebble)
+	block(map, Vector3.new(14, 0.3, 40), CFrame.new(0, y + 0.15, front - 20), path, Enum.Material.Pebble)
+	cyl(map, Vector3.new(0, y + 0.2, 6), 20, 0.4, path, Enum.Material.Pebble)
+	block(map, Vector3.new(LOBBY_HALF_X * 2 - 20, 0.3, 10), CFrame.new(0, y + 0.15, 30), path, Enum.Material.Pebble)
+
+	-- фонтан
+	local fountainModel = Instance.new("Folder")
+	fountainModel.Name = "Fountain"
+	fountainModel.Parent = map
+	buildFountain(fountainModel)
+	for _, d in ipairs(fountainModel:GetDescendants()) do
+		if d:IsA("BasePart") then
+			d.CFrame = d.CFrame + Vector3.new(0, 0, 6)
 		end
 	end
 
-	buildFountain(map)
-
-	for index, c in ipairs({
-		Vector3.new(-PLOT_DIST, y, -PLOT_DIST),
-		Vector3.new(PLOT_DIST, y, -PLOT_DIST),
-		Vector3.new(PLOT_DIST, y, PLOT_DIST),
-		Vector3.new(-PLOT_DIST, y, PLOT_DIST),
-	}) do
-		buildPlot(map, index, c)
+	-- 4 базы в ряд, входом к зонам
+	local xs = { -120, -40, 40, 120 }
+	for index, x in ipairs(xs) do
+		local c = Vector3.new(x, y, -66)
+		buildPlot(map, index, c, Vector3.new(x, y, 1000))
 	end
 
-	buildStation(map, "Speed", "⚡ Скорость", rgb(255, 190, 30), Vector3.new(-52, y, 0), Vector3.new(1, 0, 0))
-	buildStation(map, "Stamina", "💪 Стамина", rgb(60, 210, 110), Vector3.new(52, y, 0), Vector3.new(-1, 0, 0))
-	buildStation(map, "Wings", "🕊 Крылья", rgb(90, 160, 255), Vector3.new(0, y, -52), Vector3.new(0, 0, 1))
-	buildStation(map, "Market", "💰 Рынок", rgb(255, 110, 50), Vector3.new(0, y, 52), Vector3.new(0, 0, -1))
-	buildStation(map, "Donate", "⭐ Донат-магазин", rgb(255, 80, 200), Vector3.new(57, y, 24), Vector3.new(-57, 0, -24))
+	-- магазины в ряд лицом к базам
+	local shopZ = 46
+	local toward = Vector3.new(0, 0, -1)
+	buildStation(map, "Speed", "⚡ Скорость", rgb(255, 190, 30), Vector3.new(-130, y, shopZ), toward)
+	buildStation(map, "Stamina", "💪 Стамина", rgb(60, 210, 110), Vector3.new(-66, y, shopZ), toward)
+	buildStation(map, "Donate", "⭐ Донат-магазин", rgb(255, 80, 200), Vector3.new(-26, y, shopZ + 6), toward)
+	buildStation(map, "Wings", "🕊 Крылья", rgb(90, 160, 255), Vector3.new(66, y, shopZ), toward)
+	buildStation(map, "Market", "💰 Рынок", rgb(255, 110, 50), Vector3.new(130, y, shopZ), toward)
 
-	-- клумбы, фонари, деревья
-	for i = 1, 8 do
-		local a = i / 8 * math.pi * 2 + math.pi / 8
-		local p = Vector3.new(math.cos(a) * 26, y, math.sin(a) * 26)
-		lamp(map, p, FLOWER_COLORS[(i % #FLOWER_COLORS) + 1])
+	-- арка старта
+	local white = rgb(255, 255, 255)
+	for _, x in ipairs({ -16, 16 }) do
+		cyl(map, Vector3.new(x, y + 11, front - 4), 2, 22, white, Enum.Material.Marble)
+		local orb = ball(map, Vector3.new(4, 4, 4), Vector3.new(x, y + 24, front - 4), rgb(80, 220, 255), Enum.Material.Neon)
+		light(orb, rgb(80, 220, 255), 30, 2)
 	end
-	for i = 1, 40 do
+	local archTop = block(map, Vector3.new(36, 4, 3), CFrame.new(0, y + 21, front - 4), rgb(80, 160, 255))
+	billboard(archTop, "ЗОНЫ ➜  держи ПРОБЕЛ", white, 4, 360, 60, false, 400)
+	-- стартовая площадка
+	cyl(map, Vector3.new(0, y + 0.3, front - 10), 9, 0.6, rgb(80, 220, 255), Enum.Material.Neon, deco({}))
+
+	-- фонари вдоль дорожек
+	for i = -7, 7 do
+		if i ~= 0 then
+			lamp(map, Vector3.new(i * 22, y, -12), FLOWER_COLORS[(math.abs(i) % #FLOWER_COLORS) + 1])
+		end
+	end
+	for _, z in ipairs({ 58, 74 }) do
+		lamp(map, Vector3.new(-11, y, z), rgb(80, 220, 255))
+		lamp(map, Vector3.new(11, y, z), rgb(80, 220, 255))
+	end
+	-- клумбы у фонтана
+	for i = 1, 30 do
 		local a = rng:NextNumber(0, math.pi * 2)
-		local d = rng:NextNumber(22, 40)
-		local p = Vector3.new(math.cos(a) * d, y, math.sin(a) * d)
-		if math.abs(p.X) > 8 and math.abs(p.Z) > 8 then
-			flower(map, p, FLOWER_COLORS[rng:NextInteger(1, #FLOWER_COLORS)])
+		local d = rng:NextNumber(14, 19)
+		flower(map, Vector3.new(math.cos(a) * d, y, 6 + math.sin(a) * d), FLOWER_COLORS[rng:NextInteger(1, #FLOWER_COLORS)])
+	end
+	-- пальмы и деревья по бокам и у пляжа
+	for z = LOBBY_BACK_Z + 15, front - 10, 28 do
+		palm(map, Vector3.new(-LOBBY_HALF_X + 6, y, z), 1.3)
+		palm(map, Vector3.new(LOBBY_HALF_X - 6, y, z), 1.3)
+	end
+	for x = -150, 150, 40 do
+		if math.abs(x) > 30 then
+			roundTree(map, Vector3.new(x, y, front - 8), 1.1)
+			bush(map, Vector3.new(x + 18, y, front - 6), rgb(70, 190, 80), 1)
 		end
 	end
-	for i = 1, 16 do
-		local a = i / 16 * math.pi * 2
-		local p = Vector3.new(math.cos(a) * 180, y, math.sin(a) * 180)
-		if i % 2 == 0 then
-			palm(map, p, 1.3)
-		else
-			roundTree(map, p, 1.3)
-		end
-	end
-	for i = 1, 12 do
-		local a = i / 12 * math.pi * 2 + 0.2
-		bush(map, Vector3.new(math.cos(a) * 160, y, math.sin(a) * 160), rgb(70, 190, 80), 1.2)
+	for x = -150, 150, 30 do
+		bush(map, Vector3.new(x, y, LOBBY_BACK_Z + 8), rgb(70, 190, 80), 1.1)
 	end
 end
 
@@ -760,15 +787,35 @@ local function decorateIsland(model, theme, center, r)
 	end
 end
 
+local nextEdgeZ = Config.LobbyFrontZ
+
+-- светящиеся огоньки-подсказки над водой между зонами
+local function buildGuideLights(map, fromZ, toZ, color)
+	local folder = Instance.new("Folder")
+	folder.Name = "Guide"
+	folder.Parent = map
+	local step = 45
+	local z = fromZ + step / 2
+	while z < toZ - 10 do
+		local orb = ball(folder, Vector3.new(2.4, 2.4, 2.4), Vector3.new(0, GY + 24 + math.sin(z / 60) * 4, z), color, Enum.Material.Neon, deco({ CastShadow = false }))
+		orb.Transparency = 0.15
+		z = z + step
+	end
+end
+
 local function buildIsland(map, index, def)
 	local model = Instance.new("Model")
 	model.Name = "Island" .. index
 	model.Parent = map
-	local a = math.rad(def.angle)
-	local center = Vector3.new(math.cos(a) * def.distance, GY, math.sin(a) * def.distance)
+	local a = math.rad(index * 47)
+	local r = def.radius
+	local edge = r + 8
+	local center = Vector3.new(0, GY, nextEdgeZ + def.gap + edge)
+	def.centerZ = center.Z
+	buildGuideLights(map, nextEdgeZ, nextEdgeZ + def.gap, Config.Rarities[def.rarity].color)
+	nextEdgeZ = center.Z + edge
 	local rarity = Config.Rarities[def.rarity]
 	local theme = THEMES[def.theme] or THEMES.meadow
-	local r = def.radius
 
 	-- слои: трава, пляж, скалы
 	cyl(model, center - Vector3.new(0, 1.5, 0), r, 3, theme.ground, def.theme == "ice" and Enum.Material.Snow or Enum.Material.Grass)
@@ -801,7 +848,16 @@ local function buildIsland(map, index, def)
 		CFrame = CFrame.new(center + Vector3.new(0, 42, 0)),
 		Transparency = 1,
 	}))
-	billboard(signPart, def.name .. "\n" .. rarity.name, rarity.color, 0, 220, 70, true)
+	billboard(signPart, "ЗОНА " .. index .. ": " .. def.name .. "\n" .. rarity.name, rarity.color, 0, 240, 70, true, 9000)
+
+	-- ворота зоны на ближнем к лобби краю
+	local gateZ = center.Z - r + 4
+	for _, x in ipairs({ -12, 12 }) do
+		cyl(model, Vector3.new(x, GY + 8, gateZ), 1.6, 16, rarity.color:Lerp(Color3.new(1, 1, 1), 0.4), Enum.Material.Marble)
+		ball(model, Vector3.new(3, 3, 3), Vector3.new(x, GY + 17.5, gateZ), rarity.color, Enum.Material.Neon)
+	end
+	local gate = block(model, Vector3.new(28, 3, 2), CFrame.new(0, GY + 15.5, gateZ), rarity.color, Enum.Material.Neon)
+	billboard(gate, "ЗОНА " .. index, Color3.new(1, 1, 1), 3, 200, 44, false, 300)
 
 	local spawnPoints = {}
 	for k = 1, def.spawns do
@@ -814,7 +870,7 @@ local function buildIsland(map, index, def)
 			-- маленький постамент под существом
 			cyl(model, pos + Vector3.new(0, 0.3, 0), 3.4, 0.6, rarity.color, Enum.Material.Neon, deco({}))
 		end
-		spawnPoints[k] = CFrame.lookAt(pos, Vector3.new(0, pos.Y, 0))
+		spawnPoints[k] = CFrame.lookAt(pos, pos - Vector3.new(0, 0, 10))
 	end
 
 	MapBuilder.islands[index] = {

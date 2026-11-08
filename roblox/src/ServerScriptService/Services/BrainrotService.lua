@@ -230,7 +230,7 @@ local function tick()
 		workspace:SetAttribute("DivineNextSpawn", t + Config.DivineInterval)
 		if not divineEntry.model then
 			spawnAt(divineEntry, pickCreature(7))
-			Net.announce("Божественный " .. Config.Creatures[divineEntry.id].name .. " появился на Острове 7!", "divine")
+			Net.announce("Божественный " .. Config.Creatures[divineEntry.id].name .. " появился в Зоне 7!", "divine")
 		end
 	end
 	workspace:SetAttribute("DivinePresent", divineEntry ~= nil and divineEntry.model ~= nil)

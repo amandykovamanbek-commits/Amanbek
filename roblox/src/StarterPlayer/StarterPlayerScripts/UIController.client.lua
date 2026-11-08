@@ -810,7 +810,7 @@ RunService.RenderStepped:Connect(function(dt)
 	acc = 0
 	local t = workspace:GetServerTimeNow()
 	if workspace:GetAttribute("DivinePresent") then
-		divineLabel.Text = "на Острове 7!"
+		divineLabel.Text = "уже в Зоне 7!"
 	else
 		local nextT = workspace:GetAttribute("DivineNextSpawn") or t
 		divineLabel.Text = "через " .. formatTime(nextT - t)
