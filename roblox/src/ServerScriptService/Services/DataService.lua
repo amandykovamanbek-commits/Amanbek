@@ -30,6 +30,7 @@ local function defaultData()
 		creatures = {}, -- список id существ по слотам
 		pending = {}, -- накопленные $ у каждого подиума (забрать кнопкой)
 		receipts = {}, -- последние обработанные покупки
+		discovered = {}, -- какие существа уже были у игрока (для Индекса)
 		totalEarned = 0,
 	}
 end
@@ -51,6 +52,9 @@ local function reconcile(data)
 	end
 	data.creatures = clean
 	data.pending = cleanPending
+	for _, id in ipairs(clean) do
+		data.discovered[id] = true
+	end
 	return data
 end
 
@@ -126,6 +130,12 @@ function DataService.sync(player)
 	player:SetAttribute("StaminaLevel", d.staminaLevel)
 	player:SetAttribute("Wing", d.wing)
 	player:SetAttribute("Creatures", HttpService:JSONEncode(d.creatures))
+	local found = {}
+	for id in pairs(d.discovered) do
+		table.insert(found, id)
+	end
+	table.sort(found)
+	player:SetAttribute("Discovered", HttpService:JSONEncode(found))
 	player:SetAttribute("MaxSlots", DataService.maxSlots(player))
 	player:SetAttribute("Income", DataService.income(player))
 	local pendingTotal = 0

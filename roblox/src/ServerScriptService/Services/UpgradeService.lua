@@ -59,6 +59,38 @@ function UpgradeService.buyUpgrade(player, kind)
 	return { ok = true, msg = def.title .. " → уровень " .. (level + 1) }
 end
 
+-- купить столько уровней, сколько хватает денег
+function UpgradeService.buyUpgradeMax(player, kind)
+	local def = Config.Upgrades[kind]
+	if not def then
+		return { ok = false, msg = "Нет такой прокачки" }
+	end
+	if not nearStation(player, kind) then
+		return { ok = false, msg = "Подойди к станции «" .. def.title .. "»" }
+	end
+	local profile = DataService.get(player)
+	local field = kind == "Speed" and "speedLevel" or "staminaLevel"
+	local bought, spent = 0, 0
+	while profile.data[field] < def.maxLevel do
+		local cost = Config.upgradeCost(kind, profile.data[field])
+		if profile.data.money < cost then
+			break
+		end
+		profile.data.money = profile.data.money - cost
+		profile.data[field] = profile.data[field] + 1
+		bought = bought + 1
+		spent = spent + cost
+	end
+	if bought == 0 then
+		return { ok = false, msg = "Не хватает денег" }
+	end
+	if kind == "Speed" then
+		UpgradeService.applyWalkSpeed(player)
+	end
+	DataService.sync(player)
+	return { ok = true, msg = def.title .. " +" .. bought .. " ур. за " .. Config.formatMoney(spent) }
+end
+
 function UpgradeService.buyWing(player, index)
 	if type(index) ~= "number" then
 		return { ok = false, msg = "Ошибка" }

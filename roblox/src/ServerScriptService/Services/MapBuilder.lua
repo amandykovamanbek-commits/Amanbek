@@ -354,6 +354,89 @@ end
 ---------------------------------------------------------------------
 -- стартовая зона
 ---------------------------------------------------------------------
+
+-- тематические украшения для каждой палатки
+local function stationDecor(name, model, cf, color)
+	local white = rgb(255, 255, 255)
+	local gold = rgb(255, 205, 40)
+	local function at(x, y, z)
+		return (cf * CFrame.new(x, y, z)).Position
+	end
+	if name == "Speed" then
+		-- молния на крыше
+		block(model, Vector3.new(1.2, 5, 1.2), cf * CFrame.new(0.8, 18.5, 0) * CFrame.Angles(0, 0, math.rad(-25)), gold, Enum.Material.Neon, deco({}))
+		block(model, Vector3.new(3.2, 1.2, 1.2), cf * CFrame.new(0, 16.4, 0), gold, Enum.Material.Neon, deco({}))
+		block(model, Vector3.new(1.2, 5, 1.2), cf * CFrame.new(-0.8, 14.3, 0) * CFrame.Angles(0, 0, math.rad(-25)), gold, Enum.Material.Neon, deco({}))
+		-- полосатая беговая дорожка
+		for i = 0, 7 do
+			block(model, Vector3.new(14, 0.2, 1.5), cf * CFrame.new(0, 1.1, -9 - i * 1.5), i % 2 == 0 and gold or rgb(30, 30, 35), nil, deco({}))
+		end
+		-- кроссовок на прилавке
+		block(model, Vector3.new(1.4, 1, 3), cf * CFrame.new(-5.5, 6, -2), rgb(240, 50, 60))
+		block(model, Vector3.new(1.5, 0.4, 3.1), cf * CFrame.new(-5.5, 5.5, -2), white)
+	elseif name == "Stamina" then
+		-- гантели по бокам
+		for _, x in ipairs({ -10.5, 10.5 }) do
+			cyl(model, at(x, 2.5, -4), 0.4, 3.2, rgb(80, 80, 90), Enum.Material.Metal)
+			for _, dy in ipairs({ -1.4, 1.4 }) do
+				cyl(model, at(x, 2.5 + dy, -4), 1.4, 0.6, rgb(40, 180, 90), Enum.Material.Metal)
+			end
+		end
+		-- неоновое сердце
+		ball(model, Vector3.new(2.6, 2.6, 1), at(-0.9, 18.2, 0), rgb(255, 60, 90), Enum.Material.Neon, deco({}))
+		ball(model, Vector3.new(2.6, 2.6, 1), at(0.9, 18.2, 0), rgb(255, 60, 90), Enum.Material.Neon, deco({}))
+		block(model, Vector3.new(2.6, 2.6, 1), cf * CFrame.new(0, 17.0, 0) * CFrame.Angles(0, 0, math.rad(45)), rgb(255, 60, 90), Enum.Material.Neon, deco({}))
+		block(model, Vector3.new(18, 0.2, 10), cf * CFrame.new(0, 1.1, -12), rgb(60, 200, 110), nil, deco({}))
+	elseif name == "Wings" then
+		-- огромные крылья на крыше
+		for _, sx in ipairs({ -1, 1 }) do
+			for k = 0, 3 do
+				block(model, Vector3.new(6 - k, 1.2, 0.4), cf * CFrame.new(sx * (4 + k * 2.2), 17 + k * 1.3, 0) * CFrame.Angles(0, 0, math.rad(sx * (20 + k * 8))), k % 2 == 0 and white or rgb(170, 210, 255), k == 3 and Enum.Material.Neon or nil, deco({}))
+			end
+		end
+		-- голубые колонны с перьями
+		for _, x in ipairs({ -10.5, 10.5 }) do
+			cyl(model, at(x, 4, -6), 1, 7, rgb(120, 180, 255), Enum.Material.Marble)
+			block(model, Vector3.new(0.3, 2.4, 1), cf * CFrame.new(x, 8.5, -6) * CFrame.Angles(0, 0, math.rad(15)), white, Enum.Material.Neon, deco({}))
+		end
+	elseif name == "Market" then
+		-- ящики и горы монет
+		for i, off in ipairs({ { -10, -5 }, { 10, -5 }, { -10.5, 3 } }) do
+			block(model, Vector3.new(3, 3, 3), cf * CFrame.new(off[1], 2.5, off[2]) * CFrame.Angles(0, math.rad(i * 20), 0), rgb(170, 120, 70), Enum.Material.WoodPlanks)
+		end
+		for i = 0, 5 do
+			cyl(model, at(10 + (i % 2) * 0.4, 1.3 + i * 0.35, 3), 1.6 - i * 0.15, 0.35, gold, Enum.Material.Metal)
+		end
+		-- большая монета-вывеска
+		local coin = part({
+			Parent = model,
+			Shape = Enum.PartType.Cylinder,
+			Size = Vector3.new(0.8, 5, 5),
+			CFrame = cf * CFrame.new(0, 19, 0) * CFrame.Angles(0, math.rad(90), 0),
+			Color = gold,
+			Material = Enum.Material.Neon,
+			CanCollide = false,
+		})
+		billboard(coin, "$", rgb(120, 80, 0), 0, 60, 60, false, 200)
+	elseif name == "Donate" then
+		-- звезда
+		for k = 0, 4 do
+			block(model, Vector3.new(1.4, 4, 0.8), cf * CFrame.new(0, 19, 0) * CFrame.Angles(0, 0, math.rad(k * 72)) * CFrame.new(0, 1.8, 0), gold, Enum.Material.Neon, deco({}))
+		end
+		-- подарки
+		local gifts = { { -10, -5, rgb(255, 80, 200) }, { 10, -5, rgb(80, 200, 255) }, { 10.5, 3, rgb(255, 205, 40) } }
+		for _, g in ipairs(gifts) do
+			block(model, Vector3.new(3, 3, 3), cf * CFrame.new(g[1], 2.5, g[2]), g[3])
+			block(model, Vector3.new(3.1, 3.1, 0.5), cf * CFrame.new(g[1], 2.5, g[2]), white, nil, deco({}))
+			block(model, Vector3.new(0.5, 3.1, 3.1), cf * CFrame.new(g[1], 2.5, g[2]), white, nil, deco({}))
+			ball(model, Vector3.new(1.2, 1, 1.2), at(g[1], 4.3, g[2]), white, nil, deco({}))
+		end
+		local sparkle = Instance.new("Sparkles")
+		sparkle.SparkleColor = gold
+		sparkle.Parent = model:FindFirstChild("Kiosk")
+	end
+end
+
 local function buildStation(map, name, title, color, pos, facing)
 	local model = Instance.new("Model")
 	model.Name = name
@@ -386,6 +469,8 @@ local function buildStation(map, name, title, color, pos, facing)
 	-- украшения на прилавке
 	ball(model, Vector3.new(1.6, 1.6, 1.6), (cf * CFrame.new(-4, 6.4, -2)).Position, rgb(255, 230, 80), Enum.Material.Neon, deco({}))
 	ball(model, Vector3.new(1.6, 1.6, 1.6), (cf * CFrame.new(4, 6.4, -2)).Position, rgb(120, 230, 255), Enum.Material.Neon, deco({}))
+
+	stationDecor(name, model, cf, color)
 
 	local pp = prompt(kiosk, "Открыть", title, "OpenPrompt")
 	MapBuilder.stations[name] = { model = model, kiosk = kiosk, prompt = pp, position = pos }

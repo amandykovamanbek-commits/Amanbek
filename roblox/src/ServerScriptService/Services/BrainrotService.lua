@@ -190,10 +190,15 @@ local function deliver(player, profile)
 	end
 	table.insert(profile.data.creatures, id)
 	table.insert(profile.data.pending, 0)
+	local isNew = not profile.data.discovered[id]
+	profile.data.discovered[id] = true
 	PlotService.refresh(player)
 	DataService.sync(player)
 	local def = Config.Creatures[id]
 	Net.notify(player, def.name .. " теперь на базе! +" .. Config.formatMoney(def.income) .. "/сек", "success")
+	if isNew then
+		Net.notify(player, "📖 Новое существо в Индексе: " .. def.name .. "!", "announce")
+	end
 	if def.rarity >= 7 then
 		Net.announce(player.DisplayName .. " доставил " .. def.name .. " на базу!", "divine")
 	end

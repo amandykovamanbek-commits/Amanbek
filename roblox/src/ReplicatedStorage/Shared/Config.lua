@@ -97,19 +97,19 @@ Config.Rarities = {
 
 -- rarity = номер редкости, income = $/сек, weight = шанс среди своей редкости
 Config.Creatures = {
-	frog_slipper = { name = "Лягушонок-Тапок", rarity = 1, income = 1, weight = 70 },
-	dumpling = { name = "Пельмешек", rarity = 1, income = 2, weight = 30 },
-	cactus_runner = { name = "Кактус-Бегун", rarity = 2, income = 8, weight = 70 },
-	mushroom_hedgehog = { name = "Грибной Ёжик", rarity = 2, income = 12, weight = 30 },
-	jelly_teapot = { name = "Медузий Чайник", rarity = 3, income = 40, weight = 70 },
-	banana_crab = { name = "Банановый Краб", rarity = 3, income = 65, weight = 30 },
-	fire_hamster = { name = "Огненный Хомяк", rarity = 4, income = 220, weight = 70 },
-	cloud_sheep = { name = "Облачная Овечка", rarity = 4, income = 320, weight = 30 },
-	owl_king = { name = "Совиный Король", rarity = 5, income = 1100, weight = 70 },
-	rocket_penguin = { name = "Ракетный Пингвин", rarity = 5, income = 1700, weight = 30 },
-	crystal_whale = { name = "Кристальный Кит", rarity = 6, income = 6500, weight = 70 },
-	shadow_fox = { name = "Теневой Лис", rarity = 6, income = 9500, weight = 30 },
-	sun_dragon = { name = "Солнечный Дракоша", rarity = 7, income = 75000, weight = 100 },
+	frog_slipper = { icon = "🐸", name = "Лягушонок-Тапок", rarity = 1, income = 1, weight = 70 },
+	dumpling = { icon = "🥟", name = "Пельмешек", rarity = 1, income = 2, weight = 30 },
+	cactus_runner = { icon = "🌵", name = "Кактус-Бегун", rarity = 2, income = 8, weight = 70 },
+	mushroom_hedgehog = { icon = "🦔", name = "Грибной Ёжик", rarity = 2, income = 12, weight = 30 },
+	jelly_teapot = { icon = "🍵", name = "Медузий Чайник", rarity = 3, income = 40, weight = 70 },
+	banana_crab = { icon = "🦀", name = "Банановый Краб", rarity = 3, income = 65, weight = 30 },
+	fire_hamster = { icon = "🐹", name = "Огненный Хомяк", rarity = 4, income = 220, weight = 70 },
+	cloud_sheep = { icon = "🐑", name = "Облачная Овечка", rarity = 4, income = 320, weight = 30 },
+	owl_king = { icon = "🦉", name = "Совиный Король", rarity = 5, income = 1100, weight = 70 },
+	rocket_penguin = { icon = "🐧", name = "Ракетный Пингвин", rarity = 5, income = 1700, weight = 30 },
+	crystal_whale = { icon = "🐋", name = "Кристальный Кит", rarity = 6, income = 6500, weight = 70 },
+	shadow_fox = { icon = "🦊", name = "Теневой Лис", rarity = 6, income = 9500, weight = 30 },
+	sun_dragon = { icon = "🐉", name = "Солнечный Дракоша", rarity = 7, income = 75000, weight = 100 },
 }
 
 Config.SellSeconds = 60          -- цена продажи = доход * 60

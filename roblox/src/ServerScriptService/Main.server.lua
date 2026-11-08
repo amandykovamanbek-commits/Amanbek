@@ -45,6 +45,21 @@ local handlers = {
 	SellAll = function(player)
 		return UpgradeService.sellAll(player)
 	end,
+	BuyUpgradeMax = function(player, arg)
+		return UpgradeService.buyUpgradeMax(player, arg)
+	end,
+	GoHome = function(player)
+		local profile = DataService.get(player)
+		if profile.carrying then
+			return { ok = false, msg = "С существом домой — только своим ходом!" }
+		end
+		if profile.homeAt and os.clock() - profile.homeAt < 10 then
+			return { ok = false, msg = "Подожди " .. math.ceil(10 - (os.clock() - profile.homeAt)) .. " сек" }
+		end
+		profile.homeAt = os.clock()
+		BrainrotService.teleportHome(player)
+		return { ok = true, msg = "🏠 Ты дома!" }
+	end,
 	BuyPass = function(player, arg)
 		return MonetizationService.buyPass(player, arg)
 	end,
