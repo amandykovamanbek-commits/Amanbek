@@ -28,6 +28,10 @@ const S = {
   thud: t0 => { let ph = 0; add(t0, .6, t => { ph += 2 * Math.PI * (70 - 50 * t) / SR; return Math.sin(ph) * Math.exp(-t * 6) * .8 + rnd() * Math.exp(-t * 30) * .25; }); },
   hiss: t0 => { let lp = 0; add(t0, 1.3, t => { lp += .5 * (rnd() - lp); const env = Math.min(1, t * 10) * Math.min(1, (1.3 - t) * 5); return (rnd() - lp) * env * .12 * (0.7 + .3 * Math.sin(t * 40)); }); },
   shutter: t0 => { add(t0, .02, t => rnd() * Math.exp(-t * 400) * .18); add(t0 + .06, .03, t => rnd() * Math.exp(-t * 300) * .14); },
+  rimshot: t0 => { [0, .16].forEach(d => { let ph = 0; add(t0 + d, .18, t => { ph += 2 * Math.PI * (220 - 300 * t) / SR; return Math.sin(ph) * Math.exp(-t * 18) * .45; }); });
+    add(t0 + .34, .9, t => { const n = rnd(); return n * Math.exp(-t * 5) * .22 * (0.6 + .4 * Math.sin(t * 9000)); }); },
+  cricket: t0 => { for (let k = 0; k < 6; k++) add(t0 + k * .32, .12, t => tone(4300, t) * (Math.sin(2 * Math.PI * 30 * t) > 0 ? 1 : 0) * .06 * Math.sin(Math.PI * t / .12)); },
+  clang: t0 => add(t0, 1.0, t => (tone(523, t) * .5 + tone(1240, t) * .35 + tone(2211, t) * .25 + rnd() * Math.exp(-t * 60) * .5) * Math.exp(-t * 5) * .22),
   success: t0 => [523, 659, 784, 1047].forEach((f, i) => add(t0 + i * .07, .5, t => (tone(f, t) + .3 * tone(2 * f, t)) * Math.exp(-t * 6) * .1)),
 };
 for (const e of events) (S[e.k] || S.pop)(e.t);
