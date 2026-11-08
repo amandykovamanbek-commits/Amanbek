@@ -59,7 +59,6 @@ function CharacterVisuals.applyWings(player)
 		weld.Parent = inner
 
 		local outer = wingPart(model, Vector3.new(2.2, 1.2, 0.2) * s, def.color:Lerp(Color3.new(1, 1, 1), 0.3), material)
-		outer.CFrame = inner.CFrame * CFrame.new(side * 2.4 * s, -0.3 * s, 0) * CFrame.Angles(0, 0, side * math.rad(-15))
 		local w2 = Instance.new("Weld")
 		w2.Part0 = inner
 		w2.Part1 = outer

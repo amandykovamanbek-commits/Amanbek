@@ -90,7 +90,7 @@ local moneyFrame = new("Frame", {
 	Parent = gui,
 	AnchorPoint = Vector2.new(0.5, 0),
 	Position = UDim2.new(0.5, 0, 0, 8),
-	Size = UDim2.fromOffset(260, 64),
+	Size = UDim2.fromOffset(320, 64),
 	BackgroundColor3 = C.bg,
 	BackgroundTransparency = 0.15,
 }, { corner(14), stroke(C.gold, 2) })
@@ -454,7 +454,9 @@ end
 local acc = 0
 RunService.RenderStepped:Connect(function(dt)
 	moneyLabel.Text = Config.formatMoney(player:GetAttribute("Money") or 0)
+	local pending = player:GetAttribute("Pending") or 0
 	incomeLabel.Text = "+" .. Config.formatMoney(player:GetAttribute("Income") or 0) .. "/сек"
+		.. (pending > 0 and ("  ·  на базе " .. Config.formatMoney(pending)) or "")
 
 	local frac = player:GetAttribute("StaminaFrac") or 1
 	staminaFill.Size = UDim2.fromScale(math.clamp(frac, 0, 1), 1)
@@ -501,4 +503,35 @@ task.delay(3, function()
 	toast("Держи ПРОБЕЛ в прыжке, чтобы лететь!", "info")
 	task.wait(1)
 	toast("Хватай существ на островах и неси на базу", "info")
+	task.wait(1)
+	toast("Наступи на зелёную кнопку у подиума — заберёшь $", "info")
 end)
+
+-- метка «Твоя база», видна издалека (только тебе)
+local function markBase()
+	local index = player:GetAttribute("PlotIndex")
+	if not index then
+		return
+	end
+	local map = workspace:WaitForChild("Map")
+	local plot = map:WaitForChild("Plot" .. index)
+	local beacon = plot:WaitForChild("Beacon")
+	local old = beacon:FindFirstChild("MyBase")
+	if old then
+		old:Destroy()
+	end
+	local bb = new("BillboardGui", {
+		Name = "MyBase",
+		Parent = beacon,
+		Adornee = beacon,
+		Size = UDim2.fromOffset(170, 44),
+		StudsOffset = Vector3.new(0, 18, 0),
+		AlwaysOnTop = true,
+		MaxDistance = 6000,
+		LightInfluence = 0,
+	})
+	new("Frame", { Parent = bb, Size = UDim2.fromScale(1, 1), BackgroundColor3 = C.green }, { corner(12), stroke(C.white, 2) })
+	label({ Parent = bb, Size = UDim2.new(1, -10, 1, -6), Position = UDim2.fromOffset(5, 3), Text = "🏠 ТВОЯ БАЗА", ZIndex = 2 })
+end
+player:GetAttributeChangedSignal("PlotIndex"):Connect(markBase)
+task.spawn(markBase)

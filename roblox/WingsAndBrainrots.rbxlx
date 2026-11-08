@@ -1,4 +1,4 @@
-<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4"><Meta name="ExplicitAutoJoints">true</Meta><Item class="Workspace" referent="RBX00000020"><Properties><string name="Name">Workspace</string><bool name="StreamingEnabled">false</bool></Properties></Item><Item class="ReplicatedStorage" referent="RBX00000003"><Properties><string name="Name">ReplicatedStorage</string></Properties><Item class="Folder" referent="RBX00000002"><Properties><string name="Name">Shared</string></Properties><Item class="ModuleScript" referent="RBX00000001"><Properties><string name="Name">Config</string><ProtectedString name="Source"><![CDATA[-- Config: весь баланс игры в одном месте.
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4"><Meta name="ExplicitAutoJoints">true</Meta><Item class="Workspace" referent="RBX00000021"><Properties><string name="Name">Workspace</string><bool name="StreamingEnabled">false</bool></Properties></Item><Item class="ReplicatedStorage" referent="RBX00000003"><Properties><string name="Name">ReplicatedStorage</string></Properties><Item class="Folder" referent="RBX00000002"><Properties><string name="Name">Shared</string></Properties><Item class="ModuleScript" referent="RBX00000001"><Properties><string name="Name">Config</string><ProtectedString name="Source"><![CDATA[-- Config: весь баланс игры в одном месте.
 -- Меняй цифры здесь — сервер и клиент читают этот же модуль.
 
 local Config = {}
@@ -12,6 +12,7 @@ Config.ExtraSlotsPass = 5        -- +слоты за Game Pass
 Config.StartMoney = 0
 Config.AutosaveSeconds = 60
 Config.DataStoreName = "WingsAndBrainrots_v1"
+Config.CollectRadius = 3.5       -- наступи на кнопку у подиума, чтобы забрать $
 
 Config.WaterLevel = 0            -- верх воды
 Config.GroundY = 8               -- верх стартовой платформы и островов
@@ -125,13 +126,13 @@ end
 -- Острова: каждый следующий дальше, промежуток растёт
 ---------------------------------------------------------------------
 Config.Islands = {
-	{ distance = 220, angle = 20, radius = 32, rarity = 1, spawns = 4 },
-	{ distance = 420, angle = 75, radius = 34, rarity = 2, spawns = 4 },
-	{ distance = 680, angle = 130, radius = 36, rarity = 3, spawns = 4 },
-	{ distance = 1000, angle = 185, radius = 38, rarity = 4, spawns = 3 },
-	{ distance = 1400, angle = 240, radius = 40, rarity = 5, spawns = 3 },
-	{ distance = 1900, angle = 295, radius = 42, rarity = 6, spawns = 3 },
-	{ distance = 2600, angle = 350, radius = 46, rarity = 7, spawns = 1 },
+	{ name = "Цветочный луг", theme = "meadow", distance = 340, angle = 20, radius = 55, rarity = 1, spawns = 5 },
+	{ name = "Конфетный лес", theme = "candy", distance = 580, angle = 75, radius = 58, rarity = 2, spawns = 5 },
+	{ name = "Пальмовый пляж", theme = "tropical", distance = 860, angle = 130, radius = 62, rarity = 3, spawns = 4 },
+	{ name = "Огненный вулкан", theme = "volcano", distance = 1200, angle = 185, radius = 66, rarity = 4, spawns = 4 },
+	{ name = "Ледяной ледник", theme = "ice", distance = 1620, angle = 240, radius = 70, rarity = 5, spawns = 3 },
+	{ name = "Кристальная пещера", theme = "crystal", distance = 2140, angle = 295, radius = 74, rarity = 6, spawns = 3 },
+	{ name = "Небесный храм", theme = "golden", distance = 2860, angle = 350, radius = 80, rarity = 7, spawns = 1 },
 }
 
 Config.RespawnMin = 20           -- секунд до нового существа на месте
@@ -342,16 +343,13 @@ Players.PlayerRemoving:Connect(function(player)
 	DataService.release(player)
 end)
 
--- доход каждую секунду
+-- доход каждую секунду копится у подиумов (забираешь кнопкой на базе)
 task.spawn(function()
 	while true do
 		task.wait(1)
 		for player, profile in pairs(DataService.all()) do
 			if player.Parent and profile.plotIndex then
-				local income = DataService.income(player)
-				if income > 0 then
-					DataService.addMoney(player, income)
-				end
+				PlotService.accumulate(player)
 				DataService.sync(player)
 			end
 		end
@@ -435,6 +433,7 @@ local function spawnAt(entry, id)
 	local model = CreatureFactory.build(id, entry.cframe)
 	model.Parent = MapBuilder.creatureFolder
 	entry.model = model
+	entry.homePivot = model:GetPivot()
 	entry.id = id
 	entry.carriedBy = nil
 
@@ -511,7 +510,7 @@ function BrainrotService.drop(player)
 			weld:Destroy()
 		end
 		CreatureFactory.setAnchored(entry.model, true)
-		entry.model:PivotTo(entry.cframe * CFrame.new(0, (entry.model.PrimaryPart.Size.Y / 2 + 0.9 * CreatureFactory.scaleFor(entry.id)), 0))
+		entry.model:PivotTo(entry.homePivot)
 		local prompt = entry.model.PrimaryPart:FindFirstChild("GrabPrompt")
 		if prompt then
 			prompt.Enabled = true
@@ -547,6 +546,7 @@ local function deliver(player, profile)
 		entry.nextSpawn = now() + rng:NextNumber(Config.RespawnMin, Config.RespawnMax)
 	end
 	table.insert(profile.data.creatures, id)
+	table.insert(profile.data.pending, 0)
 	PlotService.refresh(player)
 	DataService.sync(player)
 	local def = Config.Creatures[id]
@@ -634,6 +634,9 @@ function BrainrotService.init()
 				elseif profile.carrying and PlotService.isInside(player, root.Position) then
 					deliver(player, profile)
 				end
+				if root.Parent then
+					PlotService.checkCollect(player, root.Position)
+				end
 			end
 		end
 	end)
@@ -701,7 +704,6 @@ function CharacterVisuals.applyWings(player)
 		weld.Parent = inner
 
 		local outer = wingPart(model, Vector3.new(2.2, 1.2, 0.2) * s, def.color:Lerp(Color3.new(1, 1, 1), 0.3), material)
-		outer.CFrame = inner.CFrame * CFrame.new(side * 2.4 * s, -0.3 * s, 0) * CFrame.Angles(0, 0, side * math.rad(-15))
 		local w2 = Instance.new("Weld")
 		w2.Part0 = inner
 		w2.Part1 = outer
@@ -758,201 +760,464 @@ function CharacterVisuals.apply(player)
 end
 
 return CharacterVisuals
-]]></ProtectedString></Properties></Item><Item class="ModuleScript" referent="RBX00000007"><Properties><string name="Name">CreatureFactory</string><ProtectedString name="Source"><![CDATA[-- CreatureFactory: собирает оригинальных существ из блоков.
--- Каждый вид описан списком деталей относительно тела (перед = -Z).
+]]></ProtectedString></Properties></Item><Item class="ModuleScript" referent="RBX00000007"><Properties><string name="Name">CreatureFactory</string><ProtectedString name="Source"><![CDATA[-- CreatureFactory: детальные оригинальные существа-животные из блоков.
+-- Перед существа смотрит в -Z, верх = +Y. Все детали приварены к телу (Body).
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 
 local CreatureFactory = {}
 
-local B, K, C = Enum.PartType.Ball, Enum.PartType.Block, Enum.PartType.Cylinder
 local NEON = Enum.Material.Neon
 local GLASS = Enum.Material.Glass
-local UP = CFrame.Angles(0, 0, math.rad(90)) -- цилиндр вертикально
-local FWD = CFrame.Angles(0, math.rad(90), 0) -- цилиндр вперёд
+local METAL = Enum.Material.Metal
+local FABRIC = Enum.Material.Fabric
 
 local function rgb(r, g, b)
 	return Color3.fromRGB(r, g, b)
 end
+local function V(x, y, z)
+	return Vector3.new(x, y, z)
+end
+local function A(x, y, z)
+	return CFrame.Angles(math.rad(x or 0), math.rad(y or 0), math.rad(z or 0))
+end
+local UP = A(0, 0, 90) -- цилиндр вертикально
+local FWD = A(0, 90, 0) -- цилиндр вдоль Z
 
 local WHITE = rgb(255, 255, 255)
-local BLACK = rgb(20, 20, 25)
+local BLACK = rgb(25, 22, 30)
+local PINK = rgb(255, 150, 170)
 
--- body = { shape, size, color, material?, transparency? }
--- eyes = { x, y, z, size, color? }
--- parts = { { shape, size, pos, color, material?, rot?, transparency? } }
-local SPECS = {
-	frog_slipper = {
-		body = { B, Vector3.new(3, 2.4, 3.4), rgb(110, 200, 80) },
-		eyes = { 0.8, 1.2, -0.9, 0.9 },
-		parts = {
-			{ K, Vector3.new(3.6, 0.8, 4.6), Vector3.new(0, -1.3, 0), rgb(255, 130, 170) },
-			{ K, Vector3.new(3.6, 0.3, 1.2), Vector3.new(0, -0.8, -1.4), rgb(255, 255, 255) },
-			{ B, Vector3.new(1, 0.6, 1.2), Vector3.new(1.4, -0.9, -1.2), rgb(90, 170, 60) },
-			{ B, Vector3.new(1, 0.6, 1.2), Vector3.new(-1.4, -0.9, -1.2), rgb(90, 170, 60) },
-		},
-	},
-	dumpling = {
-		body = { B, Vector3.new(3.4, 2.4, 3.2), rgb(245, 225, 185) },
-		eyes = { 0.6, 0.4, -1.45, 0.6 },
-		parts = {
-			{ K, Vector3.new(0.4, 0.8, 0.4), Vector3.new(0, 1.3, 0), rgb(235, 210, 165) },
-			{ K, Vector3.new(0.4, 0.6, 0.4), Vector3.new(0.6, 1.2, 0.2), rgb(235, 210, 165) },
-			{ K, Vector3.new(0.4, 0.6, 0.4), Vector3.new(-0.6, 1.2, 0.2), rgb(235, 210, 165) },
-			{ B, Vector3.new(0.6, 0.4, 0.2), Vector3.new(1.1, -0.1, -1.4), rgb(255, 150, 160) },
-			{ B, Vector3.new(0.6, 0.4, 0.2), Vector3.new(-1.1, -0.1, -1.4), rgb(255, 150, 160) },
-		},
-	},
-	cactus_runner = {
-		body = { K, Vector3.new(2, 3.6, 2), rgb(60, 170, 80) },
-		eyes = { 0.45, 0.9, -1.0, 0.6 },
-		parts = {
-			{ K, Vector3.new(1.6, 0.7, 0.7), Vector3.new(1.6, 0.3, 0), rgb(60, 170, 80) },
-			{ K, Vector3.new(0.7, 1.4, 0.7), Vector3.new(2.1, 1.0, 0), rgb(60, 170, 80) },
-			{ K, Vector3.new(1.6, 0.7, 0.7), Vector3.new(-1.6, -0.2, 0), rgb(60, 170, 80) },
-			{ K, Vector3.new(0.7, 1.4, 0.7), Vector3.new(-2.1, 0.5, 0), rgb(60, 170, 80) },
-			{ B, Vector3.new(1.2, 0.8, 1.2), Vector3.new(0, 2.1, 0), rgb(255, 110, 180) },
-			{ K, Vector3.new(0.6, 1.0, 0.8), Vector3.new(0.5, -2.2, -0.2), rgb(150, 100, 60) },
-			{ K, Vector3.new(0.6, 1.0, 0.8), Vector3.new(-0.5, -2.2, 0.2), rgb(150, 100, 60) },
-		},
-	},
-	mushroom_hedgehog = {
-		body = { B, Vector3.new(3, 2.4, 3.6), rgb(150, 105, 70) },
-		eyes = { 0.6, 0.3, -1.6, 0.55 },
-		parts = {
-			{ B, Vector3.new(4.2, 1.8, 4.2), Vector3.new(0, 1.2, 0.2), rgb(220, 50, 50) },
-			{ B, Vector3.new(0.7, 0.4, 0.7), Vector3.new(0.9, 2.0, 0.4), WHITE },
-			{ B, Vector3.new(0.6, 0.4, 0.6), Vector3.new(-1.0, 1.9, -0.3), WHITE },
-			{ B, Vector3.new(0.5, 0.4, 0.5), Vector3.new(0.1, 2.1, 1.1), WHITE },
-			{ B, Vector3.new(0.5, 0.4, 0.5), Vector3.new(0, 0, -1.9), BLACK },
-		},
-	},
-	jelly_teapot = {
-		body = { B, Vector3.new(3.4, 3, 3.4), rgb(90, 220, 220), GLASS, 0.3 },
-		eyes = { 0.7, 0.4, -1.5, 0.6 },
-		parts = {
-			{ C, Vector3.new(2.2, 0.6, 0.6), Vector3.new(0, 0, -2.0), rgb(90, 220, 220), GLASS, FWD * CFrame.Angles(0, 0, math.rad(25)), 0.3 },
-			{ K, Vector3.new(0.4, 1.6, 0.4), Vector3.new(0, 0.2, 1.9), rgb(70, 190, 200) },
-			{ C, Vector3.new(0.4, 1.4, 1.4), Vector3.new(0, 1.6, 0), rgb(70, 190, 200), nil, UP },
-			{ K, Vector3.new(0.3, 1.6, 0.3), Vector3.new(0.8, -1.9, 0.4), rgb(160, 255, 255), NEON },
-			{ K, Vector3.new(0.3, 1.6, 0.3), Vector3.new(-0.8, -1.9, -0.4), rgb(160, 255, 255), NEON },
-			{ K, Vector3.new(0.3, 1.6, 0.3), Vector3.new(0, -1.9, 0.9), rgb(160, 255, 255), NEON },
-		},
-	},
-	banana_crab = {
-		body = { K, Vector3.new(4.2, 1.6, 2.4), rgb(250, 220, 60) },
-		eyes = { 0.7, 1.2, -0.8, 0.6 },
-		parts = {
-			{ K, Vector3.new(1.2, 0.8, 2.0), Vector3.new(2.4, 0.3, 0), rgb(240, 200, 40), nil, CFrame.Angles(0, 0, math.rad(30)) },
-			{ K, Vector3.new(1.2, 0.8, 2.0), Vector3.new(-2.4, 0.3, 0), rgb(240, 200, 40), nil, CFrame.Angles(0, 0, math.rad(-30)) },
-			{ B, Vector3.new(1.4, 1.2, 1.4), Vector3.new(2.4, 0.6, -1.8), rgb(230, 70, 50) },
-			{ B, Vector3.new(1.4, 1.2, 1.4), Vector3.new(-2.4, 0.6, -1.8), rgb(230, 70, 50) },
-			{ K, Vector3.new(0.3, 1, 0.3), Vector3.new(0.7, 0.9, -0.8), rgb(120, 90, 40) },
-			{ K, Vector3.new(0.3, 1, 0.3), Vector3.new(-0.7, 0.9, -0.8), rgb(120, 90, 40) },
-			{ K, Vector3.new(3.6, 0.4, 0.3), Vector3.new(0, -1.0, 0.6), rgb(120, 90, 40) },
-			{ K, Vector3.new(3.6, 0.4, 0.3), Vector3.new(0, -1.0, -0.4), rgb(120, 90, 40) },
-		},
-	},
-	fire_hamster = {
-		body = { B, Vector3.new(3.6, 3.2, 3.6), rgb(240, 140, 50) },
-		eyes = { 0.7, 0.4, -1.6, 0.6 },
-		fire = true,
-		parts = {
-			{ B, Vector3.new(1, 1, 0.5), Vector3.new(1.1, 1.5, -0.2), rgb(240, 140, 50) },
-			{ B, Vector3.new(1, 1, 0.5), Vector3.new(-1.1, 1.5, -0.2), rgb(240, 140, 50) },
-			{ B, Vector3.new(2, 1.6, 0.6), Vector3.new(0, -0.4, -1.5), rgb(255, 225, 190) },
-			{ B, Vector3.new(1.4, 1.4, 1.4), Vector3.new(0, 1.9, 0.4), rgb(255, 80, 20), NEON },
-			{ B, Vector3.new(0.8, 1.2, 0.8), Vector3.new(0, 2.6, 0.5), rgb(255, 200, 40), NEON },
-		},
-	},
-	cloud_sheep = {
-		body = { B, Vector3.new(3.6, 3, 4), WHITE },
-		eyes = { 0.45, 0.6, -2.55, 0.5 },
-		parts = {
-			{ B, Vector3.new(2, 2, 2), Vector3.new(1.2, 1.2, 0.6), WHITE },
-			{ B, Vector3.new(2, 2, 2), Vector3.new(-1.2, 1.2, -0.4), WHITE },
-			{ B, Vector3.new(2, 2, 2), Vector3.new(0, 1.4, 1.4), WHITE },
-			{ B, Vector3.new(1.8, 1.8, 1.4), Vector3.new(0, 0.4, -2.1), rgb(60, 60, 75) },
-			{ K, Vector3.new(0.6, 1.2, 0.6), Vector3.new(1, -1.6, -1), rgb(60, 60, 75) },
-			{ K, Vector3.new(0.6, 1.2, 0.6), Vector3.new(-1, -1.6, -1), rgb(60, 60, 75) },
-			{ K, Vector3.new(0.6, 1.2, 0.6), Vector3.new(1, -1.6, 1), rgb(60, 60, 75) },
-			{ K, Vector3.new(0.6, 1.2, 0.6), Vector3.new(-1, -1.6, 1), rgb(60, 60, 75) },
-		},
-	},
-	owl_king = {
-		body = { B, Vector3.new(3.4, 4, 3.2), rgb(130, 90, 60) },
-		eyes = { 0.75, 0.7, -1.35, 1.0, rgb(255, 210, 40) },
-		parts = {
-			{ B, Vector3.new(2.4, 2.6, 0.6), Vector3.new(0, -0.6, -1.3), rgb(240, 225, 200) },
-			{ K, Vector3.new(0.5, 0.6, 0.5), Vector3.new(0, 0.1, -1.7), rgb(255, 170, 40) },
-			{ C, Vector3.new(0.8, 2.2, 2.2), Vector3.new(0, 2.3, 0), rgb(255, 200, 40), Enum.Material.Metal, UP },
-			{ K, Vector3.new(0.4, 0.8, 0.4), Vector3.new(0.8, 2.9, 0), rgb(255, 200, 40), Enum.Material.Metal },
-			{ K, Vector3.new(0.4, 0.8, 0.4), Vector3.new(-0.8, 2.9, 0), rgb(255, 200, 40), Enum.Material.Metal },
-			{ K, Vector3.new(0.4, 0.8, 0.4), Vector3.new(0, 2.9, -0.8), rgb(255, 200, 40), Enum.Material.Metal },
-			{ B, Vector3.new(0.4, 0.4, 0.4), Vector3.new(0, 2.4, -1.1), rgb(255, 40, 80), NEON },
-			{ K, Vector3.new(0.6, 2.6, 2.2), Vector3.new(1.8, -0.2, 0.2), rgb(110, 75, 50) },
-			{ K, Vector3.new(0.6, 2.6, 2.2), Vector3.new(-1.8, -0.2, 0.2), rgb(110, 75, 50) },
-		},
-	},
-	rocket_penguin = {
-		body = { B, Vector3.new(3, 4.2, 3), rgb(35, 35, 45) },
-		eyes = { 0.6, 1.0, -1.3, 0.55 },
-		parts = {
-			{ B, Vector3.new(2.2, 3.2, 0.6), Vector3.new(0, -0.3, -1.25), WHITE },
-			{ K, Vector3.new(0.6, 0.4, 0.8), Vector3.new(0, 0.6, -1.7), rgb(255, 150, 30) },
-			{ C, Vector3.new(3, 1.4, 1.4), Vector3.new(0, 0, 1.9), rgb(180, 180, 195), Enum.Material.Metal, UP },
-			{ B, Vector3.new(1.2, 1.4, 1.2), Vector3.new(0, -1.9, 1.9), rgb(255, 120, 30), NEON },
-			{ K, Vector3.new(0.4, 1.8, 1.2), Vector3.new(1.7, 0, 0), rgb(35, 35, 45), nil, CFrame.Angles(0, 0, math.rad(-20)) },
-			{ K, Vector3.new(0.4, 1.8, 1.2), Vector3.new(-1.7, 0, 0), rgb(35, 35, 45), nil, CFrame.Angles(0, 0, math.rad(20)) },
-		},
-	},
-	crystal_whale = {
-		body = { B, Vector3.new(3.4, 2.8, 6), rgb(70, 120, 230) },
-		eyes = { 1.3, 0.3, -2.0, 0.5 },
-		parts = {
-			{ B, Vector3.new(2.8, 1.4, 4.6), Vector3.new(0, -0.8, -0.2), rgb(200, 220, 255) },
-			{ K, Vector3.new(3.4, 0.4, 1.4), Vector3.new(0, 0.2, 3.4), rgb(70, 120, 230) },
-			{ K, Vector3.new(0.6, 1.6, 0.6), Vector3.new(0, 1.8, -0.6), rgb(140, 255, 255), NEON, CFrame.Angles(0, math.rad(45), math.rad(10)) },
-			{ K, Vector3.new(0.5, 1.2, 0.5), Vector3.new(0.6, 1.6, 0.4), rgb(140, 255, 255), NEON, CFrame.Angles(0, math.rad(45), math.rad(-15)) },
-			{ K, Vector3.new(0.5, 1.2, 0.5), Vector3.new(-0.6, 1.6, 0.9), rgb(140, 255, 255), NEON, CFrame.Angles(0, math.rad(45), math.rad(15)) },
-		},
-	},
-	shadow_fox = {
-		body = { K, Vector3.new(2.4, 2.2, 4), rgb(55, 35, 80) },
-		eyes = { 0.55, 0.5, -2.05, 0.5, rgb(200, 90, 255) },
-		glowEyes = true,
-		parts = {
-			{ K, Vector3.new(0.7, 1.2, 0.4), Vector3.new(0.7, 1.6, -1.4), rgb(55, 35, 80) },
-			{ K, Vector3.new(0.7, 1.2, 0.4), Vector3.new(-0.7, 1.6, -1.4), rgb(55, 35, 80) },
-			{ K, Vector3.new(1.0, 0.8, 0.8), Vector3.new(0, -0.2, -2.3), rgb(40, 25, 60) },
-			{ B, Vector3.new(1.6, 1.6, 3.2), Vector3.new(0, 1.0, 3.2), rgb(55, 35, 80), nil, CFrame.Angles(math.rad(-30), 0, 0) },
-			{ B, Vector3.new(1, 1, 1.2), Vector3.new(0, 1.9, 4.6), rgb(190, 90, 255), NEON },
-			{ K, Vector3.new(0.6, 1.2, 0.6), Vector3.new(0.8, -1.6, -1.4), rgb(40, 25, 60) },
-			{ K, Vector3.new(0.6, 1.2, 0.6), Vector3.new(-0.8, -1.6, -1.4), rgb(40, 25, 60) },
-			{ K, Vector3.new(0.6, 1.2, 0.6), Vector3.new(0.8, -1.6, 1.4), rgb(40, 25, 60) },
-			{ K, Vector3.new(0.6, 1.2, 0.6), Vector3.new(-0.8, -1.6, 1.4), rgb(40, 25, 60) },
-		},
-	},
-	sun_dragon = {
-		body = { B, Vector3.new(3.4, 3.2, 4.4), rgb(255, 200, 60), NEON },
-		eyes = { 0.7, 0.8, -1.9, 0.6 },
-		divine = true,
-		parts = {
-			{ B, Vector3.new(2.2, 2, 2.2), Vector3.new(0, 1.4, -2.2), rgb(255, 210, 80), NEON },
-			{ K, Vector3.new(0.4, 1.4, 0.4), Vector3.new(0.6, 2.8, -2.0), WHITE, nil, CFrame.Angles(math.rad(-25), 0, 0) },
-			{ K, Vector3.new(0.4, 1.4, 0.4), Vector3.new(-0.6, 2.8, -2.0), WHITE, nil, CFrame.Angles(math.rad(-25), 0, 0) },
-			{ K, Vector3.new(4, 0.3, 2.4), Vector3.new(3.0, 1.4, 0.4), rgb(255, 150, 40), NEON, CFrame.Angles(0, 0, math.rad(25)) },
-			{ K, Vector3.new(4, 0.3, 2.4), Vector3.new(-3.0, 1.4, 0.4), rgb(255, 150, 40), NEON, CFrame.Angles(0, 0, math.rad(-25)) },
-			{ B, Vector3.new(1.2, 1.2, 3.4), Vector3.new(0, -0.2, 3.2), rgb(255, 190, 50), NEON, CFrame.Angles(math.rad(20), 0, 0) },
-			{ C, Vector3.new(0.3, 3.6, 3.6), Vector3.new(0, 3.6, -2.2), rgb(255, 255, 160), NEON, UP },
-		},
-	},
+---------------------------------------------------------------------
+-- описания существ: function(p, eye) ... end
+-- p(shape, size, pos, color, material?, rot?, transparency?)
+--   shape: "B" шар, "K" блок, "C" цилиндр, "W" клин
+-- eye(x, y, z, size, irisColor?)
+-- foot = расстояние от центра тела до земли
+---------------------------------------------------------------------
+local SPECS = {}
+
+SPECS.frog_slipper = {
+	foot = 2.0,
+	body = { "B", V(3.2, 2.6, 3.4), rgb(110, 210, 80) },
+	build = function(p, eye)
+		p("B", V(2.4, 1.8, 1.2), V(0, -0.4, -1.3), rgb(220, 250, 160)) -- живот
+		p("B", V(1.4, 1.2, 1.4), V(0.9, 1.2, -0.6), rgb(110, 210, 80))
+		p("B", V(1.4, 1.2, 1.4), V(-0.9, 1.2, -0.6), rgb(110, 210, 80))
+		eye(0.9, 1.5, -1.1, 1.0, rgb(255, 190, 40))
+		eye(-0.9, 1.5, -1.1, 1.0, rgb(255, 190, 40))
+		p("K", V(1.8, 0.15, 0.2), V(0, 0.15, -1.7), rgb(60, 120, 40)) -- улыбка
+		p("B", V(0.5, 0.3, 0.2), V(1.1, 0.4, -1.55), PINK)
+		p("B", V(0.5, 0.3, 0.2), V(-1.1, 0.4, -1.55), PINK)
+		p("B", V(1.4, 0.9, 2.0), V(1.5, -0.9, 0.4), rgb(95, 190, 70)) -- задние лапы
+		p("B", V(1.4, 0.9, 2.0), V(-1.5, -0.9, 0.4), rgb(95, 190, 70))
+		p("B", V(0.7, 1.2, 0.7), V(0.9, -0.9, -1.2), rgb(95, 190, 70))
+		p("B", V(0.7, 1.2, 0.7), V(-0.9, -0.9, -1.2), rgb(95, 190, 70))
+		for i = -1, 1 do
+			p("B", V(0.5, 0.6, 0.5), V(0.6 * i, 1.4, 0.8), rgb(80, 170, 60)) -- пятнышки
+		end
+		-- тапок
+		p("K", V(3.8, 0.6, 5.2), V(0, -1.75, 0.1), rgb(255, 120, 170))
+		p("K", V(3.9, 0.3, 5.3), V(0, -2.0, 0.1), WHITE)
+		p("K", V(3.8, 1.2, 0.4), V(0, -1.1, 2.6), rgb(255, 120, 170))
+		for x = -1.5, 1.5, 0.75 do
+			p("B", V(0.8, 0.8, 0.8), V(x, -1.3, -2.4), WHITE)
+		end
+		p("B", V(1.3, 1.3, 1.3), V(0, -0.9, -2.9), rgb(255, 230, 240))
+	end,
 }
 
+SPECS.dumpling = {
+	foot = 1.7,
+	body = { "B", V(3.8, 2.6, 3.4), rgb(250, 235, 200) },
+	build = function(p, eye)
+		for i = -2, 2 do
+			p("B", V(0.9, 1.1, 0.9), V(i * 0.6, 1.25, 0.2 + math.abs(i) * 0.1), rgb(245, 225, 185)) -- защипы
+		end
+		eye(0.7, 0.3, -1.5, 0.75)
+		eye(-0.7, 0.3, -1.5, 0.75)
+		p("B", V(0.7, 0.4, 0.2), V(1.3, -0.2, -1.4), PINK)
+		p("B", V(0.7, 0.4, 0.2), V(-1.3, -0.2, -1.4), PINK)
+		p("B", V(0.5, 0.35, 0.2), V(0, -0.35, -1.65), rgb(200, 80, 90)) -- ротик
+		p("B", V(0.9, 0.6, 1.1), V(0.9, -1.3, -0.4), rgb(240, 215, 175)) -- ножки
+		p("B", V(0.9, 0.6, 1.1), V(-0.9, -1.3, -0.4), rgb(240, 215, 175))
+		p("B", V(0.7, 0.7, 0.7), V(1.9, -0.1, 0), rgb(245, 225, 185)) -- ручки
+		p("B", V(0.7, 0.7, 0.7), V(-1.9, -0.1, 0), rgb(245, 225, 185))
+		-- палочки и пар
+		p("C", V(4.5, 0.25, 0.25), V(0.8, 2.3, 0.6), rgb(170, 110, 60), nil, A(0, 20, 70))
+		p("C", V(4.5, 0.25, 0.25), V(1.2, 2.3, 0.4), rgb(170, 110, 60), nil, A(0, 30, 75))
+		p("B", V(1.2, 1.2, 1.2), V(-0.6, 2.8, 0.3), WHITE, nil, nil, 0.5)
+		p("B", V(0.9, 0.9, 0.9), V(-0.9, 3.6, 0.5), WHITE, nil, nil, 0.6)
+		-- тарелочка
+		p("C", V(0.3, 5, 5), V(0, -1.6, 0), rgb(120, 200, 255), nil, UP)
+	end,
+}
+
+SPECS.cactus_runner = {
+	foot = 3.2,
+	body = { "C", V(4.2, 2.4, 2.4), rgb(70, 190, 90), nil, UP },
+	build = function(p, eye)
+		p("B", V(2.4, 1.4, 2.4), V(0, 2.1, 0), rgb(70, 190, 90))
+		for y = -1.2, 1.6, 0.9 do
+			for k = 0, 3 do
+				local a = math.rad(k * 90 + 45)
+				p("K", V(0.12, 0.12, 0.5), V(math.cos(a) * 1.25, y, math.sin(a) * 1.25), rgb(255, 250, 220))
+			end
+		end
+		eye(0.5, 1.1, -1.1, 0.7)
+		eye(-0.5, 1.1, -1.1, 0.7)
+		-- очки
+		p("K", V(2.3, 0.18, 0.15), V(0, 1.15, -1.3), BLACK)
+		p("K", V(0.9, 0.6, 0.15), V(0.55, 1.05, -1.32), BLACK, GLASS, nil, 0.2)
+		p("K", V(0.9, 0.6, 0.15), V(-0.55, 1.05, -1.32), BLACK, GLASS, nil, 0.2)
+		p("K", V(0.8, 0.12, 0.15), V(0, 0.3, -1.25), rgb(30, 100, 40))
+		-- руки
+		p("C", V(1.4, 0.8, 0.8), V(1.7, 0.2, 0), rgb(70, 190, 90))
+		p("C", V(1.6, 0.8, 0.8), V(2.3, 1.0, 0), rgb(70, 190, 90), nil, UP)
+		p("B", V(0.8, 0.8, 0.8), V(2.3, 1.8, 0), rgb(70, 190, 90))
+		p("C", V(1.4, 0.8, 0.8), V(-1.7, -0.3, 0), rgb(70, 190, 90))
+		p("C", V(1.4, 0.8, 0.8), V(-2.3, 0.4, 0), rgb(70, 190, 90), nil, UP)
+		p("B", V(0.8, 0.8, 0.8), V(-2.3, 1.1, 0), rgb(70, 190, 90))
+		-- цветок
+		for k = 0, 4 do
+			local a = math.rad(k * 72)
+			p("B", V(0.8, 0.4, 0.8), V(math.cos(a) * 0.5, 2.9, math.sin(a) * 0.5), rgb(255, 90, 170))
+		end
+		p("B", V(0.5, 0.5, 0.5), V(0, 3.0, 0), rgb(255, 220, 60))
+		-- кроссовки
+		for _, x in ipairs({ -0.6, 0.6 }) do
+			p("K", V(0.5, 1.0, 0.5), V(x, -2.5, 0), rgb(70, 190, 90))
+			p("K", V(0.9, 0.6, 1.5), V(x, -3.0, -0.3), rgb(240, 50, 60))
+			p("K", V(1.0, 0.25, 1.6), V(x, -3.3, -0.3), WHITE)
+			p("K", V(0.92, 0.1, 0.3), V(x, -2.75, -0.6), WHITE)
+		end
+	end,
+}
+
+SPECS.mushroom_hedgehog = {
+	foot = 1.9,
+	body = { "B", V(3.2, 2.6, 3.8), rgb(160, 110, 75) },
+	build = function(p, eye)
+		p("B", V(2.2, 1.8, 1.6), V(0, -0.2, -1.5), rgb(245, 215, 175)) -- мордочка
+		p("B", V(1.0, 0.8, 1.2), V(0, -0.3, -2.4), rgb(245, 215, 175))
+		p("B", V(0.5, 0.45, 0.45), V(0, -0.15, -3.0), BLACK) -- нос
+		eye(0.55, 0.35, -2.05, 0.55)
+		eye(-0.55, 0.35, -2.05, 0.55)
+		p("B", V(0.5, 0.3, 0.2), V(0.95, -0.45, -2.05), PINK)
+		p("B", V(0.5, 0.3, 0.2), V(-0.95, -0.45, -2.05), PINK)
+		-- иголки
+		for row = 0, 2 do
+			for k = -3, 3 do
+				local a = k * 25
+				p("W", V(0.4, 1.0, 0.9), V(math.sin(math.rad(a)) * 1.5, 0.6 + row * 0.15, 0.2 + row * 0.7), rgb(110, 70, 45), nil, A(-60 + row * 10, 0, -a))
+			end
+		end
+		-- шляпка-гриб
+		p("B", V(4.6, 2.0, 4.6), V(0, 1.6, 0.3), rgb(235, 50, 60))
+		p("C", V(0.4, 4.2, 4.2), V(0, 1.0, 0.3), rgb(255, 240, 220), nil, UP)
+		for k = 0, 5 do
+			local a = math.rad(k * 60 + 15)
+			p("B", V(0.7, 0.35, 0.7), V(math.cos(a) * 1.3, 2.4, 0.3 + math.sin(a) * 1.3), WHITE)
+		end
+		p("B", V(0.8, 0.4, 0.8), V(0, 2.65, 0.3), WHITE)
+		-- лапки
+		for _, x in ipairs({ -0.9, 0.9 }) do
+			p("B", V(0.8, 0.9, 0.9), V(x, -1.3, -0.9), rgb(140, 95, 65))
+			p("B", V(0.8, 0.9, 0.9), V(x, -1.3, 1.0), rgb(140, 95, 65))
+		end
+	end,
+}
+
+SPECS.jelly_teapot = {
+	foot = 3.4,
+	body = { "B", V(3.6, 3.0, 3.6), rgb(90, 225, 230), GLASS, nil, 0.25 },
+	build = function(p, eye)
+		p("C", V(0.5, 3.4, 3.4), V(0, -1.3, 0), rgb(60, 190, 210), nil, UP)
+		p("C", V(0.5, 2.4, 2.4), V(0, 1.55, 0), rgb(60, 190, 210), nil, UP) -- крышка
+		p("B", V(0.8, 0.8, 0.8), V(0, 2.1, 0), rgb(255, 210, 80), NEON)
+		p("C", V(2.4, 0.7, 0.7), V(0, 0.2, -2.1), rgb(90, 225, 230), GLASS, FWD * A(0, 0, 35), 0.25) -- носик
+		p("C", V(0.3, 1.8, 1.8), V(0, 0.1, 2.0), rgb(60, 190, 210), nil, A(0, 90, 0)) -- ручка
+		p("C", V(0.3, 1.0, 1.0), V(0, 0.1, 2.0), rgb(90, 225, 230), GLASS, A(0, 90, 0), 0.3)
+		eye(0.65, 0.35, -1.6, 0.7)
+		eye(-0.65, 0.35, -1.6, 0.7)
+		p("B", V(0.6, 0.3, 0.2), V(0, -0.35, -1.7), rgb(255, 120, 160))
+		-- щупальца
+		for k = 0, 5 do
+			local a = math.rad(k * 60)
+			local x, z = math.cos(a) * 1.1, math.sin(a) * 1.1
+			p("C", V(1.0, 0.45, 0.45), V(x, -1.9, z), rgb(170, 255, 255), NEON, UP * A(0, 0, 0))
+			p("C", V(0.9, 0.35, 0.35), V(x * 1.15, -2.7, z * 1.15), rgb(140, 240, 255), NEON, UP)
+			p("B", V(0.4, 0.4, 0.4), V(x * 1.25, -3.2, z * 1.25), rgb(255, 160, 230), NEON)
+		end
+	end,
+}
+
+SPECS.banana_crab = {
+	foot = 1.9,
+	body = { "B", V(4.0, 1.8, 3.0), rgb(240, 80, 60) },
+	build = function(p, eye)
+		-- банан-панцирь
+		p("C", V(1.8, 1.3, 1.3), V(-1.4, 1.3, 0.1), rgb(255, 225, 60), nil, A(0, 0, 25))
+		p("C", V(1.8, 1.4, 1.4), V(0, 1.6, 0.1), rgb(255, 230, 70))
+		p("C", V(1.8, 1.3, 1.3), V(1.4, 1.3, 0.1), rgb(255, 225, 60), nil, A(0, 0, -25))
+		p("K", V(0.35, 0.35, 0.35), V(-2.3, 0.85, 0.1), rgb(110, 80, 40))
+		p("K", V(0.35, 0.5, 0.35), V(2.3, 0.9, 0.1), rgb(110, 80, 40))
+		-- глаза на стебельках
+		p("C", V(1.0, 0.25, 0.25), V(0.6, 1.0, -1.2), rgb(220, 70, 50), nil, UP)
+		p("C", V(1.0, 0.25, 0.25), V(-0.6, 1.0, -1.2), rgb(220, 70, 50), nil, UP)
+		eye(0.6, 1.6, -1.25, 0.65)
+		eye(-0.6, 1.6, -1.25, 0.65)
+		p("K", V(1.0, 0.12, 0.2), V(0, -0.1, -1.5), rgb(120, 30, 30))
+		-- клешни
+		for _, sx in ipairs({ -1, 1 }) do
+			p("C", V(1.4, 0.5, 0.5), V(sx * 2.3, 0.0, -0.9), rgb(230, 70, 50), nil, A(0, sx * 40, 0))
+			p("B", V(1.4, 1.2, 1.5), V(sx * 2.9, 0.3, -1.8), rgb(250, 90, 70))
+			p("W", V(0.5, 0.6, 1.1), V(sx * 2.7, 0.9, -2.6), rgb(250, 90, 70), nil, A(0, 0, 0))
+			p("W", V(0.5, 0.6, 1.1), V(sx * 3.1, -0.1, -2.6), rgb(250, 90, 70), nil, A(0, 0, 180))
+			for k = 0, 2 do
+				p("K", V(1.6, 0.3, 0.3), V(sx * 2.2, -0.9, -0.2 + k * 0.8), rgb(220, 70, 50), nil, A(0, 0, sx * -30))
+			end
+		end
+	end,
+}
+
+SPECS.fire_hamster = {
+	foot = 1.9,
+	body = { "B", V(3.8, 3.4, 3.6), rgb(245, 150, 60) },
+	fire = true,
+	build = function(p, eye)
+		p("B", V(2.6, 2.2, 1.2), V(0, -0.5, -1.4), rgb(255, 235, 200)) -- живот
+		p("B", V(1.6, 1.2, 1.2), V(1.2, 0.1, -1.3), rgb(255, 225, 190)) -- щёчки
+		p("B", V(1.6, 1.2, 1.2), V(-1.2, 0.1, -1.3), rgb(255, 225, 190))
+		eye(0.65, 0.7, -1.55, 0.6)
+		eye(-0.65, 0.7, -1.55, 0.6)
+		p("B", V(0.4, 0.3, 0.3), V(0, 0.25, -1.95), PINK)
+		p("K", V(0.4, 0.4, 0.15), V(0, -0.05, -1.95), WHITE) -- зубки
+		-- уши
+		for _, sx in ipairs({ -1, 1 }) do
+			p("B", V(1.1, 1.1, 0.5), V(sx * 1.2, 1.6, -0.2), rgb(245, 150, 60))
+			p("B", V(0.7, 0.7, 0.3), V(sx * 1.2, 1.6, -0.45), PINK)
+			p("B", V(0.7, 0.6, 0.7), V(sx * 0.8, -0.5, -1.8), rgb(255, 200, 170)) -- лапки
+			p("B", V(1.0, 0.6, 1.3), V(sx * 1.0, -1.6, -0.6), rgb(255, 200, 170))
+		end
+		p("B", V(0.6, 0.6, 0.6), V(0, -0.8, 1.8), rgb(255, 225, 190)) -- хвостик
+		-- огненный хохолок
+		p("B", V(1.4, 1.6, 1.4), V(0, 2.0, 0.2), rgb(255, 80, 20), NEON)
+		p("B", V(1.0, 1.4, 1.0), V(0.3, 2.7, 0.3), rgb(255, 160, 30), NEON)
+		p("B", V(0.6, 1.0, 0.6), V(-0.2, 3.2, 0.3), rgb(255, 230, 80), NEON)
+	end,
+}
+
+SPECS.cloud_sheep = {
+	foot = 2.6,
+	body = { "B", V(3.8, 3.0, 4.4), WHITE },
+	build = function(p, eye)
+		local puffs = { V(1.3, 1.2, 0.8), V(-1.3, 1.2, 0.2), V(0, 1.6, 1.4), V(0, 1.5, -0.6), V(1.5, 0.2, 1.6), V(-1.5, 0.2, 1.4), V(0, 0.4, 2.3) }
+		for _, pos in ipairs(puffs) do
+			p("B", V(2.2, 2.0, 2.2), pos, WHITE)
+		end
+		p("B", V(2.0, 2.0, 1.8), V(0, 0.5, -2.3), rgb(70, 70, 90)) -- голова
+		p("B", V(1.6, 1.0, 1.0), V(0, 1.5, -2.2), WHITE) -- чёлка
+		eye(0.5, 0.65, -3.1, 0.55)
+		eye(-0.5, 0.65, -3.1, 0.55)
+		p("B", V(0.5, 0.25, 0.2), V(0, -0.1, -3.15), PINK)
+		p("B", V(1.2, 0.5, 0.6), V(1.2, 0.8, -2.1), rgb(70, 70, 90), nil, A(0, 0, -25)) -- уши
+		p("B", V(1.2, 0.5, 0.6), V(-1.2, 0.8, -2.1), rgb(70, 70, 90), nil, A(0, 0, 25))
+		p("B", V(0.8, 0.8, 0.8), V(0, -0.8, -2.5), rgb(255, 210, 50), METAL) -- колокольчик
+		for _, x in ipairs({ -1.0, 1.0 }) do
+			for _, z in ipairs({ -1.1, 1.2 }) do
+				p("C", V(1.4, 0.7, 0.7), V(x, -1.8, z), rgb(70, 70, 90), nil, UP)
+			end
+		end
+		-- маленькая радуга на хвосте
+		local rainbow = { rgb(255, 80, 80), rgb(255, 190, 40), rgb(90, 220, 90), rgb(80, 160, 255) }
+		for k, c in ipairs(rainbow) do
+			p("C", V(0.3, 2.6 - k * 0.45, 2.6 - k * 0.45), V(0, 1.4, 3.0), c, NEON, A(0, 90, 0))
+		end
+	end,
+}
+
+SPECS.owl_king = {
+	foot = 2.5,
+	body = { "B", V(3.6, 4.2, 3.4), rgb(140, 95, 60) },
+	build = function(p, eye)
+		p("B", V(2.8, 3.0, 1.0), V(0, -0.6, -1.3), rgb(245, 230, 200)) -- грудка
+		for y = -1.4, 0.4, 0.6 do
+			p("W", V(0.6, 0.3, 0.3), V(0, y, -1.8), rgb(200, 170, 130), nil, A(0, 0, 180))
+		end
+		p("B", V(1.6, 1.6, 0.6), V(0.75, 0.9, -1.35), rgb(255, 250, 235)) -- лицевой диск
+		p("B", V(1.6, 1.6, 0.6), V(-0.75, 0.9, -1.35), rgb(255, 250, 235))
+		eye(0.75, 0.9, -1.55, 1.1, rgb(255, 200, 30))
+		eye(-0.75, 0.9, -1.55, 1.1, rgb(255, 200, 30))
+		p("W", V(0.5, 0.7, 0.5), V(0, 0.2, -1.85), rgb(255, 160, 40), nil, A(0, 0, 180))
+		p("W", V(0.6, 1.0, 0.6), V(1.3, 2.2, -0.3), rgb(120, 80, 50)) -- ушки-перья
+		p("W", V(0.6, 1.0, 0.6), V(-1.3, 2.2, -0.3), rgb(120, 80, 50))
+		-- крылья
+		p("B", V(0.8, 3.0, 2.4), V(1.8, -0.2, 0.2), rgb(115, 75, 45), nil, A(0, 0, 10))
+		p("B", V(0.8, 3.0, 2.4), V(-1.8, -0.2, 0.2), rgb(115, 75, 45), nil, A(0, 0, -10))
+		-- корона
+		p("C", V(0.9, 2.4, 2.4), V(0, 2.4, 0), rgb(255, 205, 40), METAL, UP)
+		for k = 0, 5 do
+			local a = math.rad(k * 60)
+			p("W", V(0.5, 0.9, 0.4), V(math.cos(a) * 1.0, 3.25, math.sin(a) * 1.0), rgb(255, 205, 40), METAL, A(0, -k * 60 + 90, 0))
+		end
+		p("B", V(0.5, 0.5, 0.5), V(0, 2.4, -1.15), rgb(255, 40, 90), NEON)
+		p("B", V(0.4, 0.4, 0.4), V(0.85, 2.4, -0.8), rgb(60, 200, 255), NEON)
+		p("B", V(0.4, 0.4, 0.4), V(-0.85, 2.4, -0.8), rgb(80, 255, 120), NEON)
+		-- мантия
+		p("K", V(3.4, 3.6, 0.3), V(0, -0.4, 1.75), rgb(190, 30, 50), FABRIC)
+		p("K", V(3.6, 0.5, 0.5), V(0, 1.4, 1.6), WHITE, FABRIC)
+		-- лапки
+		p("K", V(0.8, 0.4, 1.0), V(0.7, -2.2, -0.6), rgb(255, 170, 40))
+		p("K", V(0.8, 0.4, 1.0), V(-0.7, -2.2, -0.6), rgb(255, 170, 40))
+	end,
+}
+
+SPECS.rocket_penguin = {
+	foot = 2.6,
+	body = { "B", V(3.2, 4.4, 3.0), rgb(35, 35, 50) },
+	build = function(p, eye)
+		p("B", V(2.4, 3.4, 0.9), V(0, -0.4, -1.15), WHITE)
+		p("B", V(2.2, 1.6, 0.8), V(0, 1.1, -1.05), WHITE)
+		eye(0.55, 1.2, -1.45, 0.55)
+		eye(-0.55, 1.2, -1.45, 0.55)
+		p("W", V(0.6, 0.5, 0.9), V(0, 0.55, -1.75), rgb(255, 150, 30), nil, A(-90, 0, 0)) -- клюв
+		p("B", V(0.5, 0.3, 0.2), V(1.0, 0.6, -1.3), PINK)
+		p("B", V(0.5, 0.3, 0.2), V(-1.0, 0.6, -1.3), PINK)
+		-- лётные очки
+		p("K", V(3.3, 0.35, 3.1), V(0, 1.95, 0), rgb(120, 70, 40), FABRIC)
+		p("C", V(0.3, 0.9, 0.9), V(0.5, 2.0, -1.45), rgb(80, 200, 255), GLASS, FWD, 0.2)
+		p("C", V(0.3, 0.9, 0.9), V(-0.5, 2.0, -1.45), rgb(80, 200, 255), GLASS, FWD, 0.2)
+		-- крылья
+		p("B", V(0.6, 2.6, 1.4), V(1.75, -0.2, 0), rgb(35, 35, 50), nil, A(0, 0, 20))
+		p("B", V(0.6, 2.6, 1.4), V(-1.75, -0.2, 0), rgb(35, 35, 50), nil, A(0, 0, -20))
+		-- лапы
+		p("K", V(1.0, 0.4, 1.4), V(0.7, -2.3, -0.5), rgb(255, 150, 30))
+		p("K", V(1.0, 0.4, 1.4), V(-0.7, -2.3, -0.5), rgb(255, 150, 30))
+		-- реактивный ранец
+		p("K", V(2.4, 2.4, 0.8), V(0, 0.2, 1.7), rgb(200, 200, 215), METAL)
+		for _, x in ipairs({ -0.7, 0.7 }) do
+			p("C", V(3.0, 0.9, 0.9), V(x, 0, 2.3), rgb(230, 60, 60), METAL, UP)
+			p("B", V(0.9, 0.9, 0.9), V(x, 1.5, 2.3), rgb(230, 60, 60), METAL)
+			p("C", V(0.4, 1.0, 1.0), V(x, -1.6, 2.3), rgb(80, 80, 90), METAL, UP)
+			p("B", V(0.8, 1.6, 0.8), V(x, -2.4, 2.3), rgb(255, 140, 30), NEON)
+			p("B", V(0.5, 1.0, 0.5), V(x, -3.0, 2.3), rgb(255, 230, 80), NEON)
+		end
+	end,
+}
+
+SPECS.crystal_whale = {
+	foot = 2.2,
+	body = { "B", V(3.8, 3.0, 6.4), rgb(70, 130, 240) },
+	build = function(p, eye)
+		p("B", V(3.0, 1.6, 5.2), V(0, -0.8, -0.4), rgb(210, 230, 255)) -- живот
+		for z = -2, 1 do
+			p("K", V(2.4, 0.08, 0.15), V(0, -1.45, z * 0.8), rgb(170, 200, 245))
+		end
+		eye(1.45, 0.25, -2.0, 0.6)
+		eye(-1.45, 0.25, -2.0, 0.6)
+		p("K", V(2.2, 0.12, 0.2), V(0, -0.35, -3.1), rgb(40, 80, 160)) -- улыбка
+		p("B", V(0.5, 0.3, 0.2), V(1.4, -0.3, -2.5), PINK)
+		p("B", V(0.5, 0.3, 0.2), V(-1.4, -0.3, -2.5), PINK)
+		-- плавники и хвост
+		p("B", V(2.2, 0.4, 1.2), V(2.0, -0.9, -0.6), rgb(60, 115, 220), nil, A(0, -20, -25))
+		p("B", V(2.2, 0.4, 1.2), V(-2.0, -0.9, -0.6), rgb(60, 115, 220), nil, A(0, 20, 25))
+		p("B", V(1.6, 1.4, 2.4), V(0, 0.2, 3.6), rgb(70, 130, 240))
+		p("B", V(2.4, 0.4, 1.4), V(1.0, 0.6, 4.8), rgb(60, 115, 220), nil, A(0, 25, 15))
+		p("B", V(2.4, 0.4, 1.4), V(-1.0, 0.6, 4.8), rgb(60, 115, 220), nil, A(0, -25, -15))
+		-- фонтанчик
+		p("C", V(1.6, 0.4, 0.4), V(0, 2.2, -1.2), rgb(160, 230, 255), NEON, UP, 0.3)
+		p("B", V(1.0, 0.6, 1.0), V(0, 3.1, -1.2), rgb(190, 240, 255), NEON, nil, 0.3)
+		-- кристаллы на спине
+		local cc = rgb(140, 255, 255)
+		p("K", V(0.7, 1.8, 0.7), V(0, 1.9, 0.2), cc, NEON, A(10, 45, 0), 0.1)
+		p("K", V(0.5, 1.3, 0.5), V(0.6, 1.6, 0.9), cc, NEON, A(-10, 45, -20), 0.1)
+		p("K", V(0.5, 1.3, 0.5), V(-0.6, 1.6, 0.9), cc, NEON, A(-10, 45, 20), 0.1)
+		p("K", V(0.4, 1.0, 0.4), V(0, 1.4, 1.8), rgb(255, 140, 240), NEON, A(-20, 45, 0), 0.1)
+	end,
+}
+
+SPECS.shadow_fox = {
+	foot = 2.3,
+	body = { "B", V(2.6, 2.4, 4.2), rgb(70, 45, 110) },
+	glowEyes = true,
+	build = function(p, eye)
+		p("B", V(2.4, 2.2, 2.2), V(0, 1.1, -2.2), rgb(70, 45, 110)) -- голова
+		p("B", V(1.8, 1.2, 1.2), V(0, 0.5, -2.7), rgb(240, 230, 255)) -- щёки
+		p("B", V(0.9, 0.8, 1.4), V(0, 0.6, -3.3), rgb(240, 230, 255)) -- морда
+		p("B", V(0.45, 0.4, 0.4), V(0, 0.75, -4.0), BLACK)
+		eye(0.55, 1.4, -3.1, 0.55, rgb(210, 90, 255))
+		eye(-0.55, 1.4, -3.1, 0.55, rgb(210, 90, 255))
+		for _, sx in ipairs({ -1, 1 }) do
+			p("W", V(0.9, 1.6, 0.6), V(sx * 0.7, 2.6, -2.0), rgb(70, 45, 110))
+			p("W", V(0.5, 1.0, 0.3), V(sx * 0.7, 2.5, -2.25), PINK)
+			p("C", V(1.6, 0.7, 0.7), V(sx * 0.8, -1.4, -1.3), rgb(55, 35, 85), nil, UP)
+			p("C", V(1.6, 0.7, 0.7), V(sx * 0.8, -1.4, 1.3), rgb(55, 35, 85), nil, UP)
+			p("B", V(0.8, 0.5, 1.0), V(sx * 0.8, -2.1, -1.4), rgb(240, 230, 255))
+		end
+		p("B", V(1.8, 1.6, 1.0), V(0, -0.2, -1.8), rgb(240, 230, 255)) -- грудка
+		-- пушистый хвост
+		p("B", V(1.8, 1.8, 3.4), V(0, 1.0, 3.0), rgb(80, 50, 125), nil, A(-35, 0, 0))
+		p("B", V(1.6, 1.6, 2.0), V(0, 2.4, 4.0), rgb(90, 55, 140), nil, A(-50, 0, 0))
+		p("B", V(1.2, 1.2, 1.4), V(0, 3.2, 4.5), rgb(200, 100, 255), NEON)
+		-- светящиеся огоньки
+		p("B", V(0.5, 0.5, 0.5), V(1.8, 2.4, 0), rgb(200, 100, 255), NEON)
+		p("B", V(0.4, 0.4, 0.4), V(-1.8, 2.0, 0.8), rgb(140, 200, 255), NEON)
+	end,
+}
+
+SPECS.sun_dragon = {
+	foot = 2.6,
+	body = { "B", V(3.6, 3.2, 4.6), rgb(255, 195, 50) },
+	divine = true,
+	build = function(p, eye)
+		p("B", V(2.6, 2.2, 3.4), V(0, -0.7, -0.4), rgb(255, 240, 180)) -- живот
+		p("C", V(1.8, 1.4, 1.4), V(0, 1.6, -2.0), rgb(255, 195, 50), nil, A(0, 0, 60)) -- шея
+		p("B", V(2.4, 2.2, 2.6), V(0, 2.6, -2.8), rgb(255, 200, 60)) -- голова
+		p("B", V(1.6, 1.2, 1.6), V(0, 2.2, -4.0), rgb(255, 215, 90)) -- морда
+		p("B", V(0.3, 0.3, 0.3), V(0.4, 2.5, -4.75), BLACK)
+		p("B", V(0.3, 0.3, 0.3), V(-0.4, 2.5, -4.75), BLACK)
+		eye(0.7, 3.0, -3.7, 0.65, rgb(255, 80, 40))
+		eye(-0.7, 3.0, -3.7, 0.65, rgb(255, 80, 40))
+		p("W", V(0.4, 1.4, 0.5), V(0.6, 4.0, -2.4), WHITE, nil, A(-30, 0, 0)) -- рога
+		p("W", V(0.4, 1.4, 0.5), V(-0.6, 4.0, -2.4), WHITE, nil, A(-30, 0, 0))
+		-- шипы на спине
+		for k = 0, 4 do
+			p("W", V(0.3, 0.9, 0.9), V(0, 1.8 - k * 0.15, -0.8 + k * 1.0), rgb(255, 120, 40), NEON, A(0, 180, 0))
+		end
+		-- крылья
+		for _, sx in ipairs({ -1, 1 }) do
+			p("C", V(3.2, 0.4, 0.4), V(sx * 2.6, 2.2, 0.0), rgb(230, 150, 30), nil, A(0, 0, sx * -25))
+			p("K", V(4.2, 0.2, 3.0), V(sx * 3.4, 1.7, 0.9), rgb(255, 130, 40), NEON, A(0, sx * -10, sx * 20), 0.15)
+			p("K", V(2.6, 0.2, 2.2), V(sx * 5.2, 2.4, 1.2), rgb(255, 180, 60), NEON, A(0, sx * -20, sx * 35), 0.15)
+			p("C", V(1.6, 0.9, 0.9), V(sx * 1.1, -1.6, -1.0), rgb(240, 180, 40), nil, UP)
+			p("C", V(1.6, 0.9, 0.9), V(sx * 1.1, -1.6, 1.2), rgb(240, 180, 40), nil, UP)
+		end
+		-- хвост
+		p("B", V(1.4, 1.2, 2.8), V(0, -0.2, 3.2), rgb(255, 195, 50), nil, A(15, 0, 0))
+		p("B", V(1.0, 0.9, 2.2), V(0, -0.8, 5.0), rgb(255, 195, 50), nil, A(20, 0, 0))
+		p("W", V(0.3, 1.2, 1.2), V(0, -0.6, 6.3), rgb(255, 120, 40), NEON, A(0, 180, 0))
+		-- нимб
+		p("C", V(0.25, 3.4, 3.4), V(0, 4.9, -2.6), rgb(255, 255, 170), NEON, UP)
+	end,
+}
+
+---------------------------------------------------------------------
 local function makePart(model, shape, size, cf, color, material, transparency)
-	local p = Instance.new("Part")
-	p.Shape = shape
+	local p
+	if shape == "W" then
+		p = Instance.new("WedgePart")
+	else
+		p = Instance.new("Part")
+		if shape == "B" then
+			p.Shape = Enum.PartType.Ball
+		elseif shape == "C" then
+			p.Shape = Enum.PartType.Cylinder
+		else
+			p.Shape = Enum.PartType.Block
+		end
+	end
 	p.Size = size
 	p.CFrame = cf
 	p.Color = color
@@ -962,8 +1227,8 @@ local function makePart(model, shape, size, cf, color, material, transparency)
 	p.BottomSurface = Enum.SurfaceType.Smooth
 	p.Anchored = true
 	p.CanCollide = false
-	p.CanQuery = true
 	p.CanTouch = false
+	p.CastShadow = true
 	p.Massless = true
 	p.Parent = model
 	return p
@@ -979,12 +1244,17 @@ end
 function CreatureFactory.scaleFor(id)
 	local def = Config.Creatures[id]
 	if def.rarity >= 7 then
-		return 1.9
+		return 2.4
 	end
-	return 1 + (def.rarity - 1) * 0.15
+	return 1.25 + (def.rarity - 1) * 0.15
 end
 
--- Создаёт модель существа в позиции cframe (низ модели на уровне cframe).
+-- высота центра тела над точкой, где стоит существо
+function CreatureFactory.footOffset(id)
+	return SPECS[id].foot * CreatureFactory.scaleFor(id)
+end
+
+-- Создаёт модель существа, стоящего на cframe.
 function CreatureFactory.build(id, cframe)
 	local spec = SPECS[id]
 	local def = Config.Creatures[id]
@@ -995,59 +1265,60 @@ function CreatureFactory.build(id, cframe)
 	model.Name = def.name
 	model:SetAttribute("CreatureId", id)
 
-	local bodyDef = spec.body
-	local bodySize = bodyDef[2] * s
-	local origin = cframe * CFrame.new(0, bodySize.Y / 2 + 0.9 * s, 0)
-	local body = makePart(model, bodyDef[1], bodySize, origin, bodyDef[3], bodyDef[4], bodyDef[5])
+	local origin = cframe * CFrame.new(0, spec.foot * s, 0)
+	local b = spec.body
+	-- body = { форма, размер, цвет, материал?, поворот?, прозрачность? }
+	local bodyCf = origin
+	if b[5] then
+		bodyCf = origin * b[5]
+	end
+	local body = makePart(model, b[1], b[2] * s, bodyCf, b[3], b[4], b[6])
 	body.Name = "Body"
 	model.PrimaryPart = body
 
-	local e = spec.eyes
-	if e then
-		local eyeColor = e[5] or WHITE
-		for _, side in ipairs({ -1, 1 }) do
-			local eyePos = Vector3.new(e[1] * side, e[2], e[3]) * s
-			local eye = makePart(model, B, Vector3.new(e[4], e[4], e[4]) * s, origin * CFrame.new(eyePos), eyeColor, spec.glowEyes and NEON or nil)
-			weld(body, eye)
-			local pupil = makePart(
-				model,
-				B,
-				Vector3.new(e[4], e[4], e[4]) * 0.5 * s,
-				origin * CFrame.new(eyePos + Vector3.new(0, 0, -e[4] * 0.38 * s)),
-				BLACK
-			)
-			weld(body, pupil)
+	local function p(shape, size, pos, color, material, rot, transparency)
+		local cf = origin * CFrame.new(pos * s)
+		if rot then
+			cf = cf * rot
 		end
+		local part = makePart(model, shape, size * s, cf, color, material, transparency)
+		weld(body, part)
+		return part
 	end
 
-	for _, pd in ipairs(spec.parts) do
-		local rot = pd[6] or CFrame.new()
-		local p = makePart(model, pd[1], pd[2] * s, origin * CFrame.new(pd[3] * s) * rot, pd[4], pd[5], pd[7])
-		weld(body, p)
+	local function eye(x, y, z, size, iris)
+		p("B", V(size, size, size * 0.7), V(x, y, z), WHITE)
+		p("B", V(size * 0.62, size * 0.62, size * 0.3), V(x, y - size * 0.05, z - size * 0.28), iris or rgb(60, 40, 30), spec.glowEyes and NEON or nil)
+		p("B", V(size * 0.34, size * 0.34, size * 0.2), V(x, y - size * 0.05, z - size * 0.38), BLACK)
+		p("B", V(size * 0.18, size * 0.18, size * 0.1), V(x + size * 0.12, y + size * 0.14, z - size * 0.45), WHITE, NEON)
 	end
+
+	spec.build(p, eye)
 
 	if spec.fire then
 		local fire = Instance.new("Fire")
 		fire.Size = 3 * s
-		fire.Heat = 4
+		fire.Heat = 5
+		fire.Color = rgb(255, 120, 30)
+		fire.SecondaryColor = rgb(255, 220, 60)
 		fire.Parent = body
 	end
-	if spec.divine or def.rarity >= 6 then
-		local light = Instance.new("PointLight")
-		light.Color = rarity.color
-		light.Range = 16
-		light.Brightness = 2
-		light.Parent = body
+	if def.rarity >= 4 then
+		local l = Instance.new("PointLight")
+		l.Color = rarity.color
+		l.Range = spec.divine and 30 or 14
+		l.Brightness = spec.divine and 3 or 1.5
+		l.Parent = body
 	end
-	if def.rarity >= 5 then
+	if def.rarity >= 3 then
 		local sparkles = Instance.new("ParticleEmitter")
 		sparkles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
 		sparkles.Color = ColorSequence.new(rarity.color)
-		sparkles.Rate = spec.divine and 25 or 8
+		sparkles.Rate = spec.divine and 30 or (def.rarity * 2)
 		sparkles.Lifetime = NumberRange.new(1, 2)
 		sparkles.Speed = NumberRange.new(1, 3)
 		sparkles.SpreadAngle = Vector2.new(180, 180)
-		sparkles.Size = NumberSequence.new(0.4)
+		sparkles.Size = NumberSequence.new(0.5)
 		sparkles.LightEmission = 1
 		sparkles.Parent = body
 	end
@@ -1055,9 +1326,9 @@ function CreatureFactory.build(id, cframe)
 	-- табличка: имя, редкость, доход
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Info"
-	gui.Size = UDim2.fromOffset(170, 54)
-	gui.StudsOffset = Vector3.new(0, bodySize.Y / 2 + 2.5, 0)
-	gui.MaxDistance = 120
+	gui.Size = UDim2.fromOffset(190, 62)
+	gui.StudsOffset = Vector3.new(0, spec.foot * s + 2.5, 0)
+	gui.MaxDistance = 130
 	gui.LightInfluence = 0
 	gui.Adornee = body
 	local function line(text, color, y, h)
@@ -1068,19 +1339,18 @@ function CreatureFactory.build(id, cframe)
 		l.Font = Enum.Font.FredokaOne
 		l.TextScaled = true
 		l.TextColor3 = color
-		l.TextStrokeTransparency = 0.2
+		l.TextStrokeTransparency = 0
 		l.Text = text
 		l.Parent = gui
 	end
-	line(def.name, WHITE, 0, 0.4)
-	line(rarity.name, rarity.color, 0.4, 0.3)
-	line(Config.formatMoney(def.income) .. "/сек", rgb(120, 255, 120), 0.7, 0.3)
+	line(def.name, WHITE, 0, 0.38)
+	line(rarity.name, rarity.color, 0.38, 0.3)
+	line(Config.formatMoney(def.income) .. "/сек", rgb(120, 255, 120), 0.68, 0.32)
 	gui.Parent = body
 
 	return model
 end
 
--- Переключает модель: закреплена на месте или свободна (для переноски).
 function CreatureFactory.setAnchored(model, anchored)
 	for _, d in ipairs(model:GetDescendants()) do
 		if d:IsA("BasePart") then
@@ -1120,6 +1390,7 @@ local function defaultData()
 		staminaLevel = 0,
 		wing = 1,
 		creatures = {}, -- список id существ по слотам
+		pending = {}, -- накопленные $ у каждого подиума (забрать кнопкой)
 		receipts = {}, -- последние обработанные покупки
 		totalEarned = 0,
 	}
@@ -1133,13 +1404,15 @@ local function reconcile(data)
 		end
 	end
 	-- выкинуть неизвестных существ (если удалил их из конфига)
-	local clean = {}
-	for _, id in ipairs(data.creatures) do
+	local clean, cleanPending = {}, {}
+	for i, id in ipairs(data.creatures) do
 		if Config.Creatures[id] then
 			table.insert(clean, id)
+			table.insert(cleanPending, tonumber(data.pending[i]) or 0)
 		end
 	end
 	data.creatures = clean
+	data.pending = cleanPending
 	return data
 end
 
@@ -1217,6 +1490,11 @@ function DataService.sync(player)
 	player:SetAttribute("Creatures", HttpService:JSONEncode(d.creatures))
 	player:SetAttribute("MaxSlots", DataService.maxSlots(player))
 	player:SetAttribute("Income", DataService.income(player))
+	local pendingTotal = 0
+	for _, v in ipairs(d.pending) do
+		pendingTotal = pendingTotal + v
+	end
+	player:SetAttribute("Pending", math.floor(pendingTotal))
 	player:SetAttribute("Carrying", profile.carrying and profile.carrying.id or "")
 	for passKey in pairs(Config.GamePasses) do
 		player:SetAttribute("Pass_" .. passKey, DataService.hasPass(player, passKey))
@@ -1265,6 +1543,15 @@ function DataService.baseIncome(player)
 		total = total + Config.Creatures[id].income
 	end
 	return total
+end
+
+function DataService.slotIncome(player, slot)
+	local profile = profiles[player]
+	local id = profile and profile.data.creatures[slot]
+	if not id then
+		return 0
+	end
+	return Config.Creatures[id].income * DataService.incomeMultiplier(player)
 end
 
 function DataService.income(player)
@@ -1318,7 +1605,8 @@ end
 
 return DataService
 ]]></ProtectedString></Properties></Item><Item class="ModuleScript" referent="RBX00000009"><Properties><string name="Name">MapBuilder</string><ProtectedString name="Source"><![CDATA[-- MapBuilder: строит всю карту из блоков при старте сервера.
--- База в центре, 4 участка, станции прокачки, 7 островов, вода, освещение.
+-- Яркая стартовая зона с фонтаном, 4 базы с подиумами, торговые палатки,
+-- 7 тематических островов, облака, вода и освещение.
 
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1331,23 +1619,34 @@ local MapBuilder = {
 	islands = {},
 }
 
-local PLATFORM_HALF = 110
-local PLOT_HALF = 28
+local GY = Config.GroundY
+local PLATFORM_HALF = 150
+local PLOT_HALF = 32
+local PLOT_DIST = 88
+local rng = Random.new(7)
+
 local PLOT_COLORS = {
-	Color3.fromRGB(230, 80, 80),
-	Color3.fromRGB(80, 140, 240),
-	Color3.fromRGB(90, 200, 100),
-	Color3.fromRGB(240, 200, 70),
+	Color3.fromRGB(255, 85, 110),
+	Color3.fromRGB(70, 160, 255),
+	Color3.fromRGB(80, 220, 120),
+	Color3.fromRGB(255, 190, 40),
 }
 
+local function rgb(r, g, b)
+	return Color3.fromRGB(r, g, b)
+end
+
+---------------------------------------------------------------------
+-- помощники
+---------------------------------------------------------------------
 local function part(props)
-	local p = Instance.new("Part")
+	local p = Instance.new(props.Class or "Part")
 	p.Anchored = true
 	p.TopSurface = Enum.SurfaceType.Smooth
 	p.BottomSurface = Enum.SurfaceType.Smooth
 	p.Material = Enum.Material.SmoothPlastic
 	for k, v in pairs(props) do
-		if k ~= "Parent" then
+		if k ~= "Parent" and k ~= "Class" then
 			p[k] = v
 		end
 	end
@@ -1355,12 +1654,57 @@ local function part(props)
 	return p
 end
 
-local function billboard(adornee, text, color, offsetY, sizeX, sizeY, alwaysOnTop)
+local function block(parent, size, cf, color, material, extra)
+	local props = { Parent = parent, Size = size, CFrame = cf, Color = color, Material = material or Enum.Material.SmoothPlastic }
+	if extra then
+		for k, v in pairs(extra) do
+			props[k] = v
+		end
+	end
+	return part(props)
+end
+
+local function ball(parent, size, pos, color, material, extra)
+	local props = { Parent = parent, Shape = Enum.PartType.Ball, Size = size, CFrame = CFrame.new(pos), Color = color, Material = material or Enum.Material.SmoothPlastic }
+	if extra then
+		for k, v in pairs(extra) do
+			props[k] = v
+		end
+	end
+	return part(props)
+end
+
+-- вертикальный цилиндр: center — центр, height — высота
+local function cyl(parent, center, radius, height, color, material, extra)
+	local props = {
+		Parent = parent,
+		Shape = Enum.PartType.Cylinder,
+		Size = Vector3.new(height, radius * 2, radius * 2),
+		CFrame = CFrame.new(center) * CFrame.Angles(0, 0, math.rad(90)),
+		Color = color,
+		Material = material or Enum.Material.SmoothPlastic,
+	}
+	if extra then
+		for k, v in pairs(extra) do
+			props[k] = v
+		end
+	end
+	return part(props)
+end
+
+local function deco(props)
+	props.CanCollide = false
+	props.CanQuery = false
+	props.CanTouch = false
+	return props
+end
+
+local function billboard(adornee, text, color, offsetY, sizeX, sizeY, alwaysOnTop, maxDistance)
 	local gui = Instance.new("BillboardGui")
 	gui.Size = UDim2.fromOffset(sizeX or 220, sizeY or 60)
 	gui.StudsOffset = Vector3.new(0, offsetY or 4, 0)
 	gui.AlwaysOnTop = alwaysOnTop == true
-	gui.MaxDistance = alwaysOnTop and 6000 or 200
+	gui.MaxDistance = maxDistance or (alwaysOnTop and 6000 or 220)
 	gui.LightInfluence = 0
 	gui.Adornee = adornee
 	local label = Instance.new("TextLabel")
@@ -1370,7 +1714,7 @@ local function billboard(adornee, text, color, offsetY, sizeX, sizeY, alwaysOnTo
 	label.Font = Enum.Font.FredokaOne
 	label.TextScaled = true
 	label.TextColor3 = color or Color3.new(1, 1, 1)
-	label.TextStrokeTransparency = 0.2
+	label.TextStrokeTransparency = 0
 	label.Text = text
 	label.Parent = gui
 	gui.Parent = adornee
@@ -1383,58 +1727,194 @@ local function prompt(parentPart, actionText, objectText, name)
 	pp.ActionText = actionText
 	pp.ObjectText = objectText or ""
 	pp.HoldDuration = 0
-	pp.MaxActivationDistance = 12
+	pp.MaxActivationDistance = 14
 	pp.RequiresLineOfSight = false
 	pp.KeyboardKeyCode = Enum.KeyCode.E
 	pp.Parent = parentPart
 	return pp
 end
 
-local function cylinder(parent, center, radius, height, color, material)
-	return part({
-		Parent = parent,
-		Shape = Enum.PartType.Cylinder,
-		Size = Vector3.new(height, radius * 2, radius * 2),
-		CFrame = CFrame.new(center) * CFrame.Angles(0, 0, math.rad(90)),
-		Color = color,
-		Material = material or Enum.Material.SmoothPlastic,
-	})
+local function light(parentPart, color, range, brightness)
+	local l = Instance.new("PointLight")
+	l.Color = color
+	l.Range = range or 14
+	l.Brightness = brightness or 1.5
+	l.Parent = parentPart
+	return l
 end
 
-local function tree(parent, pos, scale)
+---------------------------------------------------------------------
+-- растительность и предметы
+---------------------------------------------------------------------
+local FLOWER_COLORS = { rgb(255, 80, 120), rgb(255, 220, 60), rgb(160, 110, 255), rgb(255, 140, 40), rgb(90, 200, 255), rgb(255, 255, 255) }
+
+local function roundTree(parent, pos, scale, leafColor)
 	scale = scale or 1
-	part({
-		Parent = parent,
-		Size = Vector3.new(1.6, 9, 1.6) * scale,
-		CFrame = CFrame.new(pos + Vector3.new(0, 4.5 * scale, 0)),
-		Color = Color3.fromRGB(120, 80, 50),
-		Material = Enum.Material.Wood,
-	})
-	part({
-		Parent = parent,
-		Shape = Enum.PartType.Ball,
-		Size = Vector3.new(8, 8, 8) * scale,
-		CFrame = CFrame.new(pos + Vector3.new(0, 10 * scale, 0)),
-		Color = Color3.fromRGB(70, 170, 70),
-		Material = Enum.Material.Grass,
-	})
+	leafColor = leafColor or rgb(80, 200, 80)
+	block(parent, Vector3.new(1.8, 9, 1.8) * scale, CFrame.new(pos + Vector3.new(0, 4.5 * scale, 0)), rgb(140, 90, 55), Enum.Material.Wood)
+	ball(parent, Vector3.new(9, 8, 9) * scale, pos + Vector3.new(0, 10.5 * scale, 0), leafColor, Enum.Material.Grass)
+	ball(parent, Vector3.new(6, 6, 6) * scale, pos + Vector3.new(2.5, 12.5, 1) * scale, leafColor:Lerp(Color3.new(1, 1, 1), 0.15), Enum.Material.Grass)
+	ball(parent, Vector3.new(5, 5, 5) * scale, pos + Vector3.new(-2.2, 12, -1.5) * scale, leafColor:Lerp(Color3.new(0, 0, 0), 0.1), Enum.Material.Grass)
+	-- яблочки
+	for i = 1, 3 do
+		local a = i * 2.1
+		ball(parent, Vector3.new(0.9, 0.9, 0.9) * scale, pos + Vector3.new(math.cos(a) * 4.2, 9.5 + i * 0.6, math.sin(a) * 4.2) * scale, rgb(255, 60, 60), nil, deco({}))
+	end
 end
 
+local function palm(parent, pos, scale)
+	scale = scale or 1
+	local top = pos
+	for i = 0, 5 do
+		local seg = pos + Vector3.new(i * 0.5, i * 2.2 + 1, 0) * scale
+		block(parent, Vector3.new(1.6, 2.4, 1.6) * scale, CFrame.new(seg) * CFrame.Angles(0, 0, math.rad(-12)), i % 2 == 0 and rgb(170, 120, 70) or rgb(150, 100, 60), Enum.Material.Wood)
+		top = seg
+	end
+	for i = 1, 6 do
+		local a = i / 6 * math.pi * 2
+		local dir = Vector3.new(math.cos(a), 0, math.sin(a))
+		local leafPos = top + dir * 3.2 * scale + Vector3.new(0, 0.4, 0) * scale
+		block(parent, Vector3.new(1.6, 0.3, 6.5) * scale, CFrame.lookAt(leafPos, leafPos + dir) * CFrame.Angles(math.rad(-18), 0, 0), rgb(60, 190, 70), Enum.Material.Grass, deco({}))
+	end
+	for i = 1, 3 do
+		ball(parent, Vector3.new(1.1, 1.1, 1.1) * scale, top + Vector3.new(math.cos(i * 2) * 0.8, -1, math.sin(i * 2) * 0.8) * scale, rgb(120, 80, 40), nil, deco({}))
+	end
+end
+
+local function pine(parent, pos, scale, color, snow)
+	scale = scale or 1
+	color = color or rgb(40, 140, 80)
+	block(parent, Vector3.new(1.4, 4, 1.4) * scale, CFrame.new(pos + Vector3.new(0, 2, 0) * scale), rgb(110, 75, 50), Enum.Material.Wood)
+	for i = 0, 3 do
+		local size = (7 - i * 1.5) * scale
+		local y = (4 + i * 2.6) * scale
+		block(parent, Vector3.new(size, 2.4 * scale, size), CFrame.new(pos + Vector3.new(0, y, 0)) * CFrame.Angles(0, math.rad(45 * i), 0), color, Enum.Material.Grass)
+		if snow then
+			block(parent, Vector3.new(size * 0.8, 0.5 * scale, size * 0.8), CFrame.new(pos + Vector3.new(0, y + 1.3 * scale, 0)) * CFrame.Angles(0, math.rad(45 * i), 0), rgb(250, 252, 255), Enum.Material.Snow, deco({}))
+		end
+	end
+end
+
+local function lollipopTree(parent, pos, scale, color)
+	scale = scale or 1
+	cyl(parent, pos + Vector3.new(0, 5 * scale, 0), 0.6 * scale, 10 * scale, rgb(255, 255, 255))
+	local center = pos + Vector3.new(0, 11 * scale, 0)
+	part({ Parent = parent, Shape = Enum.PartType.Cylinder, Size = Vector3.new(1.4, 8, 8) * scale, CFrame = CFrame.new(center), Color = color })
+	part(deco({ Parent = parent, Shape = Enum.PartType.Cylinder, Size = Vector3.new(1.6, 5.5, 5.5) * scale, CFrame = CFrame.new(center), Color = rgb(255, 255, 255) }))
+	part(deco({ Parent = parent, Shape = Enum.PartType.Cylinder, Size = Vector3.new(1.8, 3, 3) * scale, CFrame = CFrame.new(center), Color = color }))
+end
+
+local function candyCane(parent, pos, scale)
+	scale = scale or 1
+	for i = 0, 5 do
+		block(parent, Vector3.new(1.2, 1.2, 1.2) * scale, CFrame.new(pos + Vector3.new(0, 0.6 + i * 1.2, 0) * scale), i % 2 == 0 and rgb(255, 60, 80) or rgb(255, 255, 255))
+	end
+	block(parent, Vector3.new(1.2, 1.2, 1.2) * scale, CFrame.new(pos + Vector3.new(1.2, 7.8, 0) * scale), rgb(255, 255, 255))
+	block(parent, Vector3.new(1.2, 1.2, 1.2) * scale, CFrame.new(pos + Vector3.new(2.4, 7.2, 0) * scale), rgb(255, 60, 80))
+end
+
+local function flower(parent, pos, color)
+	block(parent, Vector3.new(0.25, 1.4, 0.25), CFrame.new(pos + Vector3.new(0, 0.7, 0)), rgb(60, 160, 60), nil, deco({}))
+	for i = 1, 4 do
+		local a = i / 4 * math.pi * 2
+		ball(parent, Vector3.new(0.7, 0.4, 0.7), pos + Vector3.new(math.cos(a) * 0.4, 1.5, math.sin(a) * 0.4), color, nil, deco({}))
+	end
+	ball(parent, Vector3.new(0.5, 0.5, 0.5), pos + Vector3.new(0, 1.6, 0), rgb(255, 230, 80), nil, deco({}))
+end
+
+local function bush(parent, pos, color, scale)
+	scale = scale or 1
+	ball(parent, Vector3.new(4, 3, 4) * scale, pos + Vector3.new(0, 1, 0) * scale, color, Enum.Material.Grass)
+	ball(parent, Vector3.new(3, 2.5, 3) * scale, pos + Vector3.new(1.6, 1.2, 0.6) * scale, color:Lerp(Color3.new(1, 1, 1), 0.12), Enum.Material.Grass)
+	for i = 1, 3 do
+		ball(parent, Vector3.new(0.6, 0.6, 0.6) * scale, pos + Vector3.new(math.cos(i * 2) * 1.8, 2, math.sin(i * 2) * 1.8) * scale, FLOWER_COLORS[(i % #FLOWER_COLORS) + 1], nil, deco({}))
+	end
+end
+
+local function rock(parent, pos, color, scale)
+	scale = scale or 1
+	block(parent, Vector3.new(4, 3, 3.4) * scale, CFrame.new(pos + Vector3.new(0, 1.2, 0) * scale) * CFrame.Angles(math.rad(10), math.rad(rng:NextInteger(0, 90)), math.rad(8)), color, Enum.Material.Slate)
+	block(parent, Vector3.new(2.4, 2, 2.2) * scale, CFrame.new(pos + Vector3.new(1.8, 0.8, 1) * scale) * CFrame.Angles(0, math.rad(30), math.rad(-12)), color:Lerp(Color3.new(1, 1, 1), 0.1), Enum.Material.Slate)
+end
+
+local function mushroom(parent, pos, capColor, glow, scale)
+	scale = scale or 1
+	cyl(parent, pos + Vector3.new(0, 1.2, 0) * scale, 0.5 * scale, 2.4 * scale, rgb(250, 240, 220), nil, deco({}))
+	local cap = ball(parent, Vector3.new(3, 1.6, 3) * scale, pos + Vector3.new(0, 2.6, 0) * scale, capColor, glow and Enum.Material.Neon or nil, deco({}))
+	for i = 1, 3 do
+		ball(parent, Vector3.new(0.5, 0.3, 0.5) * scale, pos + Vector3.new(math.cos(i * 2.1) * 0.9, 3.25, math.sin(i * 2.1) * 0.9) * scale, rgb(255, 255, 255), nil, deco({}))
+	end
+	if glow then
+		light(cap, capColor, 10, 1)
+	end
+end
+
+local function crystal(parent, pos, color, scale)
+	scale = scale or 1
+	local main = block(parent, Vector3.new(2, 8, 2) * scale, CFrame.new(pos + Vector3.new(0, 3.5, 0) * scale) * CFrame.Angles(math.rad(8), math.rad(45), math.rad(6)), color, Enum.Material.Neon, { Transparency = 0.15 })
+	block(parent, Vector3.new(1.4, 5, 1.4) * scale, CFrame.new(pos + Vector3.new(1.4, 2.2, 0.6) * scale) * CFrame.Angles(math.rad(-10), math.rad(20), math.rad(-25)), color, Enum.Material.Neon, { Transparency = 0.15 })
+	block(parent, Vector3.new(1.2, 4, 1.2) * scale, CFrame.new(pos + Vector3.new(-1.2, 1.8, -0.5) * scale) * CFrame.Angles(math.rad(12), math.rad(60), math.rad(22)), color, Enum.Material.Neon, { Transparency = 0.15 })
+	light(main, color, 16, 1.5)
+end
+
+local function lamp(parent, pos, color)
+	block(parent, Vector3.new(0.6, 8, 0.6), CFrame.new(pos + Vector3.new(0, 4, 0)), rgb(60, 60, 70), Enum.Material.Metal)
+	local bulb = ball(parent, Vector3.new(1.8, 1.8, 1.8), pos + Vector3.new(0, 8.6, 0), color, Enum.Material.Neon)
+	light(bulb, color, 18, 1.2)
+end
+
+local function cloud(parent, pos, scale)
+	for i = 1, 5 do
+		local off = Vector3.new(rng:NextNumber(-8, 8), rng:NextNumber(-1.5, 1.5), rng:NextNumber(-4, 4)) * scale
+		local s = rng:NextNumber(7, 12) * scale
+		ball(parent, Vector3.new(s, s * 0.7, s), pos + off, rgb(255, 255, 255), Enum.Material.SmoothPlastic, deco({ CastShadow = false, Transparency = 0.05 }))
+	end
+end
+
+---------------------------------------------------------------------
+-- освещение и вода
+---------------------------------------------------------------------
 local function buildLighting()
-	Lighting.ClockTime = 14
-	Lighting.Brightness = 2.5
-	Lighting.Ambient = Color3.fromRGB(110, 110, 120)
-	Lighting.OutdoorAmbient = Color3.fromRGB(150, 150, 160)
+	Lighting.ClockTime = 13.5
+	Lighting.Brightness = 3
+	Lighting.Ambient = rgb(120, 120, 135)
+	Lighting.OutdoorAmbient = rgb(160, 160, 175)
+	Lighting.EnvironmentDiffuseScale = 1
+	Lighting.EnvironmentSpecularScale = 1
 	Lighting.GlobalShadows = true
 	Lighting.FogEnd = 100000
+
 	local atmo = Lighting:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere")
-	atmo.Density = 0.12
-	atmo.Haze = 0.5
-	atmo.Color = Color3.fromRGB(200, 225, 255)
-	atmo.Decay = Color3.fromRGB(120, 170, 230)
+	atmo.Density = 0.08
+	atmo.Offset = 0.1
+	atmo.Haze = 0.2
+	atmo.Glare = 0.3
+	atmo.Color = rgb(210, 235, 255)
+	atmo.Decay = rgb(140, 190, 255)
 	atmo.Parent = Lighting
+
+	local cc = Instance.new("ColorCorrectionEffect")
+	cc.Saturation = 0.3
+	cc.Contrast = 0.08
+	cc.Brightness = 0.02
+	cc.TintColor = rgb(255, 250, 240)
+	cc.Parent = Lighting
+
+	local bloom = Instance.new("BloomEffect")
+	bloom.Intensity = 0.6
+	bloom.Size = 24
+	bloom.Threshold = 1.4
+	bloom.Parent = Lighting
+
+	local rays = Instance.new("SunRaysEffect")
+	rays.Intensity = 0.08
+	rays.Spread = 0.7
+	rays.Parent = Lighting
+
 	if not Lighting:FindFirstChildOfClass("Sky") then
-		Instance.new("Sky").Parent = Lighting
+		local sky = Instance.new("Sky")
+		sky.SunAngularSize = 14
+		sky.Parent = Lighting
 	end
 end
 
@@ -1442,184 +1922,362 @@ local function buildWater(map)
 	local tile = 2000
 	for ix = -2, 1 do
 		for iz = -2, 1 do
-			part({
+			part(deco({
 				Parent = map,
 				Name = "Water",
 				Size = Vector3.new(tile, 4, tile),
 				CFrame = CFrame.new(ix * tile + tile / 2, Config.WaterLevel - 2, iz * tile + tile / 2),
-				Color = Color3.fromRGB(40, 125, 210),
+				Color = rgb(40, 190, 230),
 				Material = Enum.Material.Glass,
-				Transparency = 0.25,
-				CanCollide = false,
-				CanQuery = false,
-				CanTouch = false,
+				Reflectance = 0.1,
+				Transparency = 0.2,
 				CastShadow = false,
-			})
+			}))
+			part(deco({
+				Parent = map,
+				Name = "SeaFloor",
+				Size = Vector3.new(tile, 2, tile),
+				CFrame = CFrame.new(ix * tile + tile / 2, Config.WaterLevel - 30, iz * tile + tile / 2),
+				Color = rgb(20, 90, 160),
+				Material = Enum.Material.Sand,
+				CastShadow = false,
+			}))
 		end
 	end
 end
 
-local function buildStation(map, name, title, color, pos)
-	local folder = Instance.new("Model")
-	folder.Name = name
+local function buildClouds(map)
+	local folder = Instance.new("Folder")
+	folder.Name = "Clouds"
 	folder.Parent = map
-	part({
-		Parent = folder,
-		Size = Vector3.new(16, 1, 16),
-		CFrame = CFrame.new(pos + Vector3.new(0, 0.5, 0)),
-		Color = color,
-		Material = Enum.Material.SmoothPlastic,
-	})
-	local kiosk = part({
-		Parent = folder,
-		Name = "Kiosk",
-		Size = Vector3.new(5, 5, 5),
-		CFrame = CFrame.new(pos + Vector3.new(0, 3.5, 0)),
-		Color = Color3.fromRGB(60, 60, 70),
-	})
-	part({
-		Parent = folder,
-		Size = Vector3.new(5.4, 1, 5.4),
-		CFrame = CFrame.new(pos + Vector3.new(0, 6.5, 0)),
-		Color = color,
-		Material = Enum.Material.Neon,
-	})
-	billboard(kiosk, title, color, 7, 260, 60)
+	for i = 1, 40 do
+		local a = rng:NextNumber(0, math.pi * 2)
+		local d = rng:NextNumber(200, 3000)
+		cloud(folder, Vector3.new(math.cos(a) * d, rng:NextNumber(140, 260), math.sin(a) * d), rng:NextNumber(1.2, 2.4))
+	end
+end
+
+---------------------------------------------------------------------
+-- стартовая зона
+---------------------------------------------------------------------
+local function buildStation(map, name, title, color, pos, facing)
+	local model = Instance.new("Model")
+	model.Name = name
+	model.Parent = map
+	local cf = CFrame.lookAt(pos, pos + facing)
+	local white = rgb(255, 255, 255)
+
+	block(model, Vector3.new(20, 1, 16), cf * CFrame.new(0, 0.5, 0), color:Lerp(white, 0.55))
+	-- прилавок
+	local kiosk = block(model, Vector3.new(14, 4, 3), cf * CFrame.new(0, 3, -2), color)
+	kiosk.Name = "Kiosk"
+	block(model, Vector3.new(14.6, 0.6, 3.6), cf * CFrame.new(0, 5.3, -2), white)
+	-- столбы
+	for _, x in ipairs({ -8, 8 }) do
+		for _, z in ipairs({ -4, 5 }) do
+			block(model, Vector3.new(0.8, 11, 0.8), cf * CFrame.new(x, 6.5, z), white, Enum.Material.Wood)
+		end
+	end
+	-- полосатая крыша
+	for i = -4, 4 do
+		block(model, Vector3.new(2, 0.6, 12), cf * CFrame.new(i * 2, 12.6, 0.5) * CFrame.Angles(math.rad(-8), 0, 0), i % 2 == 0 and color or white)
+	end
+	for i = -4, 4 do
+		ball(model, Vector3.new(2, 2, 2), (cf * CFrame.new(i * 2, 12.2, -5.6)).Position, i % 2 == 0 and color or white, nil, deco({}))
+	end
+	-- вывеска
+	local sign = block(model, Vector3.new(12, 3, 0.6), cf * CFrame.new(0, 15.2, -5), color, Enum.Material.Neon)
+	billboard(sign, title, white, 2.5, 280, 60, false, 260)
+	light(sign, color, 24, 2)
+	-- украшения на прилавке
+	ball(model, Vector3.new(1.6, 1.6, 1.6), (cf * CFrame.new(-4, 6.4, -2)).Position, rgb(255, 230, 80), Enum.Material.Neon, deco({}))
+	ball(model, Vector3.new(1.6, 1.6, 1.6), (cf * CFrame.new(4, 6.4, -2)).Position, rgb(120, 230, 255), Enum.Material.Neon, deco({}))
+
 	local pp = prompt(kiosk, "Открыть", title, "OpenPrompt")
-	MapBuilder.stations[name] = { model = folder, kiosk = kiosk, prompt = pp, position = pos }
+	MapBuilder.stations[name] = { model = model, kiosk = kiosk, prompt = pp, position = pos }
+end
+
+local function buildFountain(map)
+	local c = Vector3.new(0, GY, 0)
+	cyl(map, c + Vector3.new(0, 1, 0), 12, 2, rgb(240, 240, 250), Enum.Material.Marble)
+	cyl(map, c + Vector3.new(0, 1.6, 0), 10.5, 1.4, rgb(70, 210, 255), Enum.Material.Glass, deco({ Transparency = 0.2 }))
+	cyl(map, c + Vector3.new(0, 4, 0), 2, 6, rgb(240, 240, 250), Enum.Material.Marble)
+	cyl(map, c + Vector3.new(0, 7.2, 0), 5, 0.8, rgb(240, 240, 250), Enum.Material.Marble)
+	local top = ball(map, Vector3.new(3, 3, 3), c + Vector3.new(0, 9, 0), rgb(255, 215, 60), Enum.Material.Neon)
+	light(top, rgb(255, 230, 120), 30, 2)
+	-- струи
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+	emitter.Color = ColorSequence.new(rgb(140, 230, 255))
+	emitter.Rate = 40
+	emitter.Lifetime = NumberRange.new(1.2, 1.8)
+	emitter.Speed = NumberRange.new(14, 18)
+	emitter.SpreadAngle = Vector2.new(25, 25)
+	emitter.Acceleration = Vector3.new(0, -25, 0)
+	emitter.Size = NumberSequence.new(0.8)
+	emitter.Parent = top
 end
 
 local function buildPlot(map, index, center)
 	local model = Instance.new("Model")
 	model.Name = "Plot" .. index
 	model.Parent = map
+	local color = PLOT_COLORS[index]
+	local dark = color:Lerp(Color3.new(0, 0, 0), 0.25)
+	local light2 = color:Lerp(Color3.new(1, 1, 1), 0.55)
+	local white = rgb(255, 255, 255)
+	-- -Z смотрит в центр карты (там вход)
 	local cf = CFrame.lookAt(center, Vector3.new(0, center.Y, 0))
-	part({
-		Parent = model,
-		Name = "Floor",
-		Size = Vector3.new(PLOT_HALF * 2, 1, PLOT_HALF * 2),
-		CFrame = cf * CFrame.new(0, 0.5, 0),
-		Color = PLOT_COLORS[index],
-		Material = Enum.Material.SmoothPlastic,
-		Transparency = 0.1,
-	})
-	-- бортики
-	for _, side in ipairs({ -1, 1 }) do
-		part({
-			Parent = model,
-			Size = Vector3.new(1, 2, PLOT_HALF * 2),
-			CFrame = cf * CFrame.new(side * PLOT_HALF, 1.5, 0),
-			Color = PLOT_COLORS[index]:Lerp(Color3.new(0, 0, 0), 0.3),
-		})
-	end
-	part({
-		Parent = model,
-		Size = Vector3.new(PLOT_HALF * 2, 2, 1),
-		CFrame = cf * CFrame.new(0, 1.5, PLOT_HALF),
-		Color = PLOT_COLORS[index]:Lerp(Color3.new(0, 0, 0), 0.3),
-	})
 
-	local pads = {}
-	local maxPads = Config.BaseSlots + Config.ExtraSlotsPass
-	local i = 0
-	for _, z in ipairs({ -4, 7, 18 }) do
-		for _, x in ipairs({ -20, -10, 0, 10, 20 }) do
-			i = i + 1
-			if i <= maxPads then
-				local pad = part({
-					Parent = model,
-					Name = "Pad" .. i,
-					Size = Vector3.new(7, 0.4, 7),
-					CFrame = cf * CFrame.new(x, 1.2, z),
-					Color = Color3.fromRGB(245, 245, 245),
-					Material = Enum.Material.SmoothPlastic,
-				})
-				pads[i] = pad
-			end
+	-- шахматный пол
+	local tiles = 4
+	local ts = PLOT_HALF * 2 / tiles
+	for ix = 0, tiles - 1 do
+		for iz = 0, tiles - 1 do
+			local x = -PLOT_HALF + ts / 2 + ix * ts
+			local z = -PLOT_HALF + ts / 2 + iz * ts
+			block(model, Vector3.new(ts, 1, ts), cf * CFrame.new(x, 0.5, z), (ix + iz) % 2 == 0 and light2 or white)
 		end
 	end
 
-	local post = part({
-		Parent = model,
-		Name = "SignPost",
-		Size = Vector3.new(1, 10, 1),
-		CFrame = cf * CFrame.new(0, 6, -PLOT_HALF + 2),
-		Color = Color3.fromRGB(90, 70, 50),
-		Material = Enum.Material.Wood,
-	})
-	local sign = billboard(post, "Свободная база", Color3.new(1, 1, 1), 6, 260, 50)
+	-- стены: задняя и боковые, перед открыт
+	local wallH = 8
+	local function wall(size, offset)
+		block(model, size, cf * offset, color)
+		block(model, Vector3.new(size.X + 0.4, 0.8, size.Z + 0.4), cf * offset * CFrame.new(0, wallH / 2 + 0.4, 0), white)
+		block(model, Vector3.new(size.X + 0.2, 0.5, size.Z + 0.2), cf * offset * CFrame.new(0, -wallH / 2 + 1.8, 0), dark, Enum.Material.Neon, deco({}))
+	end
+	wall(Vector3.new(PLOT_HALF * 2, wallH, 1.2), CFrame.new(0, wallH / 2 + 1, PLOT_HALF))
+	wall(Vector3.new(1.2, wallH, PLOT_HALF * 2), CFrame.new(-PLOT_HALF, wallH / 2 + 1, 0))
+	wall(Vector3.new(1.2, wallH, PLOT_HALF * 2), CFrame.new(PLOT_HALF, wallH / 2 + 1, 0))
+	-- короткие стенки по бокам входа
+	wall(Vector3.new(18, wallH, 1.2), CFrame.new(-PLOT_HALF + 9, wallH / 2 + 1, -PLOT_HALF))
+	wall(Vector3.new(18, wallH, 1.2), CFrame.new(PLOT_HALF - 9, wallH / 2 + 1, -PLOT_HALF))
+
+	-- арка входа
+	for _, x in ipairs({ -14, 14 }) do
+		block(model, Vector3.new(2.4, 16, 2.4), cf * CFrame.new(x, 9, -PLOT_HALF), white)
+		local orb = ball(model, Vector3.new(3, 3, 3), (cf * CFrame.new(x, 18.5, -PLOT_HALF)).Position, color, Enum.Material.Neon)
+		light(orb, color, 20, 2)
+	end
+	local arch = block(model, Vector3.new(30, 3, 2.4), cf * CFrame.new(0, 16.5, -PLOT_HALF), color)
+	local sign = billboard(arch, "Свободная база", white, 3.5, 320, 56, false, 300)
+	-- светящаяся завеса на входе (декор)
+	block(model, Vector3.new(26, 14, 0.2), cf * CFrame.new(0, 8, -PLOT_HALF), color, Enum.Material.ForceField, deco({ Transparency = 0.5 }))
+
+	-- флаг-маяк в углу
+	local pole = block(model, Vector3.new(0.8, 30, 0.8), cf * CFrame.new(PLOT_HALF - 3, 16, PLOT_HALF - 3), white, Enum.Material.Metal)
+	pole.Name = "Beacon"
+	block(model, Vector3.new(0.3, 5, 8), cf * CFrame.new(PLOT_HALF - 3, 28.5, PLOT_HALF - 7.2), color, Enum.Material.Fabric, deco({}))
+
+	-- подиумы 3 ряда по 5
+	local podiums = {}
+	local maxPads = Config.BaseSlots + Config.ExtraSlotsPass
+	local i = 0
+	for _, z in ipairs({ -6, 7, 20 }) do
+		for _, x in ipairs({ -22, -11, 0, 11, 22 }) do
+			i = i + 1
+			if i <= maxPads then
+				local base = cyl(model, (cf * CFrame.new(x, 2, z)).Position, 3, 2, white)
+				base.Name = "Podium" .. i
+				local rim = cyl(model, (cf * CFrame.new(x, 3.05, z)).Position, 3.3, 0.3, rgb(200, 200, 210), Enum.Material.Neon, deco({}))
+				local button = block(model, Vector3.new(3, 0.4, 2.2), cf * CFrame.new(x, 1.2, z - 4.6), rgb(60, 220, 90), Enum.Material.Neon, { CanCollide = false })
+				button.Name = "Collect" .. i
+				local gui = billboard(button, "", rgb(140, 255, 140), 1.6, 110, 26, false, 70)
+				podiums[i] = {
+					base = base,
+					rim = rim,
+					button = button,
+					label = gui.Label,
+					top = cf * CFrame.new(x, 3.2, z),
+				}
+			end
+		end
+	end
 
 	MapBuilder.plots[index] = {
 		model = model,
 		cframe = cf * CFrame.new(0, 1, 0),
 		spawnCFrame = cf * CFrame.new(0, 4, -PLOT_HALF + 6) * CFrame.Angles(0, math.pi, 0),
-		pads = pads,
+		podiums = podiums,
 		sign = sign,
-		color = PLOT_COLORS[index],
+		color = color,
 	}
 end
 
 local function buildStart(map)
-	local y = Config.GroundY
-	part({
-		Parent = map,
-		Name = "StartPlatform",
-		Size = Vector3.new(PLATFORM_HALF * 2, 12, PLATFORM_HALF * 2),
-		CFrame = CFrame.new(0, y - 6, 0),
-		Color = Color3.fromRGB(110, 190, 90),
-		Material = Enum.Material.Grass,
-	})
-	part({
-		Parent = map,
-		Size = Vector3.new(PLATFORM_HALF * 2 + 6, 14, PLATFORM_HALF * 2 + 6),
-		CFrame = CFrame.new(0, y - 9, 0),
-		Color = Color3.fromRGB(220, 200, 150),
-		Material = Enum.Material.Sand,
-	})
-	-- дорожки к станциям
-	part({
-		Parent = map,
-		Size = Vector3.new(90, 0.2, 10),
-		CFrame = CFrame.new(0, y + 0.1, 0),
-		Color = Color3.fromRGB(200, 190, 170),
-		Material = Enum.Material.Cobblestone,
-	})
-	part({
-		Parent = map,
-		Size = Vector3.new(10, 0.2, 90),
-		CFrame = CFrame.new(0, y + 0.1, 0),
-		Color = Color3.fromRGB(200, 190, 170),
-		Material = Enum.Material.Cobblestone,
-	})
+	local y = GY
+	-- остров-основа
+	cyl(map, Vector3.new(0, y - 6, 0), PLATFORM_HALF * 1.32, 12, rgb(110, 205, 90), Enum.Material.Grass)
+	cyl(map, Vector3.new(0, y - 7.4, 0), PLATFORM_HALF * 1.32 + 12, 12, rgb(250, 225, 160), Enum.Material.Sand)
+	cyl(map, Vector3.new(0, y - 18, 0), PLATFORM_HALF * 1.2, 14, rgb(150, 125, 100), Enum.Material.Slate)
 
-	local d = 70
-	local corners = {
-		Vector3.new(-d, y, -d),
-		Vector3.new(d, y, -d),
-		Vector3.new(d, y, d),
-		Vector3.new(-d, y, d),
-	}
-	for index, c in ipairs(corners) do
+	-- дорожки-«плюс» и круг вокруг фонтана
+	block(map, Vector3.new(130, 0.3, 12), CFrame.new(0, y + 0.15, 0), rgb(255, 235, 200), Enum.Material.Pebble)
+	block(map, Vector3.new(12, 0.3, 130), CFrame.new(0, y + 0.15, 0), rgb(255, 235, 200), Enum.Material.Pebble)
+	cyl(map, Vector3.new(0, y + 0.2, 0), 20, 0.4, rgb(255, 235, 200), Enum.Material.Pebble)
+	-- диагональные дорожки к базам
+	for _, sx in ipairs({ -1, 1 }) do
+		for _, sz in ipairs({ -1, 1 }) do
+			local from = Vector3.new(sx * 15, y + 0.15, sz * 15)
+			local to = Vector3.new(sx * (PLOT_DIST - PLOT_HALF * 0.7), y + 0.15, sz * (PLOT_DIST - PLOT_HALF * 0.7))
+			local mid = (from + to) / 2
+			block(map, Vector3.new(10, 0.3, (to - from).Magnitude), CFrame.lookAt(mid, to), rgb(255, 235, 200), Enum.Material.Pebble)
+		end
+	end
+
+	buildFountain(map)
+
+	for index, c in ipairs({
+		Vector3.new(-PLOT_DIST, y, -PLOT_DIST),
+		Vector3.new(PLOT_DIST, y, -PLOT_DIST),
+		Vector3.new(PLOT_DIST, y, PLOT_DIST),
+		Vector3.new(-PLOT_DIST, y, PLOT_DIST),
+	}) do
 		buildPlot(map, index, c)
 	end
 
-	buildStation(map, "Speed", "⚡ Скорость", Color3.fromRGB(255, 200, 40), Vector3.new(-34, y, 0))
-	buildStation(map, "Stamina", "💪 Стамина", Color3.fromRGB(60, 220, 120), Vector3.new(34, y, 0))
-	buildStation(map, "Wings", "🕊 Крылья", Color3.fromRGB(120, 180, 255), Vector3.new(0, y, -34))
-	buildStation(map, "Market", "💰 Рынок (продажа)", Color3.fromRGB(240, 120, 60), Vector3.new(0, y, 34))
-	buildStation(map, "Donate", "⭐ Донат-магазин", Color3.fromRGB(255, 90, 200), Vector3.new(0, y, 0))
+	buildStation(map, "Speed", "⚡ Скорость", rgb(255, 190, 30), Vector3.new(-52, y, 0), Vector3.new(1, 0, 0))
+	buildStation(map, "Stamina", "💪 Стамина", rgb(60, 210, 110), Vector3.new(52, y, 0), Vector3.new(-1, 0, 0))
+	buildStation(map, "Wings", "🕊 Крылья", rgb(90, 160, 255), Vector3.new(0, y, -52), Vector3.new(0, 0, 1))
+	buildStation(map, "Market", "💰 Рынок", rgb(255, 110, 50), Vector3.new(0, y, 52), Vector3.new(0, 0, -1))
+	buildStation(map, "Donate", "⭐ Донат-магазин", rgb(255, 80, 200), Vector3.new(57, y, 24), Vector3.new(-57, 0, -24))
 
-	for _, pos in ipairs({
-		Vector3.new(-100, y, -30),
-		Vector3.new(-100, y, 30),
-		Vector3.new(100, y, -30),
-		Vector3.new(100, y, 30),
-		Vector3.new(-30, y, -100),
-		Vector3.new(30, y, -100),
-		Vector3.new(-30, y, 100),
-		Vector3.new(30, y, 100),
-	}) do
-		tree(map, pos, 1.2)
+	-- клумбы, фонари, деревья
+	for i = 1, 8 do
+		local a = i / 8 * math.pi * 2 + math.pi / 8
+		local p = Vector3.new(math.cos(a) * 26, y, math.sin(a) * 26)
+		lamp(map, p, FLOWER_COLORS[(i % #FLOWER_COLORS) + 1])
+	end
+	for i = 1, 40 do
+		local a = rng:NextNumber(0, math.pi * 2)
+		local d = rng:NextNumber(22, 40)
+		local p = Vector3.new(math.cos(a) * d, y, math.sin(a) * d)
+		if math.abs(p.X) > 8 and math.abs(p.Z) > 8 then
+			flower(map, p, FLOWER_COLORS[rng:NextInteger(1, #FLOWER_COLORS)])
+		end
+	end
+	for i = 1, 16 do
+		local a = i / 16 * math.pi * 2
+		local p = Vector3.new(math.cos(a) * 180, y, math.sin(a) * 180)
+		if i % 2 == 0 then
+			palm(map, p, 1.3)
+		else
+			roundTree(map, p, 1.3)
+		end
+	end
+	for i = 1, 12 do
+		local a = i / 12 * math.pi * 2 + 0.2
+		bush(map, Vector3.new(math.cos(a) * 160, y, math.sin(a) * 160), rgb(70, 190, 80), 1.2)
+	end
+end
+
+---------------------------------------------------------------------
+-- острова
+---------------------------------------------------------------------
+local THEMES = {
+	meadow = { ground = rgb(110, 215, 90), cliff = rgb(165, 130, 95), beach = rgb(250, 225, 150) },
+	candy = { ground = rgb(255, 170, 215), cliff = rgb(190, 130, 255), beach = rgb(255, 245, 250) },
+	tropical = { ground = rgb(120, 220, 100), cliff = rgb(200, 160, 110), beach = rgb(255, 230, 160) },
+	volcano = { ground = rgb(95, 70, 70), cliff = rgb(60, 45, 45), beach = rgb(40, 30, 30) },
+	ice = { ground = rgb(235, 248, 255), cliff = rgb(140, 200, 245), beach = rgb(200, 230, 255) },
+	crystal = { ground = rgb(130, 90, 210), cliff = rgb(70, 50, 120), beach = rgb(180, 150, 240) },
+	golden = { ground = rgb(255, 240, 170), cliff = rgb(245, 245, 250), beach = rgb(255, 220, 110) },
+}
+
+local function randomSpotOnIsland(center, radius, minFrac, maxFrac)
+	local a = rng:NextNumber(0, math.pi * 2)
+	local d = rng:NextNumber(minFrac, maxFrac) * radius
+	return center + Vector3.new(math.cos(a) * d, 0, math.sin(a) * d)
+end
+
+local function decorateIsland(model, theme, center, r)
+	local function ring(count, minF, maxF, fn)
+		for i = 1, count do
+			fn(randomSpotOnIsland(center, r, minF, maxF), i)
+		end
+	end
+	if theme == "meadow" then
+		ring(9, 0.7, 0.9, function(p) roundTree(model, p, rng:NextNumber(1, 1.4)) end)
+		ring(8, 0.55, 0.85, function(p) bush(model, p, rgb(80, 200, 80)) end)
+		ring(40, 0.15, 0.9, function(p, i) flower(model, p, FLOWER_COLORS[(i % #FLOWER_COLORS) + 1]) end)
+		ring(5, 0.6, 0.85, function(p) mushroom(model, p, rgb(255, 70, 70), false) end)
+		ring(4, 0.75, 0.9, function(p) rock(model, p, rgb(170, 165, 160)) end)
+	elseif theme == "candy" then
+		local colors = { rgb(255, 80, 150), rgb(110, 220, 255), rgb(255, 210, 60), rgb(150, 255, 150), rgb(200, 120, 255) }
+		ring(10, 0.65, 0.9, function(p, i) lollipopTree(model, p, rng:NextNumber(1, 1.5), colors[(i % #colors) + 1]) end)
+		ring(8, 0.5, 0.88, function(p) candyCane(model, p, rng:NextNumber(1, 1.6)) end)
+		ring(14, 0.2, 0.9, function(p, i)
+			ball(model, Vector3.new(2.4, 2, 2.4), p + Vector3.new(0, 0.8, 0), colors[(i % #colors) + 1], Enum.Material.Glass, { Transparency = 0.1 })
+		end)
+		ring(6, 0.55, 0.85, function(p) mushroom(model, p, rgb(255, 120, 200), true) end)
+	elseif theme == "tropical" then
+		ring(12, 0.7, 0.95, function(p) palm(model, p, rng:NextNumber(1.1, 1.5)) end)
+		ring(8, 0.55, 0.85, function(p) bush(model, p, rgb(50, 190, 90)) end)
+		ring(5, 0.75, 0.95, function(p) rock(model, p, rgb(210, 190, 150)) end)
+		-- зонтики
+		ring(3, 0.5, 0.7, function(p, i)
+			cyl(model, p + Vector3.new(0, 3.5, 0), 0.25, 7, rgb(255, 255, 255))
+			cyl(model, p + Vector3.new(0, 7.2, 0), 4, 0.5, i % 2 == 0 and rgb(255, 80, 80) or rgb(60, 170, 255), nil, deco({}))
+		end)
+		-- ракушки и морские звёзды
+		ring(14, 0.2, 0.9, function(p, i)
+			ball(model, Vector3.new(1.2, 0.5, 1.2), p + Vector3.new(0, 0.25, 0), i % 2 == 0 and rgb(255, 140, 100) or rgb(255, 200, 220), nil, deco({}))
+		end)
+	elseif theme == "volcano" then
+		-- вулкан у края
+		local vp = center + Vector3.new(r * 0.55, 0, r * 0.25)
+		cyl(model, vp + Vector3.new(0, 4, 0), 16, 8, rgb(70, 50, 50), Enum.Material.Basalt)
+		cyl(model, vp + Vector3.new(0, 11, 0), 11, 8, rgb(80, 55, 55), Enum.Material.Basalt)
+		cyl(model, vp + Vector3.new(0, 17, 0), 7, 6, rgb(90, 60, 55), Enum.Material.Basalt)
+		local crater = cyl(model, vp + Vector3.new(0, 20.2, 0), 5, 0.6, rgb(255, 100, 20), Enum.Material.Neon)
+		light(crater, rgb(255, 120, 40), 40, 3)
+		local fire = Instance.new("Fire")
+		fire.Size = 14
+		fire.Heat = 20
+		fire.Parent = crater
+		local smoke = Instance.new("Smoke")
+		smoke.Size = 10
+		smoke.RiseVelocity = 8
+		smoke.Opacity = 0.15
+		smoke.Parent = crater
+		ring(7, 0.25, 0.85, function(p)
+			local pool = cyl(model, p + Vector3.new(0, 0.1, 0), rng:NextNumber(2.5, 4.5), 0.4, rgb(255, 110, 20), Enum.Material.Neon, deco({}))
+			light(pool, rgb(255, 120, 40), 12, 1)
+		end)
+		ring(8, 0.6, 0.9, function(p) rock(model, p, rgb(50, 40, 40), rng:NextNumber(1, 1.6)) end)
+		ring(5, 0.5, 0.85, function(p) crystal(model, p, rgb(255, 60, 40), 0.9) end)
+	elseif theme == "ice" then
+		ring(10, 0.65, 0.92, function(p) pine(model, p, rng:NextNumber(1.1, 1.5), rgb(40, 130, 90), true) end)
+		ring(8, 0.4, 0.88, function(p) crystal(model, p, rgb(150, 230, 255), rng:NextNumber(0.8, 1.3)) end)
+		ring(3, 0.4, 0.7, function(p)
+			ball(model, Vector3.new(4, 4, 4), p + Vector3.new(0, 2, 0), rgb(255, 255, 255), Enum.Material.Snow)
+			ball(model, Vector3.new(3, 3, 3), p + Vector3.new(0, 5, 0), rgb(255, 255, 255), Enum.Material.Snow)
+			ball(model, Vector3.new(2.2, 2.2, 2.2), p + Vector3.new(0, 7.2, 0), rgb(255, 255, 255), Enum.Material.Snow)
+			block(model, Vector3.new(0.3, 0.3, 1.2), CFrame.new(p + Vector3.new(0, 7.2, -1.4)), rgb(255, 140, 30), nil, deco({}))
+			block(model, Vector3.new(2, 0.4, 2), CFrame.new(p + Vector3.new(0, 8.4, 0)), rgb(30, 30, 40), nil, deco({}))
+		end)
+		ring(6, 0.3, 0.85, function(p) rock(model, p, rgb(170, 215, 245)) end)
+	elseif theme == "crystal" then
+		local colors = { rgb(90, 240, 255), rgb(255, 90, 220), rgb(170, 110, 255) }
+		ring(14, 0.45, 0.92, function(p, i) crystal(model, p, colors[(i % #colors) + 1], rng:NextNumber(1, 1.9)) end)
+		ring(10, 0.3, 0.9, function(p, i) mushroom(model, p, colors[(i % #colors) + 1], true, rng:NextNumber(0.8, 1.4)) end)
+		ring(6, 0.6, 0.9, function(p) rock(model, p, rgb(80, 60, 130), 1.4) end)
+	elseif theme == "golden" then
+		-- кольцо колонн и пьедестал в центре
+		for i = 1, 10 do
+			local a = i / 10 * math.pi * 2
+			local p = center + Vector3.new(math.cos(a), 0, math.sin(a)) * (r * 0.62)
+			cyl(model, p + Vector3.new(0, 1, 0), 2.6, 2, rgb(255, 255, 255), Enum.Material.Marble)
+			cyl(model, p + Vector3.new(0, 9, 0), 1.8, 14, rgb(250, 250, 255), Enum.Material.Marble)
+			cyl(model, p + Vector3.new(0, 16.5, 0), 2.6, 1.4, rgb(255, 210, 60), Enum.Material.Metal)
+			local orb = ball(model, Vector3.new(2, 2, 2), p + Vector3.new(0, 18.4, 0), rgb(255, 230, 100), Enum.Material.Neon)
+			light(orb, rgb(255, 220, 120), 16, 1.5)
+		end
+		cyl(model, center + Vector3.new(0, 0.6, 0), 14, 1.2, rgb(255, 255, 255), Enum.Material.Marble)
+		cyl(model, center + Vector3.new(0, 1.4, 0), 11, 0.5, rgb(255, 210, 60), Enum.Material.Neon, deco({}))
+		ring(8, 0.75, 0.95, function(p) cloud(model, p + Vector3.new(0, 2, 0), 0.5) end)
+		ring(20, 0.3, 0.9, function(p) flower(model, p, rgb(255, 225, 90)) end)
 	end
 end
 
@@ -1628,39 +2286,54 @@ local function buildIsland(map, index, def)
 	model.Name = "Island" .. index
 	model.Parent = map
 	local a = math.rad(def.angle)
-	local center = Vector3.new(math.cos(a) * def.distance, Config.GroundY, math.sin(a) * def.distance)
+	local center = Vector3.new(math.cos(a) * def.distance, GY, math.sin(a) * def.distance)
 	local rarity = Config.Rarities[def.rarity]
+	local theme = THEMES[def.theme] or THEMES.meadow
+	local r = def.radius
 
-	cylinder(model, center - Vector3.new(0, 1, 0), def.radius, 2, Color3.fromRGB(100, 185, 85), Enum.Material.Grass)
-	cylinder(model, center - Vector3.new(0, 8, 0), def.radius - 2, 12, Color3.fromRGB(130, 115, 100), Enum.Material.Slate)
-	cylinder(model, center - Vector3.new(0, 15, 0), def.radius * 0.6, 6, Color3.fromRGB(110, 95, 85), Enum.Material.Slate)
+	-- слои: трава, пляж, скалы
+	cyl(model, center - Vector3.new(0, 1.5, 0), r, 3, theme.ground, def.theme == "ice" and Enum.Material.Snow or Enum.Material.Grass)
+	cyl(model, center - Vector3.new(0, 2.6, 0), r + 8, 3, theme.beach, Enum.Material.Sand)
+	cyl(model, center - Vector3.new(0, 10, 0), r - 3, 14, theme.cliff, Enum.Material.Slate)
+	cyl(model, center - Vector3.new(0, 20, 0), r * 0.7, 10, theme.cliff:Lerp(Color3.new(0, 0, 0), 0.15), Enum.Material.Slate)
 	-- светящийся край цвета редкости
-	cylinder(model, center - Vector3.new(0, 0.9, 0), def.radius + 0.6, 1.6, rarity.color, Enum.Material.Neon)
-
-	for t = 1, 3 do
-		local ta = a + t * 2.1
-		tree(model, center + Vector3.new(math.cos(ta), 0, math.sin(ta)) * (def.radius * 0.78), 1)
+	cyl(model, center - Vector3.new(0, 1.35, 0), r + 0.6, 2.6, rarity.color, Enum.Material.Neon, deco({}))
+	-- холмы по краю
+	for h = 1, 3 do
+		local ha = a + h * 2.2 + 0.6
+		local hp = center + Vector3.new(math.cos(ha), 0, math.sin(ha)) * (r * 0.78)
+		ball(model, Vector3.new(r * 0.5, 9, r * 0.5), hp, theme.ground:Lerp(Color3.new(0, 0, 0), 0.06), Enum.Material.Grass)
 	end
 
-	local signPart = part({
+	decorateIsland(model, def.theme, center, r)
+
+	-- летающие камушки вокруг
+	for k = 1, 5 do
+		local fa = k / 5 * math.pi * 2 + a
+		local fp = center + Vector3.new(math.cos(fa) * (r + 22), rng:NextNumber(18, 34), math.sin(fa) * (r + 22))
+		cyl(model, fp, rng:NextNumber(4, 7), 3, theme.ground)
+		cyl(model, fp - Vector3.new(0, 3, 0), 3.5, 4, theme.cliff, Enum.Material.Slate)
+	end
+
+	local signPart = part(deco({
 		Parent = model,
 		Name = "SignAnchor",
 		Size = Vector3.new(1, 1, 1),
-		CFrame = CFrame.new(center + Vector3.new(0, 30, 0)),
+		CFrame = CFrame.new(center + Vector3.new(0, 42, 0)),
 		Transparency = 1,
-		CanCollide = false,
-		CanQuery = false,
-	})
-	billboard(signPart, "Остров " .. index .. "\n" .. rarity.name, rarity.color, 0, 180, 60, true)
+	}))
+	billboard(signPart, def.name .. "\n" .. rarity.name, rarity.color, 0, 220, 70, true)
 
 	local spawnPoints = {}
 	for k = 1, def.spawns do
 		local pos
 		if def.spawns == 1 then
-			pos = center
+			pos = center + Vector3.new(0, 1.2, 0)
 		else
 			local sa = k / def.spawns * math.pi * 2 + a
-			pos = center + Vector3.new(math.cos(sa), 0, math.sin(sa)) * (def.radius * 0.45)
+			pos = center + Vector3.new(math.cos(sa), 0, math.sin(sa)) * (r * 0.32)
+			-- маленький постамент под существом
+			cyl(model, pos + Vector3.new(0, 0.3, 0), 3.4, 0.6, rarity.color, Enum.Material.Neon, deco({}))
 		end
 		spawnPoints[k] = CFrame.lookAt(pos, Vector3.new(0, pos.Y, 0))
 	end
@@ -1679,6 +2352,7 @@ function MapBuilder.build()
 	map.Name = "Map"
 	map.Parent = workspace
 	buildWater(map)
+	buildClouds(map)
 	buildStart(map)
 	for index, def in ipairs(Config.Islands) do
 		buildIsland(map, index, def)
@@ -1877,7 +2551,8 @@ function Net.announce(text, kind)
 end
 
 return Net
-]]></ProtectedString></Properties></Item><Item class="ModuleScript" referent="RBX00000012"><Properties><string name="Name">PlotService</string><ProtectedString name="Source"><![CDATA[-- PlotService: 4 базы, выдача базы игроку, отображение существ на слотах.
+]]></ProtectedString></Properties></Item><Item class="ModuleScript" referent="RBX00000012"><Properties><string name="Name">PlotService</string><ProtectedString name="Source"><![CDATA[-- PlotService: 4 базы, выдача базы игроку, существа на подиумах,
+-- накопление $ у каждого подиума и сбор наступлением на зелёную кнопку.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -1885,11 +2560,25 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local MapBuilder = require(script.Parent.MapBuilder)
 local CreatureFactory = require(script.Parent.CreatureFactory)
 local DataService = require(script.Parent.DataService)
+local Net = require(script.Parent.Net)
 
 local PlotService = {}
 
 local owners = {} -- owners[plotIndex] = player
 local displayed = {} -- displayed[plotIndex] = { models }
+
+local EMPTY_RIM = Color3.fromRGB(200, 200, 210)
+local LOCKED = Color3.fromRGB(120, 120, 130)
+
+local function resetPodiums(plot)
+	for _, pod in pairs(plot.podiums) do
+		pod.base.Color = Color3.new(1, 1, 1)
+		pod.base.Transparency = 0
+		pod.rim.Color = EMPTY_RIM
+		pod.button.Transparency = 0.6
+		pod.label.Text = ""
+	end
+end
 
 function PlotService.assign(player)
 	for index = 1, #MapBuilder.plots do
@@ -1898,7 +2587,7 @@ function PlotService.assign(player)
 			local profile = DataService.get(player)
 			profile.plotIndex = index
 			local plot = MapBuilder.plots[index]
-			plot.sign.Label.Text = "База: " .. player.DisplayName
+			plot.sign.Label.Text = "База " .. player.DisplayName
 			player:SetAttribute("PlotIndex", index)
 			return index
 		end
@@ -1913,10 +2602,7 @@ function PlotService.release(player)
 			PlotService.clear(index)
 			local plot = MapBuilder.plots[index]
 			plot.sign.Label.Text = "Свободная база"
-			for _, pad in pairs(plot.pads) do
-				pad.Color = Color3.fromRGB(245, 245, 245)
-				pad.Transparency = 0
-			end
+			resetPodiums(plot)
 		end
 	end
 end
@@ -1938,7 +2624,7 @@ function PlotService.clear(index)
 	displayed[index] = {}
 end
 
--- Перерисовывает существ игрока на его базе.
+-- Перерисовывает существ игрока на подиумах.
 function PlotService.refresh(player)
 	local profile = DataService.get(player)
 	if not profile or not profile.plotIndex then
@@ -1947,25 +2633,90 @@ function PlotService.refresh(player)
 	local index = profile.plotIndex
 	local plot = MapBuilder.plots[index]
 	PlotService.clear(index)
+	resetPodiums(plot)
 	local maxSlots = DataService.maxSlots(player)
-	for slot, pad in pairs(plot.pads) do
-		if slot <= maxSlots then
-			pad.Transparency = 0
-			pad.Color = Color3.fromRGB(245, 245, 245)
-		else
-			pad.Transparency = 0.6
-			pad.Color = Color3.fromRGB(120, 120, 120)
+	for slot, pod in pairs(plot.podiums) do
+		if slot > maxSlots then
+			pod.base.Color = LOCKED
+			pod.base.Transparency = 0.5
+			pod.button.Transparency = 1
+			pod.label.Text = "🔒"
 		end
 	end
 	for slot, id in ipairs(profile.data.creatures) do
-		local pad = plot.pads[slot]
-		if pad then
-			local model = CreatureFactory.build(id, pad.CFrame * CFrame.new(0, 0.2, 0))
+		local pod = plot.podiums[slot]
+		if pod then
+			local model = CreatureFactory.build(id, pod.top)
 			model.Parent = plot.model
 			table.insert(displayed[index], model)
-			local rarity = Config.Rarities[Config.Creatures[id].rarity]
-			pad.Color = rarity.color
+			pod.rim.Color = Config.Rarities[Config.Creatures[id].rarity].color
+			pod.button.Transparency = 0
 		end
+	end
+	PlotService.updateLabels(player)
+end
+
+-- Обновляет надписи «$123» над кнопками.
+function PlotService.updateLabels(player)
+	local profile = DataService.get(player)
+	local plot = PlotService.getPlot(player)
+	if not profile or not plot then
+		return
+	end
+	for slot, id in ipairs(profile.data.creatures) do
+		local pod = plot.podiums[slot]
+		if pod and id then
+			pod.label.Text = Config.formatMoney(profile.data.pending[slot] or 0)
+		end
+	end
+end
+
+-- Каждую секунду: доход идёт в копилку подиума.
+function PlotService.accumulate(player)
+	local profile = DataService.get(player)
+	if not profile then
+		return
+	end
+	local pending = profile.data.pending
+	for slot in ipairs(profile.data.creatures) do
+		pending[slot] = (pending[slot] or 0) + DataService.slotIncome(player, slot)
+	end
+	PlotService.updateLabels(player)
+end
+
+-- Забрать деньги с одного подиума.
+function PlotService.collect(player, slot)
+	local profile = DataService.get(player)
+	local amount = math.floor(profile.data.pending[slot] or 0)
+	if amount <= 0 then
+		return 0
+	end
+	profile.data.pending[slot] = 0
+	DataService.addMoney(player, amount)
+	return amount
+end
+
+-- Игрок стоит на кнопке у подиума?
+function PlotService.checkCollect(player, position)
+	local profile = DataService.get(player)
+	local plot = PlotService.getPlot(player)
+	if not profile or not plot then
+		return
+	end
+	local total = 0
+	for slot in ipairs(profile.data.creatures) do
+		local pod = plot.podiums[slot]
+		if pod then
+			local d = pod.button.Position - position
+			if math.abs(d.X) < Config.CollectRadius and math.abs(d.Z) < Config.CollectRadius and math.abs(d.Y) < 5 then
+				total = total + PlotService.collect(player, slot)
+			end
+		end
+	end
+	if total > 0 then
+		PlotService.updateLabels(player)
+		DataService.sync(player)
+		Net.notify(player, "+" .. Config.formatMoney(total), "success")
 	end
 end
 
@@ -1976,7 +2727,7 @@ function PlotService.isInside(player, position)
 		return false
 	end
 	local rel = plot.cframe:PointToObjectSpace(position)
-	return math.abs(rel.X) <= 29 and math.abs(rel.Z) <= 29 and rel.Y < 40 and rel.Y > -6
+	return math.abs(rel.X) <= 31 and math.abs(rel.Z) <= 31 and rel.Y < 40 and rel.Y > -6
 end
 
 return PlotService
@@ -2080,11 +2831,12 @@ function UpgradeService.sell(player, slot)
 		return { ok = false, msg = "Нет такого существа" }
 	end
 	local id = table.remove(creatures, slot)
+	local stored = math.floor(table.remove(profile.data.pending, slot) or 0)
 	local price = Config.sellPrice(id)
-	DataService.addMoney(player, price)
+	DataService.addMoney(player, price + stored)
 	PlotService.refresh(player)
 	DataService.sync(player)
-	return { ok = true, msg = "Продано " .. Config.Creatures[id].name .. " за " .. Config.formatMoney(price) }
+	return { ok = true, msg = "Продано " .. Config.Creatures[id].name .. " за " .. Config.formatMoney(price + stored) }
 end
 
 function UpgradeService.sellAll(player)
@@ -2100,7 +2852,11 @@ function UpgradeService.sellAll(player)
 	for _, id in ipairs(profile.data.creatures) do
 		total = total + Config.sellPrice(id)
 	end
+	for _, v in ipairs(profile.data.pending) do
+		total = total + math.floor(v)
+	end
 	profile.data.creatures = {}
+	profile.data.pending = {}
 	DataService.addMoney(player, total)
 	PlotService.refresh(player)
 	DataService.sync(player)
@@ -2108,7 +2864,83 @@ function UpgradeService.sellAll(player)
 end
 
 return UpgradeService
-]]></ProtectedString></Properties></Item></Item></Item><Item class="StarterPlayer" referent="RBX00000019"><Properties><string name="Name">StarterPlayer</string></Properties><Item class="StarterPlayerScripts" referent="RBX00000018"><Properties><string name="Name">StarterPlayerScripts</string></Properties><Item class="LocalScript" referent="RBX00000016"><Properties><string name="Name">FlightController</string><ProtectedString name="Source"><![CDATA[-- FlightController: полёт на клиенте.
+]]></ProtectedString></Properties></Item></Item></Item><Item class="StarterPlayer" referent="RBX00000020"><Properties><string name="Name">StarterPlayer</string></Properties><Item class="StarterPlayerScripts" referent="RBX00000019"><Properties><string name="Name">StarterPlayerScripts</string></Properties><Item class="LocalScript" referent="RBX00000016"><Properties><string name="Name">CreatureAnimator</string><ProtectedString name="Source"><![CDATA[-- CreatureAnimator: существа рядом с игроком подпрыгивают и покачиваются.
+-- Анимация только на клиенте: сервер не нагружается.
+
+local RunService = game:GetService("RunService")
+
+local tracked = setmetatable({}, { __mode = "k" })
+local models = {}
+local rng = Random.new()
+
+local function gather()
+	local list = {}
+	local creatures = workspace:FindFirstChild("Creatures")
+	if creatures then
+		for _, m in ipairs(creatures:GetChildren()) do
+			if m:IsA("Model") then
+				table.insert(list, m)
+			end
+		end
+	end
+	local map = workspace:FindFirstChild("Map")
+	if map then
+		for i = 1, 4 do
+			local plot = map:FindFirstChild("Plot" .. i)
+			if plot then
+				for _, m in ipairs(plot:GetChildren()) do
+					if m:IsA("Model") and m:GetAttribute("CreatureId") then
+						table.insert(list, m)
+					end
+				end
+			end
+		end
+	end
+	models = list
+end
+
+task.spawn(function()
+	while true do
+		gather()
+		task.wait(1)
+	end
+end)
+
+local acc = 0
+RunService.RenderStepped:Connect(function(dt)
+	acc = acc + dt
+	if acc < 1 / 30 then
+		return
+	end
+	acc = 0
+	local cam = workspace.CurrentCamera
+	if not cam then
+		return
+	end
+	local camPos = cam.CFrame.Position
+	local t = os.clock()
+	for _, model in ipairs(models) do
+		local body = model.PrimaryPart
+		if body and body.Parent and body.Anchored then
+			local info = tracked[model]
+			local current = model:GetPivot()
+			if not info then
+				info = { base = current, phase = rng:NextNumber(0, math.pi * 2) }
+				tracked[model] = info
+			elseif info.last and (current.Position - info.last.Position).Magnitude > 0.05 then
+				-- сервер переставил модель — берём новую точку
+				info.base = current
+			end
+			if (info.base.Position - camPos).Magnitude < 150 then
+				local hop = math.abs(math.sin(t * 2.2 + info.phase)) * 0.6
+				local cf = info.base * CFrame.new(0, hop, 0) * CFrame.Angles(0, math.sin(t * 0.9 + info.phase) * 0.3, 0)
+				model:PivotTo(cf)
+				info.last = cf
+			end
+		end
+	end
+end)
+]]></ProtectedString><bool name="Disabled">false</bool></Properties></Item><Item class="LocalScript" referent="RBX00000017"><Properties><string name="Name">FlightController</string><ProtectedString name="Source"><![CDATA[-- FlightController: полёт на клиенте.
 -- Прыгни и держи ПРОБЕЛ (или кнопку «Лететь») — взмах вверх, тратится стамина.
 -- Отпустил — плавно снижаешься (стамина тоже тратится). Стамина 0 — падаешь.
 
@@ -2279,7 +3111,7 @@ RunService.RenderStepped:Connect(function(dt)
 	player:SetAttribute("StaminaMax", maxStamina)
 	player:SetAttribute("Flying", flying)
 end)
-]]></ProtectedString><bool name="Disabled">false</bool></Properties></Item><Item class="LocalScript" referent="RBX00000017"><Properties><string name="Name">UIController</string><ProtectedString name="Source"><![CDATA[-- UIController: деньги, стамина, таймер божественного, окна станций и донат-магазин.
+]]></ProtectedString><bool name="Disabled">false</bool></Properties></Item><Item class="LocalScript" referent="RBX00000018"><Properties><string name="Name">UIController</string><ProtectedString name="Source"><![CDATA[-- UIController: деньги, стамина, таймер божественного, окна станций и донат-магазин.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -2371,7 +3203,7 @@ local moneyFrame = new("Frame", {
 	Parent = gui,
 	AnchorPoint = Vector2.new(0.5, 0),
 	Position = UDim2.new(0.5, 0, 0, 8),
-	Size = UDim2.fromOffset(260, 64),
+	Size = UDim2.fromOffset(320, 64),
 	BackgroundColor3 = C.bg,
 	BackgroundTransparency = 0.15,
 }, { corner(14), stroke(C.gold, 2) })
@@ -2735,7 +3567,9 @@ end
 local acc = 0
 RunService.RenderStepped:Connect(function(dt)
 	moneyLabel.Text = Config.formatMoney(player:GetAttribute("Money") or 0)
+	local pending = player:GetAttribute("Pending") or 0
 	incomeLabel.Text = "+" .. Config.formatMoney(player:GetAttribute("Income") or 0) .. "/сек"
+		.. (pending > 0 and ("  ·  на базе " .. Config.formatMoney(pending)) or "")
 
 	local frac = player:GetAttribute("StaminaFrac") or 1
 	staminaFill.Size = UDim2.fromScale(math.clamp(frac, 0, 1), 1)
@@ -2782,5 +3616,36 @@ task.delay(3, function()
 	toast("Держи ПРОБЕЛ в прыжке, чтобы лететь!", "info")
 	task.wait(1)
 	toast("Хватай существ на островах и неси на базу", "info")
+	task.wait(1)
+	toast("Наступи на зелёную кнопку у подиума — заберёшь $", "info")
 end)
+
+-- метка «Твоя база», видна издалека (только тебе)
+local function markBase()
+	local index = player:GetAttribute("PlotIndex")
+	if not index then
+		return
+	end
+	local map = workspace:WaitForChild("Map")
+	local plot = map:WaitForChild("Plot" .. index)
+	local beacon = plot:WaitForChild("Beacon")
+	local old = beacon:FindFirstChild("MyBase")
+	if old then
+		old:Destroy()
+	end
+	local bb = new("BillboardGui", {
+		Name = "MyBase",
+		Parent = beacon,
+		Adornee = beacon,
+		Size = UDim2.fromOffset(170, 44),
+		StudsOffset = Vector3.new(0, 18, 0),
+		AlwaysOnTop = true,
+		MaxDistance = 6000,
+		LightInfluence = 0,
+	})
+	new("Frame", { Parent = bb, Size = UDim2.fromScale(1, 1), BackgroundColor3 = C.green }, { corner(12), stroke(C.white, 2) })
+	label({ Parent = bb, Size = UDim2.new(1, -10, 1, -6), Position = UDim2.fromOffset(5, 3), Text = "🏠 ТВОЯ БАЗА", ZIndex = 2 })
+end
+player:GetAttributeChangedSignal("PlotIndex"):Connect(markBase)
+task.spawn(markBase)
 ]]></ProtectedString><bool name="Disabled">false</bool></Properties></Item></Item></Item></roblox>

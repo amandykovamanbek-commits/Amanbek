@@ -138,16 +138,13 @@ Players.PlayerRemoving:Connect(function(player)
 	DataService.release(player)
 end)
 
--- доход каждую секунду
+-- доход каждую секунду копится у подиумов (забираешь кнопкой на базе)
 task.spawn(function()
 	while true do
 		task.wait(1)
 		for player, profile in pairs(DataService.all()) do
 			if player.Parent and profile.plotIndex then
-				local income = DataService.income(player)
-				if income > 0 then
-					DataService.addMoney(player, income)
-				end
+				PlotService.accumulate(player)
 				DataService.sync(player)
 			end
 		end

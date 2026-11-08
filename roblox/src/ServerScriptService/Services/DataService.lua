@@ -28,6 +28,7 @@ local function defaultData()
 		staminaLevel = 0,
 		wing = 1,
 		creatures = {}, -- список id существ по слотам
+		pending = {}, -- накопленные $ у каждого подиума (забрать кнопкой)
 		receipts = {}, -- последние обработанные покупки
 		totalEarned = 0,
 	}
@@ -41,13 +42,15 @@ local function reconcile(data)
 		end
 	end
 	-- выкинуть неизвестных существ (если удалил их из конфига)
-	local clean = {}
-	for _, id in ipairs(data.creatures) do
+	local clean, cleanPending = {}, {}
+	for i, id in ipairs(data.creatures) do
 		if Config.Creatures[id] then
 			table.insert(clean, id)
+			table.insert(cleanPending, tonumber(data.pending[i]) or 0)
 		end
 	end
 	data.creatures = clean
+	data.pending = cleanPending
 	return data
 end
 
@@ -125,6 +128,11 @@ function DataService.sync(player)
 	player:SetAttribute("Creatures", HttpService:JSONEncode(d.creatures))
 	player:SetAttribute("MaxSlots", DataService.maxSlots(player))
 	player:SetAttribute("Income", DataService.income(player))
+	local pendingTotal = 0
+	for _, v in ipairs(d.pending) do
+		pendingTotal = pendingTotal + v
+	end
+	player:SetAttribute("Pending", math.floor(pendingTotal))
 	player:SetAttribute("Carrying", profile.carrying and profile.carrying.id or "")
 	for passKey in pairs(Config.GamePasses) do
 		player:SetAttribute("Pass_" .. passKey, DataService.hasPass(player, passKey))
@@ -173,6 +181,15 @@ function DataService.baseIncome(player)
 		total = total + Config.Creatures[id].income
 	end
 	return total
+end
+
+function DataService.slotIncome(player, slot)
+	local profile = profiles[player]
+	local id = profile and profile.data.creatures[slot]
+	if not id then
+		return 0
+	end
+	return Config.Creatures[id].income * DataService.incomeMultiplier(player)
 end
 
 function DataService.income(player)

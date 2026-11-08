@@ -98,11 +98,12 @@ function UpgradeService.sell(player, slot)
 		return { ok = false, msg = "Нет такого существа" }
 	end
 	local id = table.remove(creatures, slot)
+	local stored = math.floor(table.remove(profile.data.pending, slot) or 0)
 	local price = Config.sellPrice(id)
-	DataService.addMoney(player, price)
+	DataService.addMoney(player, price + stored)
 	PlotService.refresh(player)
 	DataService.sync(player)
-	return { ok = true, msg = "Продано " .. Config.Creatures[id].name .. " за " .. Config.formatMoney(price) }
+	return { ok = true, msg = "Продано " .. Config.Creatures[id].name .. " за " .. Config.formatMoney(price + stored) }
 end
 
 function UpgradeService.sellAll(player)
@@ -118,7 +119,11 @@ function UpgradeService.sellAll(player)
 	for _, id in ipairs(profile.data.creatures) do
 		total = total + Config.sellPrice(id)
 	end
+	for _, v in ipairs(profile.data.pending) do
+		total = total + math.floor(v)
+	end
 	profile.data.creatures = {}
+	profile.data.pending = {}
 	DataService.addMoney(player, total)
 	PlotService.refresh(player)
 	DataService.sync(player)

@@ -76,6 +76,7 @@ local function spawnAt(entry, id)
 	local model = CreatureFactory.build(id, entry.cframe)
 	model.Parent = MapBuilder.creatureFolder
 	entry.model = model
+	entry.homePivot = model:GetPivot()
 	entry.id = id
 	entry.carriedBy = nil
 
@@ -152,7 +153,7 @@ function BrainrotService.drop(player)
 			weld:Destroy()
 		end
 		CreatureFactory.setAnchored(entry.model, true)
-		entry.model:PivotTo(entry.cframe * CFrame.new(0, (entry.model.PrimaryPart.Size.Y / 2 + 0.9 * CreatureFactory.scaleFor(entry.id)), 0))
+		entry.model:PivotTo(entry.homePivot)
 		local prompt = entry.model.PrimaryPart:FindFirstChild("GrabPrompt")
 		if prompt then
 			prompt.Enabled = true
@@ -188,6 +189,7 @@ local function deliver(player, profile)
 		entry.nextSpawn = now() + rng:NextNumber(Config.RespawnMin, Config.RespawnMax)
 	end
 	table.insert(profile.data.creatures, id)
+	table.insert(profile.data.pending, 0)
 	PlotService.refresh(player)
 	DataService.sync(player)
 	local def = Config.Creatures[id]
@@ -274,6 +276,9 @@ function BrainrotService.init()
 					Net.notify(player, had and "Упал в воду! Существо вернулось на остров." or "Упал в воду!", "error")
 				elseif profile.carrying and PlotService.isInside(player, root.Position) then
 					deliver(player, profile)
+				end
+				if root.Parent then
+					PlotService.checkCollect(player, root.Position)
 				end
 			end
 		end

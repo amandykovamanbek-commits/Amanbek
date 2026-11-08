@@ -12,6 +12,7 @@ Config.ExtraSlotsPass = 5        -- +слоты за Game Pass
 Config.StartMoney = 0
 Config.AutosaveSeconds = 60
 Config.DataStoreName = "WingsAndBrainrots_v1"
+Config.CollectRadius = 3.5       -- наступи на кнопку у подиума, чтобы забрать $
 
 Config.WaterLevel = 0            -- верх воды
 Config.GroundY = 8               -- верх стартовой платформы и островов
@@ -125,13 +126,13 @@ end
 -- Острова: каждый следующий дальше, промежуток растёт
 ---------------------------------------------------------------------
 Config.Islands = {
-	{ distance = 220, angle = 20, radius = 32, rarity = 1, spawns = 4 },
-	{ distance = 420, angle = 75, radius = 34, rarity = 2, spawns = 4 },
-	{ distance = 680, angle = 130, radius = 36, rarity = 3, spawns = 4 },
-	{ distance = 1000, angle = 185, radius = 38, rarity = 4, spawns = 3 },
-	{ distance = 1400, angle = 240, radius = 40, rarity = 5, spawns = 3 },
-	{ distance = 1900, angle = 295, radius = 42, rarity = 6, spawns = 3 },
-	{ distance = 2600, angle = 350, radius = 46, rarity = 7, spawns = 1 },
+	{ name = "Цветочный луг", theme = "meadow", distance = 340, angle = 20, radius = 55, rarity = 1, spawns = 5 },
+	{ name = "Конфетный лес", theme = "candy", distance = 580, angle = 75, radius = 58, rarity = 2, spawns = 5 },
+	{ name = "Пальмовый пляж", theme = "tropical", distance = 860, angle = 130, radius = 62, rarity = 3, spawns = 4 },
+	{ name = "Огненный вулкан", theme = "volcano", distance = 1200, angle = 185, radius = 66, rarity = 4, spawns = 4 },
+	{ name = "Ледяной ледник", theme = "ice", distance = 1620, angle = 240, radius = 70, rarity = 5, spawns = 3 },
+	{ name = "Кристальная пещера", theme = "crystal", distance = 2140, angle = 295, radius = 74, rarity = 6, spawns = 3 },
+	{ name = "Небесный храм", theme = "golden", distance = 2860, angle = 350, radius = 80, rarity = 7, spawns = 1 },
 }
 
 Config.RespawnMin = 20           -- секунд до нового существа на месте
