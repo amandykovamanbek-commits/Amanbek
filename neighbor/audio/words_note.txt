@@ -1,0 +1,1 @@
+Word timestamps from Speko (gemini-3.5-transcribe) for narration.mp3 — see build script for the caption table derived from them.
