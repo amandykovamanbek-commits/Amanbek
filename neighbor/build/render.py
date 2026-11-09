@@ -700,7 +700,7 @@ if __name__ == "__main__":
     out = os.path.join(OUTDIR, "sosed_ne_chelovek_ch1_cashworms.mp4")
     cmd = ["ffmpeg", "-v", "error", "-y",
            "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
-           "-ignore_loop", "0", "-i", gif,
+           "-stream_loop", "-1", "-i", gif,
            "-i", wav,
            "-filter_complex",
            f"[1:v]fps={FPS},format=rgba[b];[0:v][b]overlay=0:{BAN_Y}:shortest=1:format=auto,format=yuv420p[v];"
