@@ -7,6 +7,19 @@ let seed = 1; const rnd = () => (seed = (seed * 16807) % 2147483647) / 214748364
 const add = (t0, len, fn) => { const s0 = Math.round(t0 * SR); for (let i = 0; i < len * SR; i++) { const j = s0 + i; if (j >= 0 && j < N) buf[j] += fn(i / SR); } };
 const tone = (f, t) => Math.sin(2 * Math.PI * f * t);
 const S = {
+  // --- egg3d: шаги, топот, рык, крик, треск ---
+  step: t0 => { let lp = 0; add(t0, .07, t => { lp += .3 * (rnd() - lp); return lp * Math.exp(-t * 60) * .5; }); },
+  stomp: t0 => { let ph = 0, lp = 0; add(t0, .45, t => { ph += 2 * Math.PI * (70 - 90 * t) / SR; lp += .08 * (rnd() - lp); return Math.sin(ph) * Math.exp(-t * 9) * .7 + lp * Math.exp(-t * 20) * .6; }); },
+  thud: t0 => { let ph = 0; add(t0, .35, t => { ph += 2 * Math.PI * (120 - 200 * t) / SR; return Math.sin(ph) * Math.exp(-t * 14) * .6 + rnd() * Math.exp(-t * 70) * .3; }); },
+  grab: t0 => { let lp = 0; add(t0, .25, t => { const k = t / .25; lp += (.08 + .5 * k) * (rnd() - lp); return lp * Math.sin(Math.PI * k) * .6; }); },
+  squeeze: t0 => { let ph = 0; add(t0, .3, t => { ph += 2 * Math.PI * (300 - 400 * t) / SR; const saw = 2 * ((ph / (2 * Math.PI)) % 1) - 1; return saw * .12 * Math.sin(Math.PI * t / .3); }); },
+  roar: t0 => { let ph = 0, lp = 0; add(t0, 1.1, t => { const env = Math.min(1, t * 12) * Math.min(1, (1.1 - t) * 3); const f = 95 + 40 * Math.sin(t * 9) - 30 * t; ph += 2 * Math.PI * f / SR; lp += .25 * (rnd() - lp); const g = Math.tanh(3 * Math.sin(ph) + 1.5 * Math.sin(ph * 2.01) + lp * 2); return g * env * .5; }); },
+  babyroar: t0 => { let ph = 0, lp = 0; add(t0, .55, t => { const env = Math.min(1, t * 20) * Math.min(1, (.55 - t) * 5); const f = 260 + 90 * Math.sin(t * 14) - 80 * t; ph += 2 * Math.PI * f / SR; lp += .3 * (rnd() - lp); return Math.tanh(2.5 * Math.sin(ph) + Math.sin(ph * 2.02) + lp) * env * .3; }); },
+  yelp: t0 => { let ph = 0; add(t0, .3, t => { const f = 620 + 500 * Math.sin(t * 20) * (1 - t / .3); ph += 2 * Math.PI * f / SR; return Math.tanh(2 * Math.sin(ph)) * .18 * Math.sin(Math.PI * t / .3); }); },
+  scream: t0 => { let ph = 0; add(t0, .9, t => { const env = Math.min(1, t * 15) * Math.min(1, (.9 - t) * 4); const f = 700 + 250 * Math.sin(t * 30) - 150 * t; ph += 2 * Math.PI * f / SR; const saw = 2 * ((ph / (2 * Math.PI)) % 1) - 1; return Math.tanh(1.8 * saw + .6 * Math.sin(ph * 2)) * env * .2; }); },
+  wobble: t0 => { let ph = 0; add(t0, .7, t => { ph += 2 * Math.PI * (330 + 60 * Math.sin(t * 40)) / SR; return Math.sin(ph) * .1 * Math.exp(-t * 3); }); },
+  crack: t0 => { for (let k = 0; k < 4; k++) add(t0 + k * .045, .05, t => rnd() * Math.exp(-t * 180) * .45); let lp = 0; add(t0, .2, t => { lp += .5 * (rnd() - lp); return lp * Math.exp(-t * 20) * .3; }); },
+  chime: t0 => [1047, 1319, 1568].forEach((f, i) => add(t0 + i * .06, .5, t => tone(f, t) * Math.exp(-t * 6) * .09)),
   pop: t0 => { let ph = 0; add(t0, .09, t => { ph += 2 * Math.PI * (900 - 6000 * t) / SR; return Math.sin(ph) * Math.exp(-t * 45) * .32; }); },
   whoosh: t0 => { let lp = 0; add(t0, .38, t => { const k = t / .38, env = Math.sin(Math.PI * k) ** 2, a = .03 + .25 * env; lp += a * (rnd() - lp); return lp * env * .9; }); },
   send: t0 => { let lp = 0; add(t0, .14, t => { const k = t / .14, env = Math.sin(Math.PI * k); lp += (.05 + .4 * k) * (rnd() - lp); return lp * env * .35; }); },

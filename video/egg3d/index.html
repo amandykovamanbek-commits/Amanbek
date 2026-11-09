@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Нуб украл не те яйца — 3D</title>
+<style>
+  html,body{margin:0;background:#000;overflow:hidden;height:100%}
+  canvas{display:block}
+  #hint{position:fixed;left:12px;bottom:10px;color:#fff;font:14px/1.3 sans-serif;opacity:.6;pointer-events:none}
+</style>
+</head>
+<body>
+<script src="lib/three.min.js"></script>
+<script>
+// ---------------------------------------------------------------------------
+// 3D ремейк ролика «Noob steals the WRONG eggs» (Roblox, Steal an Egg).
+// Детерминированный таймлайн: renderAt(t) полностью собирает кадр по времени t.
+// ---------------------------------------------------------------------------
+const W = 1080, H = 1920;
+const RENDER = location.search.includes('render');
+window.DURATION = 29.4;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+renderer.setSize(W, H);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+if (!RENDER) {
+  const fit = () => { const s = Math.min(innerWidth / W, innerHeight / H); renderer.domElement.style.width = W * s + 'px'; renderer.domElement.style.height = H * s + 'px'; renderer.domElement.style.margin = `${(innerHeight - H * s) / 2}px auto 0`; };
+  fit(); addEventListener('resize', fit);
+}
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xa9d6ff, 70, 190);
+const camera = new THREE.PerspectiveCamera(62, W / H, 0.1, 500);
+
+// ---------- utils ----------
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, u) => a + (b - a) * u;
+const smooth = (u) => { u = clamp(u); return u * u * (3 - 2 * u); };
+const easeOut = (u) => 1 - Math.pow(1 - clamp(u), 3);
+const easeIn = (u) => Math.pow(clamp(u), 3);
+const noise = (t, s = 1) => (Math.sin(t * 37.1 * s) * 0.5 + Math.sin(t * 61.7 * s + 1.3) * 0.3 + Math.sin(t * 97.3 * s + 2.1) * 0.2);
+const mat = (c, o = {}) => new THREE.MeshLambertMaterial(Object.assign({ color: c }, o));
+function box(w, h, d, m, x = 0, y = 0, z = 0, shadow = true) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), typeof m === 'number' ? mat(m) : m);
+  mesh.position.set(x, y, z); mesh.castShadow = shadow; mesh.receiveShadow = true; return mesh;
+}
+function checkerTex(cA, cB, inner, tiles = 8) {
+  const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d');
+  const s = 512 / tiles;
+  for (let i = 0; i < tiles; i++) for (let j = 0; j < tiles; j++) {
+    g.fillStyle = (i + j) % 2 ? cA : cB; g.fillRect(i * s, j * s, s, s);
+    g.fillStyle = inner; g.globalAlpha = .55; g.fillRect(i * s + s * .22, j * s + s * .22, s * .56, s * .56); g.globalAlpha = 1;
+  }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
+}
+function faceTex(kind) {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+  g.fillStyle = '#f3d94c'; g.fillRect(0, 0, 256, 256);
+  const eye = (x, y, r, pr) => { g.fillStyle = '#fff'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.fillStyle = '#111'; g.beginPath(); g.arc(x, y, pr, 0, 7); g.fill(); g.lineWidth = 7; g.strokeStyle = '#222'; g.beginPath(); g.arc(x, y, r + 5, 0, 7); g.stroke(); };
+  if (kind === 'scared') {
+    eye(84, 100, 30, 11); eye(172, 100, 30, 11);
+    g.strokeStyle = '#222'; g.lineWidth = 7; g.beginPath(); g.moveTo(114, 100); g.lineTo(142, 100); g.stroke(); // перемычка очков
+    g.fillStyle = '#1a0a0a'; g.beginPath(); g.ellipse(128, 190, 34, 42, 0, 0, 7); g.fill();
+    g.fillStyle = '#fff'; g.fillRect(100, 152, 56, 12);
+  } else if (kind === 'dazed') {
+    eye(84, 104, 26, 6); eye(172, 104, 26, 6);
+    g.strokeStyle = '#222'; g.lineWidth = 7; g.beginPath(); g.moveTo(110, 104); g.lineTo(146, 104); g.stroke();
+    g.strokeStyle = '#1a0a0a'; g.lineWidth = 9; g.beginPath(); g.moveTo(100, 192); g.quadraticCurveTo(128, 178, 156, 192); g.stroke();
+  } else { // happy
+    eye(84, 100, 26, 9); eye(172, 100, 26, 9);
+    g.strokeStyle = '#222'; g.lineWidth = 7; g.beginPath(); g.moveTo(110, 100); g.lineTo(146, 100); g.stroke();
+    g.fillStyle = '#1a0a0a'; g.beginPath(); g.moveTo(90, 176); g.quadraticCurveTo(128, 232, 166, 176); g.closePath(); g.fill();
+    g.fillStyle = '#fff'; g.fillRect(100, 178, 56, 10);
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function shirtTex() {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 256; const g = c.getContext('2d');
+  g.fillStyle = '#1e63d8'; g.fillRect(0, 0, 256, 256);
+  g.fillStyle = '#dfe9ff'; g.font = 'bold 44px sans-serif'; g.textAlign = 'center'; g.fillText('noob', 128, 112);
+  g.fillStyle = '#2b78f0'; g.fillRect(0, 150, 256, 10);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function cloudTex() {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+  const grd = g.createRadialGradient(128, 128, 20, 128, 128, 128); grd.addColorStop(0, 'rgba(255,255,255,1)'); grd.addColorStop(.6, 'rgba(255,255,255,.85)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grd; g.fillRect(0, 0, 256, 256);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+
+// ---------- sky, light ----------
+{
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(420, 24, 12), new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false,
+    uniforms: { top: { value: new THREE.Color(0x1f6fe8) }, bot: { value: new THREE.Color(0xa9dcff) } },
+    vertexShader: 'varying vec3 p; void main(){ p = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+    fragmentShader: 'uniform vec3 top,bot; varying vec3 p; void main(){ float h = clamp(normalize(p).y*1.6+0.15,0.0,1.0); gl_FragColor = vec4(mix(bot,top,h),1.0); }'
+  }));
+  sky.name = 'sky'; scene.add(sky);
+  scene.add(new THREE.HemisphereLight(0xbfe4ff, 0x4a6a2a, 0.9));
+  const sun = new THREE.DirectionalLight(0xfff2d8, 1.35); sun.position.set(30, 60, 20); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = -40; sun.shadow.camera.right = 40; sun.shadow.camera.top = 40; sun.shadow.camera.bottom = -40; sun.shadow.camera.near = 10; sun.shadow.camera.far = 160; sun.shadow.bias = -0.0015;
+  scene.add(sun); scene.add(sun.target); window.SUN = sun;
+  const ct = cloudTex();
+  for (let i = 0; i < 14; i++) {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: ct, transparent: true, opacity: .9, fog: false }));
+    const a = i / 14 * Math.PI * 2 + (i % 3) * .3, r = 180 + (i % 4) * 30;
+    sp.position.set(Math.cos(a) * r, 55 + (i % 5) * 9, Math.sin(a) * r); sp.scale.set(70 + (i % 3) * 25, 30 + (i % 2) * 12, 1); sp.name = 'cloud'; scene.add(sp);
+  }
+}
+
+// ---------- environment builders ----------
+const T = {
+  grass: checkerTex('#6db52d', '#5fa426', '#86c93d'),
+  sand: checkerTex('#d8b86a', '#c9a75a', '#e6c97e'),
+  blue: checkerTex('#2f5fd6', '#2a55c2', '#4a78e8'),
+  wall: checkerTex('#6a6482', '#5a5572', '#7d7797', 6),
+  brick: checkerTex('#c97d3c', '#b86f32', '#d99052', 6),
+  dark: checkerTex('#4a4752', '#3e3b46', '#57545f', 6),
+};
+function ground(tex, w, d, x, z) {
+  const t = tex.clone(); t.needsUpdate = true; t.repeat.set(w / 4, d / 4);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshLambertMaterial({ map: t }));
+  m.rotation.x = -Math.PI / 2; m.position.set(x, 0, z); m.receiveShadow = true; scene.add(m); return m;
+}
+function wall(tex, len, h, x, z, ry) {
+  const t = tex.clone(); t.needsUpdate = true; t.repeat.set(len / 6, h / 6);
+  const m = box(len, h, 1.2, new THREE.MeshLambertMaterial({ map: t }), x, h / 2, z); m.rotation.y = ry; scene.add(m); return m;
+}
+function palm(x, z, h = 9, lean = .25, ry = 0) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry;
+  const trunk = mat(0x8a5a2b); let px = 0, py = 0;
+  for (let i = 0; i < 6; i++) {
+    const seg = box(.8 - i * .07, h / 6 + .1, .8 - i * .07, trunk, px, py + h / 12, 0);
+    seg.rotation.z = -lean * (i / 5); g.add(seg); px += Math.sin(lean * i / 5) * h / 6; py += Math.cos(lean * i / 5) * h / 6;
+  }
+  const leaf = mat(0x2f9e3a);
+  for (let i = 0; i < 7; i++) {
+    const l = box(5.5, .18, 1.1, leaf, 0, 0, 0); l.geometry.translate(2.6, 0, 0);
+    l.position.set(px, py + .2, 0); l.rotation.y = i / 7 * Math.PI * 2; l.rotation.z = -.55 - (i % 2) * .2; g.add(l);
+  }
+  scene.add(g); return g;
+}
+function torii(x, z, ry = 0, s = 1) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; g.scale.setScalar(s);
+  const red = mat(0xd8322a), dark = mat(0x3a1f1a);
+  g.add(box(.9, 7.5, .9, red, -4.2, 3.75, 0), box(.9, 7.5, .9, red, 4.2, 3.75, 0));
+  g.add(box(11.5, .8, 1.1, dark, 0, 7.9, 0), box(10, .6, .9, red, 0, 6.7, 0), box(.7, .7, .7, red, 0, 7.3, 0));
+  g.add(box(1.2, .4, 1.2, dark, -4.2, .2, 0), box(1.2, .4, 1.2, dark, 4.2, .2, 0));
+  scene.add(g); return g;
+}
+function castle(x, z) {
+  const g = new THREE.Group(); g.position.set(x, 0, z);
+  const white = mat(0xe8eef5), roof = mat(0x5f9ee0);
+  [[0, 0, 14, 3], [6, 2, 10, 2.2], [-6, 1, 11, 2.4], [3, -5, 8, 1.8], [-3, -5, 9, 2]].forEach(([dx, dz, h, r]) => {
+    const tw = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 8), white); tw.position.set(dx, h / 2, dz); g.add(tw);
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(r * 1.3, r * 3, 8), roof); cone.position.set(dx, h + r * 1.5, dz); g.add(cone);
+  });
+  g.add(box(16, 6, 12, white, 0, 3, 0, false));
+  scene.add(g); return g;
+}
+function fence(x1, z1, x2, z2) {
+  const g = new THREE.Group(); const wood = mat(0x8a4b20), rail = mat(0xa35d2a);
+  const len = Math.hypot(x2 - x1, z2 - z1), n = Math.max(1, Math.round(len / 3));
+  const ang = Math.atan2(x2 - x1, z2 - z1);
+  for (let i = 0; i <= n; i++) { const u = i / n; g.add(box(.35, 1.6, .35, wood, lerp(x1, x2, u), .8, lerp(z1, z2, u))); }
+  const r1 = box(.2, .22, len, rail, (x1 + x2) / 2, 1.3, (z1 + z2) / 2); r1.rotation.y = ang; g.add(r1);
+  const r2 = box(.2, .22, len, rail, (x1 + x2) / 2, .7, (z1 + z2) / 2); r2.rotation.y = ang; g.add(r2);
+  scene.add(g); return g;
+}
+function dirtPatch(x, z, w = 4, d = 3) { const m = box(w, .25, d, 0x6b4426, x, .12, z, false); scene.add(m); return m; }
+function pad(x, z, c = 0x7d3fd1) { const m = box(5, .5, 4, c, x, .25, z); scene.add(m); const b = box(4.2, .3, 3.2, 0x9a5ff0, x, .55, z); scene.add(b); return m; }
+function stall(x, z) {
+  const g = new THREE.Group(); g.position.set(x, 0, z);
+  g.add(box(.3, 3, .3, 0x8a4b20, -2, 1.5, -1.2), box(.3, 3, .3, 0x8a4b20, 2, 1.5, -1.2), box(.3, 3, .3, 0x8a4b20, -2, 1.5, 1.2), box(.3, 3, .3, 0x8a4b20, 2, 1.5, 1.2));
+  g.add(box(4.6, 1.2, 3, 0xb86f32, 0, .6, 0));
+  for (let i = 0; i < 6; i++) g.add(box(.85, .25, 3.4, i % 2 ? 0xd83a2a : 0xf5f0e6, -2.1 + i * .85, 3.1, 0));
+  scene.add(g); return g;
+}
+function crate(x, z, s = 1.4) { const m = box(s, s, s, 0xb5742f, x, s / 2, z); scene.add(m); return m; }
+function log(x, z, ry) { const m = new THREE.Mesh(new THREE.CylinderGeometry(.45, .55, 7, 7), mat(0x8a5a2b)); m.position.set(x, .5, z); m.rotation.z = Math.PI / 2; m.rotation.y = ry; m.castShadow = true; scene.add(m); return m; }
+
+// ----- зона A: главная поляна (вокруг начала координат)
+ground(T.grass, 140, 140, 0, 0);
+wall(T.wall, 90, 14, 0, -34, 0); wall(T.wall, 90, 14, -34, 0, Math.PI / 2); wall(T.wall, 90, 14, 34, 0, Math.PI / 2);
+torii(0, -27, 0, 1.1); castle(12, -58);
+palm(-10, -14, 10, .3, .4); palm(14, -18, 9, .22, 2.2); palm(-20, 6, 11, .28, 1.1); palm(22, 10, 8.5, .2, 3.4); palm(6, 20, 9.5, .3, 5.2);
+pad(-9, 9); pad(16, -2, 0x7d3fd1);
+dirtPatch(7, 5); dirtPatch(-4, -8, 3.5, 3); dirtPatch(12, 14, 3, 3);
+// пучки травы на патчах
+for (const [x, z] of [[6.2, 4.2], [8, 5.8], [-4.6, -8.5], [12.5, 13.6]]) { const s = box(.5, .9, .5, 0x3b7a21, x, .55, z); s.rotation.y = x; scene.add(s); }
+
+// ----- зона B: пустыня (x = 220)
+const BX = 220;
+ground(T.sand, 120, 120, BX, 0);
+wall(T.brick, 80, 12, BX, -30, 0); wall(T.brick, 80, 12, BX - 30, 0, Math.PI / 2); wall(T.brick, 80, 12, BX + 30, 0, Math.PI / 2);
+torii(BX - 14, -24, .3, .9);
+log(BX - 6, 6, .3); log(BX + 8, -4, 1.9); log(BX + 3, 12, 1.1);
+crate(BX + 12, 8); crate(BX + 13.5, 8.5, 1.1); crate(BX - 14, -10, 1.6);
+palm(BX - 20, -12, 9, .35, 1.2); palm(BX + 18, -16, 10, .3, 4);
+{ const p = box(6, .4, 6, 0x5fb830, BX - 8, .2, 14, false); scene.add(p); }
+
+// ----- зона C: синяя площадка с тёмным коридором (x = 420)
+const CX = 420;
+ground(T.blue, 90, 90, CX, 0);
+wall(T.dark, 70, 16, CX, -26, 0); wall(T.dark, 70, 16, CX - 26, 0, Math.PI / 2); wall(T.dark, 70, 16, CX + 26, 0, Math.PI / 2);
+pad(CX + 10, 6, 0x6a2fd0);
+{ // коридор
+  const dk = new THREE.MeshLambertMaterial({ map: T.dark }); T.dark.repeat.set(3, 3);
+  const g = new THREE.Group(); g.position.set(CX, 0, 42);
+  g.add(box(6, 10, 30, 0x2b2830, -5, 5, 0), box(6, 10, 30, 0x2b2830, 5, 5, 0), box(16, 2, 30, 0x2b2830, 0, 10.5, 0));
+  const fl = box(4, .2, 30, dk, 0, .1, 0, false); g.add(fl);
+  for (let i = 0; i < 4; i++) { const lamp = box(.4, .4, .4, new THREE.MeshBasicMaterial({ color: 0xffa040 }), -1.9, 7, -12 + i * 8); g.add(lamp); }
+  scene.add(g);
+}
+
+// ----- зона D: ферма с кирпичной стеной и заборами (x = 640)
+const DX = 640;
+ground(T.grass, 140, 140, DX, 0);
+wall(T.brick, 100, 13, DX, -36, 0); wall(T.brick, 100, 13, DX - 36, 0, Math.PI / 2); wall(T.brick, 100, 13, DX + 36, 0, Math.PI / 2);
+fence(DX - 30, -10, DX + 30, -10); fence(DX - 30, -10, DX - 30, 12); fence(DX - 12, 2, DX - 12, -10); fence(DX + 12, 2, DX + 12, -10);
+stall(DX - 26, 6); stall(DX + 24, -2);
+palm(DX + 20, 14, 9, .25, 2); palm(DX - 18, -22, 10, .3, 5);
+{ const pool = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.5, .3, 16), mat(0x3b8ee8)); pool.position.set(DX - 24, .15, 18); scene.add(pool); }
+
+// ---------- characters ----------
+const FACES = { scared: faceTex('scared'), dazed: faceTex('dazed'), happy: faceTex('happy') };
+function makeNoob() {
+  const g = new THREE.Group();
+  const skin = 0xf3d94c, pants = 0xa7c43f, hat = 0xf0a6c8;
+  const legL = new THREE.Group(), legR = new THREE.Group(), armL = new THREE.Group(), armR = new THREE.Group();
+  legL.position.set(-.25, 1, 0); legR.position.set(.25, 1, 0);
+  legL.add(box(.5, 1, .5, pants, 0, -.5, 0)); legR.add(box(.5, 1, .5, pants, 0, -.5, 0));
+  const torso = box(1, 1, .5, [mat(0x1e63d8), mat(0x1e63d8), mat(0x1e63d8), mat(0x1e63d8), new THREE.MeshLambertMaterial({ map: shirtTex() }), mat(0x1e63d8)], 0, 1.5, 0);
+  armL.position.set(-.75, 2, 0); armR.position.set(.75, 2, 0);
+  armL.add(box(.5, 1, .5, skin, 0, -.5, 0)); armR.add(box(.5, 1, .5, skin, 0, -.5, 0));
+  const faceMat = new THREE.MeshLambertMaterial({ map: FACES.scared });
+  const headG = new THREE.Group(); headG.position.set(0, 2, 0);
+  const head = box(.62, .62, .62, [mat(skin), mat(skin), mat(skin), mat(skin), faceMat, mat(skin)], 0, .36, 0);
+  const beanie = box(.7, .26, .7, hat, 0, .66, 0); const beanie2 = box(.6, .14, .6, hat, 0, .84, 0); const pom = box(.2, .2, .2, 0xffd0e4, 0, .96, 0);
+  headG.add(head, beanie, beanie2, pom);
+  g.add(legL, legR, torso, armL, armR, headG);
+  g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  g.userData = { legL, legR, armL, armR, headG, torso, faceMat };
+  // egg in hands (hidden by default)
+  const heldEgg = makeEgg(); heldEgg.position.set(0, 1.55, -.6); heldEgg.scale.setScalar(.8); heldEgg.visible = false; g.add(heldEgg); g.userData.heldEgg = heldEgg;
+  const heldEgg2 = makeEgg(); heldEgg2.position.set(.35, 1.75, -.55); heldEgg2.scale.setScalar(.75); heldEgg2.visible = false; g.add(heldEgg2); g.userData.heldEgg2 = heldEgg2;
+  scene.add(g); return g;
+}
+function noobPose(n, { run = 0, phase = 0, face = 'scared', armsUp = 0, sit = 0, hold = 0, fly = 0 } = {}) {
+  const u = n.userData, s = Math.sin(phase), c = Math.cos(phase);
+  u.legL.rotation.x = s * .95 * run * (1 - sit) + sit * -1.4; u.legR.rotation.x = -s * .95 * run * (1 - sit) + sit * -1.45;
+  u.legL.rotation.z = sit * .35; u.legR.rotation.z = -sit * .35;
+  u.armL.rotation.x = (-s * 1.1 * run) * (1 - hold) + hold * -1.35; u.armR.rotation.x = (s * 1.1 * run) * (1 - hold) + hold * -1.35;
+  u.armL.rotation.z = armsUp * 2.6 + fly * .9 + hold * -.25; u.armR.rotation.z = -armsUp * 2.6 - fly * .9 + hold * .25;
+  u.armL.rotation.x += armsUp * -.3; u.armR.rotation.x += armsUp * -.3;
+  u.torso.rotation.x = 0; u.headG.rotation.x = -.08 * run + sit * .15; u.headG.rotation.y = 0;
+  n.position.y += Math.abs(c) * .14 * run;
+  if (u.faceMat.map !== FACES[face]) { u.faceMat.map = FACES[face]; u.faceMat.needsUpdate = true; }
+  u.heldEgg.visible = hold > .5; u.heldEgg2.visible = false;
+}
+function makeEgg() {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(.55, 14, 10), mat(0x9d9b96)); m.scale.set(1, 1.3, 1); m.position.y = .7; m.castShadow = true;
+  const g = new THREE.Group(); g.add(m); g.userData.shell = m; return g;
+}
+function makeGorilla(s = 1) {
+  const g = new THREE.Group(); g.scale.setScalar(s);
+  const fur = 0x141216, fur2 = 0x201d24, plate = 0xd8d1c3, gold = 0xe4b23a;
+  const legL = new THREE.Group(), legR = new THREE.Group(), armL = new THREE.Group(), armR = new THREE.Group();
+  legL.position.set(-1.0, 2.6, 0); legR.position.set(1.0, 2.6, 0);
+  for (const L of [legL, legR]) { L.add(box(1.5, 2.6, 1.6, fur, 0, -1.3, 0)); L.add(box(1.9, .7, 2.4, 0x2c2b33, 0, -2.5, .3)); L.add(box(1.7, .3, 2.2, 0xe9e9ea, 0, -2.0, .35)); }
+  const torso = box(3.8, 3.4, 2.4, fur, 0, 4.3, 0);
+  const chest = box(2.6, 2.4, .5, plate, 0, 4.1, 1.3); const chest2 = box(1.8, .9, .3, 0xc9c1b2, 0, 2.9, 1.5);
+  const shoulderL = box(1.8, 1.4, 2.0, fur2, -2.2, 5.6, 0), shoulderR = box(1.8, 1.4, 2.0, fur2, 2.2, 5.6, 0);
+  armL.position.set(-2.4, 5.4, 0); armR.position.set(2.4, 5.4, 0);
+  for (const [A, side] of [[armL, -1], [armR, 1]]) {
+    A.add(box(1.5, 3.8, 1.5, fur, 0, -1.9, 0));
+    const hand = new THREE.Group(); hand.position.set(0, -4.1, .1);
+    hand.add(box(1.7, 1.2, 1.7, fur2, 0, 0, 0));
+    for (let i = 0; i < 4; i++) { const f = box(.36, 1.0, .5, fur2, -.6 + i * .4, -.8, .5); f.name = 'finger'; hand.add(f); }
+    const thumb = box(.4, .9, .45, fur2, side * .95, -.3, .4); thumb.rotation.z = -side * .6; thumb.name = 'thumb'; hand.add(thumb);
+    A.add(hand); A.userData.hand = hand;
+  }
+  // голова
+  const headG = new THREE.Group(); headG.position.set(0, 6.1, .2);
+  const head = box(2.3, 2.1, 2.1, fur, 0, 1.0, 0);
+  const face = box(1.8, 1.5, .5, plate, 0, .85, 1.05);
+  const brow = box(1.9, .45, .55, fur2, 0, 1.55, 1.08);
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff2a1a });
+  const eyeL = box(.38, .3, .2, eyeMat, -.45, 1.2, 1.33, false), eyeR = box(.38, .3, .2, eyeMat, .45, 1.2, 1.33, false);
+  const nose = box(.6, .3, .2, 0x9a9388, 0, .85, 1.33, false);
+  const jaw = new THREE.Group(); jaw.position.set(0, .35, 1.1);
+  const mouth = box(1.3, .5, .5, 0x3a0d0d, 0, -.25, .05); const lip = box(1.4, .25, .3, plate, 0, -.55, .2);
+  const teethU = box(1.2, .18, .12, 0xffffff, 0, -.06, .3, false), teethD = box(1.2, .18, .12, 0xffffff, 0, -.44, .3, false);
+  for (let i = 0; i < 2; i++) { const fang = box(.16, .4, .14, 0xffffff, -.5 + i * 1.0, -.2, .32, false); jaw.add(fang); }
+  jaw.add(mouth, lip, teethU, teethD);
+  const crown = new THREE.Group(); crown.position.y = 2.05;
+  const ring = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.1, .45, 10), mat(gold)); ring.castShadow = true; crown.add(ring);
+  for (let i = 0; i < 6; i++) { const sp = new THREE.Mesh(new THREE.ConeGeometry(.3, .8, 4), mat(gold)); const a = i / 6 * Math.PI * 2; sp.position.set(Math.cos(a) * .9, .6, Math.sin(a) * .9); sp.castShadow = true; crown.add(sp); }
+  const gem = box(.35, .35, .2, new THREE.MeshBasicMaterial({ color: 0xb13cff }), .55, .35, 1.0, false); crown.add(gem);
+  headG.add(head, face, brow, eyeL, eyeR, nose, jaw, crown);
+  g.add(legL, legR, torso, chest, chest2, shoulderL, shoulderR, armL, armR, headG);
+  g.traverse(o => { if (o.isMesh && o.castShadow === undefined) o.castShadow = true; });
+  g.userData = { legL, legR, armL, armR, headG, jaw, torso, eyeMat };
+  scene.add(g); return g;
+}
+function gorillaPose(g, { run = 0, phase = 0, roar = 0, armsUp = 0, grab = 0, lean = 0, armFwd = 0, fist = 0 } = {}) {
+  const u = g.userData, s = Math.sin(phase);
+  u.legL.rotation.x = s * .7 * run; u.legR.rotation.x = -s * .7 * run;
+  u.armL.rotation.x = -s * .9 * run - armsUp * 2.4 - armFwd * 1.5; u.armR.rotation.x = s * .9 * run - armsUp * 2.4 - armFwd * 1.5;
+  u.armL.rotation.z = armsUp * .9 + roar * .6 + grab * .25; u.armR.rotation.z = -armsUp * .9 - roar * .6 - grab * .25;
+  u.jaw.rotation.x = roar * .55; u.jaw.position.y = .35 - roar * .25;
+  u.headG.rotation.x = -roar * .35 + lean * .2; u.torso.rotation.x = lean * .25;
+  u.eyeMat.color.setHex(roar > .5 ? 0xff5030 : 0xff2a1a);
+  for (const A of [u.armL, u.armR]) A.userData.hand.children.forEach(c => { if (c.name === 'finger') c.rotation.x = -fist * 1.5; if (c.name === 'thumb') c.rotation.x = -fist * 1.0; });
+  g.position.y += Math.abs(Math.cos(phase)) * .25 * run * g.scale.y;
+}
+const _hv = new THREE.Vector3();
+function handPos(g, side = 1) { g.updateMatrixWorld(true); const A = side < 0 ? g.userData.armL : g.userData.armR; A.userData.hand.getWorldPosition(_hv); return _hv; }
+function shardsGroup(n = 10) { const g = new THREE.Group(); for (let i = 0; i < n; i++) { const s = box(.3 + (i % 3) * .12, .08, .3 + ((i + 1) % 3) * .1, 0x9d9b96); s.userData.seed = i; g.add(s); } g.visible = false; scene.add(g); return g; }
+function dust(n = 8) { const g = new THREE.Group(); for (let i = 0; i < n; i++) { const m = new THREE.Mesh(new THREE.SphereGeometry(.5, 8, 6), new THREE.MeshLambertMaterial({ color: 0xd9c9a8, transparent: true, opacity: .8 })); m.userData.seed = i; g.add(m); } g.visible = false; scene.add(g); return g; }
+function playDust(g, x, y, z, age, scale = 1) {
+  if (age < 0 || age > 1.1) { g.visible = false; return; } g.visible = true;
+  g.children.forEach((m, i) => { const a = i / g.children.length * Math.PI * 2 + .4, r = easeOut(age) * 3 * scale; m.position.set(x + Math.cos(a) * r, y + age * 2 * scale + .3, z + Math.sin(a) * r); m.scale.setScalar(scale * (0.4 + age * 1.2) * (1 - age * .5)); m.material.opacity = .85 * (1 - age); });
+}
+function playShards(g, x, z, age) {
+  if (age < 0 || age > 2.5) { g.visible = false; return; } g.visible = true;
+  g.children.forEach((s, i) => { const a = i / g.children.length * Math.PI * 2 + i, v = 3.5 + (i % 3), vy = 5 + (i % 4); const y = Math.max(.05, .6 + vy * age - 9 * age * age); s.position.set(x + Math.cos(a) * v * age, y, z + Math.sin(a) * v * age); s.rotation.set(age * (3 + i), i, age * 2); });
+}
+
+const noob = makeNoob();
+const kong = makeGorilla(1.0);
+const g2 = makeGorilla(.6), g3 = makeGorilla(.55);
+const babies = [makeGorilla(.26), makeGorilla(.24), makeGorilla(.27)];
+const eggs = [makeEgg(), makeEgg(), makeEgg(), makeEgg(), makeEgg()]; eggs.forEach(e => scene.add(e));
+const shards = [shardsGroup(), shardsGroup()];
+const dusts = [dust(), dust(), dust()];
+const actors = [noob, kong, g2, g3, ...babies, ...eggs];
+
+// ---------- camera helpers ----------
+const camState = { shake: 0 };
+function cam(px, py, pz, tx, ty, tz, fov = 62, shake = 0, t = 0) {
+  camera.position.set(px + noise(t, 1.0) * shake, py + noise(t + 5, 1.2) * shake, pz + noise(t + 9, .8) * shake);
+  camera.lookAt(tx, ty, tz); camera.fov = fov; camera.updateProjectionMatrix();
+}
+function sunFollow(x, z) { SUN.position.set(x + 30, 60, z + 20); SUN.target.position.set(x, 0, z); SUN.target.updateMatrixWorld(); }
+
+// ---------- SFX cues ----------
+const SFX = [];
+const cue = (t, k) => SFX.push({ t: +t.toFixed(3), k });
+// шаги нуба
+for (let t = 0.05; t < 4.0; t += .3) cue(t, 'step');
+cue(3.0, 'stomp'); cue(3.7, 'stomp');
+cue(4.3, 'grab'); cue(4.6, 'yelp');
+cue(5.6, 'roar'); cue(6.9, 'roar');
+cue(7.6, 'squeeze'); cue(8.4, 'squeeze');
+cue(9.6, 'whoosh'); cue(10.5, 'thud'); cue(10.7, 'yelp');
+cue(11.2, 'roar'); cue(12.3, 'wobble');
+cue(13.6, 'pop'); for (let t = 13.8; t < 15.5; t += .28) cue(t, 'step');
+cue(14.0, 'stomp'); cue(14.6, 'stomp'); cue(15.2, 'stomp');
+cue(15.6, 'whoosh'); cue(16.0, 'scream'); cue(17.2, 'thud');
+cue(17.6, 'grab'); cue(18.1, 'roar'); cue(18.9, 'whoosh');
+for (let t = 19.6; t < 21.3; t += .28) cue(t, 'step');
+cue(21.6, 'pop'); cue(22.0, 'pop'); cue(22.6, 'chime');
+cue(23.7, 'crack'); cue(24.2, 'crack'); cue(24.6, 'crack'); cue(24.9, 'pop'); cue(25.1, 'pop');
+cue(25.4, 'babyroar'); cue(25.8, 'babyroar'); cue(26.3, 'scream');
+for (let t = 26.6; t < 28.3; t += .25) cue(t, 'step');
+cue(27.0, 'babyroar'); cue(27.6, 'babyroar'); cue(28.4, 'whoosh');
+window.getSfx = () => SFX;
+
+// ---------- timeline ----------
+function resetActors() {
+  for (const a of actors) { a.visible = false; a.position.set(0, 0, 0); a.rotation.set(0, 0, 0); }
+  shards.forEach(s => s.visible = false); dusts.forEach(d => d.visible = false);
+  kong.scale.setScalar(1); noob.scale.setScalar(1);
+}
+function placeEggsOnPatches() {
+  eggs[0].visible = true; eggs[0].position.set(6.4, 0, 5.4); eggs[1].visible = true; eggs[1].position.set(7.6, 0, 4.6); eggs[1].scale.setScalar(.9);
+  eggs[2].visible = true; eggs[2].position.set(-4.2, 0, -8.2); eggs[2].scale.setScalar(.85);
+}
+// Горилла стоит в позе "идёт за нубом" в зоне A
+function kongWalk(t, x0, z0, x1, z1, u, ry) {
+  kong.visible = true; kong.position.set(lerp(x0, x1, u), 0, lerp(z0, z1, u)); kong.rotation.y = ry; gorillaPose(kong, { run: 1, phase: t * 5.5, roar: 0.15 });
+}
+
+const SHOTS = [
+  // 0. нуб бежит на камеру, за ним тории и пальмы, в кадре появляется горилла
+  { s: 0.0, e: 1.3, f(t, u) {
+    placeEggsOnPatches();
+    noob.visible = true; const z = lerp(-6, -1, u); noob.position.set(-1, 0, z); noob.rotation.y = 0; noobPose(noob, { run: 1, phase: t * 20, face: 'scared', armsUp: .25 });
+    kongWalk(t, -6, -22, -4, -14, u, .3);
+    cam(.8, 2.2, z + 6.5, -.6, 1.9, z - 2, 60, .05, t);
+  } },
+  // 1. общий план: нуб бежит вдоль стены, горилла топает следом (издалека)
+  { s: 1.3, e: 4.0, f(t, u) {
+    placeEggsOnPatches();
+    noob.visible = true; const x = lerp(-10, 4, u), z = lerp(-8, 2, u); noob.position.set(x, 0, z); noob.rotation.y = Math.atan2(14, 10); noobPose(noob, { run: 1, phase: t * 20, face: 'scared', armsUp: .15 });
+    kongWalk(t, -22, -18, -4, -6, u, Math.atan2(18, 12));
+    playDust(dusts[0], kong.position.x - 1, 0, kong.position.z + 1, ((t * 1.1) % .9) / .9, 1.6);
+    const dl = Math.hypot(14, 10), dx = 14 / dl, dz = 10 / dl;
+    cam(x + dx * 7.5, 2.3, z + dz * 7.5, x - dx * 3, 2.4, z - dz * 3, 70, .03, t);
+  } },
+  // 2. горилла нагоняет: гигантская лапа опускается и хватает нуба
+  { s: 4.0, e: 5.5, f(t, u) {
+    placeEggsOnPatches();
+    const grabbed = smooth((t - .3) / .35);
+    const xr = 4 + Math.min(t, .3) * 2.2;
+    kong.visible = true; kong.position.set(xr - 3.4, 0, 4.4); kong.rotation.y = Math.PI / 2;
+    gorillaPose(kong, { run: 1 - grabbed, phase: 4 * 5.5 + t * 5.5, armFwd: .25 + grabbed * .45, grab: grabbed, fist: grabbed, lean: grabbed * .4, roar: grabbed * .5 });
+    const hp = handPos(kong, 1);
+    noob.visible = true; noob.position.set(lerp(xr, hp.x, grabbed), lerp(0, hp.y - 1.4, grabbed), lerp(2, hp.z, grabbed)); noob.rotation.y = Math.PI / 2 - grabbed * .9;
+    noobPose(noob, { run: 1 - grabbed, phase: t * 20, face: 'scared', armsUp: grabbed * .9 });
+    playDust(dusts[0], xr - 3.4, 0, 5.5, t / 1.0, 2.2);
+    cam(xr + 4.5, 2.6, 8.5, xr - 1.5, 3.2, 3, 66, .08 + grabbed * .12, t);
+  } },
+  // 3. крупно лицо гориллы: корона, красные глаза, рык
+  { s: 5.5, e: 7.6, f(t, u) {
+    kong.visible = true; kong.position.set(0, 0, 0); kong.rotation.y = 0;
+    const roar = .35 + .65 * Math.abs(Math.sin(t * 2.6)) * smooth(t / .4);
+    gorillaPose(kong, { roar, armsUp: .15, lean: .15, fist: 1 });
+    gorillaPose(kong, { roar, armsUp: .15, lean: .15, fist: 1, armFwd: .5 });
+    { const hp = handPos(kong, 1); noob.visible = true; noob.position.set(hp.x, hp.y - 1.4, hp.z); noob.rotation.y = .4; noobPose(noob, { face: 'scared', armsUp: .9 }); }
+    kong.userData.headG.rotation.y = Math.sin(t * 3.1) * .12;
+    cam(.6 + Math.sin(t * .7) * .3, 7.0 + u * .4, 5.2 - u * .9, 0, 7.0, .5, 52, .16 * roar, t);
+  } },
+  // 4. очень крупно: нуб в кулаке, синяя футболка, пальцы
+  { s: 7.6, e: 9.6, f(t, u) {
+    kong.visible = true; kong.position.set(0, 0, 0); kong.rotation.y = 0; gorillaPose(kong, { armFwd: 1.1, fist: 1, roar: .4, lean: .3 });
+    const sq = .5 + .5 * Math.sin(t * 7);
+    const hp = handPos(kong, 1).clone();
+    noob.visible = true; noob.position.set(hp.x, hp.y - 1.2 + sq * .1, hp.z + .75); noob.rotation.y = .25; noob.rotation.z = .12; noobPose(noob, { face: 'scared', armsUp: .95 });
+    noob.scale.set(1, 1 - sq * .07, 1 + sq * .06);
+    cam(hp.x + .2, hp.y + .3 + Math.sin(t * 5) * .08, hp.z + 3.6 - u * .5, hp.x, hp.y + .2, hp.z + .75, 48, .25, t);
+  } },
+  // 5. горилла швыряет нуба — он летит и падает в грядку с яйцами
+  { s: 9.6, e: 11.1, f(t, u) {
+    placeEggsOnPatches();
+    kong.visible = true; kong.position.set(-3, 0, 9); kong.rotation.y = 1.95; const thr = smooth(t / .4);
+    gorillaPose(kong, { armsUp: (1 - thr) * 1.2, armFwd: thr * 1.3, roar: .7, lean: thr * .6, fist: 1 - thr });
+    const fl = clamp(t / 1.0), x = lerp(-1.5, 7, easeOut(fl) * 1.0), z = lerp(8.4, 5, fl), y = Math.max(0, 4 + 7 * fl - 11 * fl * fl);
+    noob.visible = true; noob.position.set(x, y, z); noob.rotation.set(fl * 9, 0, fl * 5); noobPose(noob, { face: 'scared', fly: 1 });
+    if (fl >= 1) { noob.rotation.set(0, .3, 0); noob.position.y = .25; noobPose(noob, { face: 'dazed', sit: 1 }); }
+    playDust(dusts[1], 7, 0, 5, (t - .95) / 1.0, 1.3);
+    cam(3 + u * 1.5, 5, 22 - u * 3, 1.5, 2.5, 7, 68, .06, t);
+  } },
+  // 6. горилла рычит в камеру, затем нуб сидит в грядке среди яиц, гориллы подходят
+  { s: 11.1, e: 13.6, f(t, u) {
+    placeEggsOnPatches();
+    noob.visible = true; noob.position.set(7.2, .25, 5.4); noob.rotation.y = .3; noobPose(noob, { face: 'dazed', sit: 1 });
+    noob.userData.headG.rotation.z = Math.sin(t * 6) * .2;
+    kong.visible = true; kong.position.set(-1, 0, 10); kong.rotation.y = 1.1; gorillaPose(kong, { run: 1, phase: t * 5, roar: .6 + .4 * Math.sin(t * 4), armsUp: .3 });
+    kong.position.x = lerp(-3, 1.5, u); kong.position.z = lerp(12, 9, u);
+    g2.visible = true; g2.position.set(lerp(-6, -1, u), 0, lerp(2, 4, u)); g2.rotation.y = 1.4; gorillaPose(g2, { run: 1, phase: t * 6 + 1, roar: .4 });
+    g3.visible = true; g3.position.set(lerp(-7, -2, u), 0, lerp(10, 9, u)); g3.rotation.y = 1.2; gorillaPose(g3, { run: 1, phase: t * 6 + 2, roar: .3 });
+    if (t < .9) { const k = t / .9; cam(kong.position.x + 2, 6.8, kong.position.z + 9.5 - k * 2.5, kong.position.x, 7.0, kong.position.z, 55, .2, t); }
+    else cam(11.5, 2.4, 9.5, 6.5, 1.5, 5.5, 58, .04, t);
+  } },
+  // 7. нуб вскакивает, хватает яйцо и убегает, гориллы гонятся
+  { s: 13.6, e: 15.6, f(t, u) {
+    placeEggsOnPatches(); eggs[0].visible = t < .2;
+    const up = smooth(t / .3);
+    const x = 7.2 + Math.max(0, t - .3) * 7, z = 5.4 + Math.max(0, t - .3) * 3;
+    noob.visible = true; noob.position.set(x, .25 * (1 - up), z); noob.rotation.y = Math.atan2(7, 3); noobPose(noob, { run: up, phase: t * 21, face: 'scared', hold: up, sit: 1 - up });
+    kong.visible = true; kong.position.set(lerp(1.5, 6, u), 0, lerp(9, 7, u)); kong.rotation.y = 1.3; gorillaPose(kong, { run: 1, phase: t * 5.5, roar: .5, armsUp: .2 });
+    g2.visible = true; g2.position.set(lerp(-1, 5, u), 0, lerp(4, 3, u)); g2.rotation.y = 1.4; gorillaPose(g2, { run: 1, phase: t * 6, roar: .3 });
+    g3.visible = true; g3.position.set(lerp(-2, 4, u), 0, lerp(9, 8, u)); g3.rotation.y = 1.3; gorillaPose(g3, { run: 1, phase: t * 6 + 2, roar: .3 });
+    playDust(dusts[0], kong.position.x, 0, kong.position.z + 1, ((t * 1.6) % .8) / .8, 1.4);
+    cam(x + 7, 2.6, z + 5, x - 2, 2.0, z - 1, 60, .05, t);
+  } },
+  // 8. пустыня: нуба швыряют, он летит кувырком через зону, горилла крушит ящики
+  { s: 15.6, e: 17.6, f(t, u) {
+    const x = lerp(BX - 20, BX + 6, u), z = lerp(0, 8, u), y = Math.max(.1, 1 + 14 * u - 14 * u * u);
+    noob.visible = true; noob.position.set(x, y, z); noob.rotation.set(t * 7, .5, t * 4); noobPose(noob, { face: 'scared', fly: 1, hold: .0 });
+    noob.userData.heldEgg.visible = true;
+    kong.visible = true; kong.position.set(BX + 10, 0, 6); kong.rotation.y = -2.2; gorillaPose(kong, { armsUp: .5 + .5 * Math.abs(Math.sin(t * 6)), roar: .8, lean: .4 });
+    playDust(dusts[2], BX + 12, 0, 8, ((t * 1.5) % 1) / 1, 2.0);
+    if (u > .9) playDust(dusts[1], x, 0, z, (u - .9) * 10, 1.4);
+    sunFollow(BX, 0);
+    cam(x - 2.5 + u * 1.5, y + 1.8, z + 5.5, x + 2.5, y, z - 1, 64, .07, t);
+  } },
+  // 9. синяя зона: горилла снова ловит нуба; затем тёмный коридор
+  { s: 17.6, e: 19.6, f(t, u) {
+    sunFollow(CX, 0);
+    if (t < 1.1) {
+      const k = smooth(t / .5);
+      kong.visible = true; kong.position.set(CX - 4.5, 0, 6.2); kong.rotation.y = 1.2; gorillaPose(kong, { armFwd: .25 + .45 * k, fist: k, roar: .6, lean: .4 * k, run: 1 - k, phase: t * 5 });
+      const hp = handPos(kong, 1);
+      noob.visible = true; noob.position.set(lerp(CX - 1, hp.x, k), lerp(0, hp.y - 1.4, k), lerp(4, hp.z, k)); noob.rotation.y = -.6; noobPose(noob, { face: 'scared', hold: 1, run: 1 - k, phase: t * 20, armsUp: k * .4 });
+      cam(CX + 6.5, 2.8, 12.5, CX - 1.5, 3.2, 5, 60, .12, t);
+    } else {
+      const k = (t - 1.1) / .9;
+      noob.visible = true; noob.position.set(CX, 0, lerp(52, 34, k)); noob.rotation.y = Math.PI; noobPose(noob, { run: 1, phase: t * 20, face: 'scared', hold: 1 });
+      kong.visible = true; kong.position.set(CX, 0, lerp(62, 46, k)); kong.rotation.y = Math.PI; gorillaPose(kong, { run: 1, phase: t * 5.5, roar: .5 });
+      cam(CX + .8, 1.9, noob.position.z - 6, CX, 2.5, noob.position.z + 6, 66, .06, t);
+    }
+  } },
+  // 10. ферма: общий план, нуб прибегает с яйцом
+  { s: 19.6, e: 21.6, f(t, u) {
+    sunFollow(DX, 0);
+    const x = lerp(DX - 22, DX - 4, u), z = lerp(14, 2, u);
+    noob.visible = true; noob.position.set(x, 0, z); noob.rotation.y = Math.atan2(18, -12); noobPose(noob, { run: 1, phase: t * 19, face: 'happy', hold: 1 });
+    if (t < .8) cam(DX - 30, 3.5, 28, DX, 3, 0, 62, .02, t);
+    else cam(x - 4, 2.6, z + 9, x + 2, 1.8, z - 2, 60, .03, t);
+  } },
+  // 11. нуб ставит два яйца на траву; камера на яйца
+  { s: 21.6, e: 23.7, f(t, u) {
+    sunFollow(DX, 0);
+    const put = smooth(t / .5);
+    noob.visible = true; noob.position.set(DX - 4, 0, 2); noob.rotation.y = Math.PI; noobPose(noob, { face: 'happy', hold: 1 - put });
+    noob.userData.heldEgg.visible = put < .5;
+    noob.userData.armL.rotation.x = -.9 * (1 - put); noob.userData.armR.rotation.x = -.9 * (1 - put); noob.userData.torso.rotation.x = 0;
+    eggs[3].visible = put > .4; eggs[3].position.set(DX - 4.7, 0, -.2); eggs[3].scale.setScalar(1.3);
+    eggs[4].visible = put > .7; eggs[4].position.set(DX - 3.1, 0, -.3); eggs[4].scale.setScalar(1.35);
+    eggs[3].rotation.z = Math.sin(t * 14) * .08 * clamp((t - 1.2) * 2); eggs[4].rotation.z = -Math.sin(t * 16 + 1) * .09 * clamp((t - 1.4) * 2);
+    if (t < 1.1) cam(DX - 1, 2.4, 6, DX - 4, 1.4, 1, 58, .02, t);
+    else cam(DX - 3.9, 1.2, -3.8, DX - 3.9, .8, -.2, 50, .02, t);
+  } },
+  // 12. яйца трескаются — вылупляются гориллы в коронах; нуб в шоке
+  { s: 23.7, e: 26.6, f(t, u) {
+    sunFollow(DX, 0);
+    noob.visible = true; noob.position.set(DX - 4, 0, 2.4); noob.rotation.y = Math.PI;
+    const hatch = smooth((t - 1.0) / .5);
+    noobPose(noob, { face: hatch > .3 ? 'scared' : 'happy', armsUp: hatch * .9 });
+    noob.userData.headG.rotation.x = -hatch * .2;
+    for (let i = 0; i < 2; i++) {
+      const e = eggs[3 + i], ex = DX - 4.7 + i * 1.6, ez = -.2 - i * .1;
+      e.position.set(ex, 0, ez); e.scale.setScalar(1.3); e.visible = t < 1.0 + i * .3;
+      e.rotation.z = Math.sin(t * 22 + i) * .14 * clamp(t * 3); e.position.y = Math.abs(Math.sin(t * 22 + i)) * .12 * clamp(t * 3);
+      playShards(shards[i], ex, ez, t - (1.0 + i * .3));
+      const b = babies[i]; const bu = smooth((t - 1.0 - i * .3) / .5);
+      b.visible = bu > 0; b.position.set(ex, 0, ez); b.rotation.y = Math.PI * .1 - i * .3; b.scale.setScalar(.26 * (0.6 + .4 * bu) + Math.sin(t * 12) * .01);
+      gorillaPose(b, { roar: .6 + .4 * Math.sin(t * 9 + i), armsUp: .7 + .3 * Math.sin(t * 7), run: bu > .9 ? .6 : 0, phase: t * 8 });
+    }
+    const b3 = babies[2]; const b3u = smooth((t - 1.7) / .4); b3.visible = b3u > 0; b3.position.set(DX - 3.9, 0, -1.4); b3.rotation.y = -.2; b3.scale.setScalar(.27 * b3u); gorillaPose(b3, { roar: 1, armsUp: .9, run: .5, phase: t * 8 });
+    if (t < 1.3) cam(DX - 3.9, 1.3, -3.8, DX - 3.9, .9, -.2, 50, .03 + hatch * .1, t);
+    else { const k = smooth((t - 1.3) / .6); cam(lerp(DX - 3.9, DX - 2.4, k), lerp(1.3, 2.4, k), lerp(-3.8, -6.5, k), lerp(DX - 3.9, DX - 4, k), lerp(.9, 1.6, k), lerp(-.2, 1.0, k), lerp(50, 60, k), .05, t); }
+    noob.userData.headG.rotation.z = Math.sin(t * 20) * .12 * hatch;
+  } },
+  // 13. нуб с криком бежит на камеру, малыши-гориллы гонятся
+  { s: 26.6, e: 28.4, f(t, u) {
+    sunFollow(DX, 0);
+    const z = lerp(2.4, 16, u), x = DX - 4 + Math.sin(t * 2) * .4;
+    noob.visible = true; noob.position.set(x, 0, z); noob.rotation.y = 0; noobPose(noob, { run: 1, phase: t * 22, face: 'scared', armsUp: .9 });
+    babies.forEach((b, i) => { b.visible = true; b.position.set(DX - 5.5 + i * 1.5, 0, lerp(-1 + i * .4, 10 + i * .6, u)); b.rotation.y = 0; b.scale.setScalar(.26); gorillaPose(b, { run: 1, phase: t * 9 + i, roar: .8, armsUp: .4 }); });
+    cam(x + .6, 2.0, z + 6, x, 2.0, z - 3, 60, .06, t);
+  } },
+  // 14. финал: общий план главной поляны с воротами тории, затемнение
+  { s: 28.4, e: 29.4, f(t, u) {
+    sunFollow(0, 0); placeEggsOnPatches();
+    noob.visible = true; noob.position.set(-3, 0, 2 - u * 6); noob.rotation.y = Math.PI; noobPose(noob, { run: 1, phase: t * 20, face: 'scared' });
+    kong.visible = true; kong.position.set(4, 0, 10 - u * 5); kong.rotation.y = Math.PI; gorillaPose(kong, { run: 1, phase: t * 5.5, roar: .3 });
+    cam(2, 4.5, 30 - u * 3, 0, 3, -10, 58, .02, t);
+  } },
+];
+
+let fade = null;
+function renderAt(t) {
+  t = clamp(t, 0, window.DURATION);
+  resetActors();
+  noob.scale.setScalar(1); noob.userData.heldEgg.visible = false; noob.userData.headG.rotation.set(0, 0, 0); kong.userData.headG.rotation.y = 0;
+  let shot = SHOTS[SHOTS.length - 1];
+  for (const s of SHOTS) if (t >= s.s && t < s.e) { shot = s; break; }
+  const lt = t - shot.s, u = clamp(lt / (shot.e - shot.s));
+  if (shot.s < 15.6) sunFollow(0, 0);
+  shot.f(lt, u);
+  // облака и небо следуют за камерой
+  scene.children.forEach(o => { if (o.name === 'sky') o.position.copy(camera.position); if (o.name === 'cloud') { o.position.x = o.userData.bx === undefined ? (o.userData.bx = o.position.x, o.userData.bz = o.position.z, o.position.x) : o.userData.bx + camera.position.x; o.position.z = o.userData.bz + camera.position.z; } });
+  // затемнение в конце и в начале
+  const f = Math.min(1, t / .25, (window.DURATION - t) / .6);
+  renderer.toneMappingExposure = 1;
+  renderer.render(scene, camera);
+  if (f < 1) { fadeOverlay(1 - f); } else fadeOverlay(0);
+}
+function fadeOverlay(a) {
+  if (!fade) { fade = document.createElement('div'); fade.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;background:#000;pointer-events:none'; renderer.domElement.parentNode.appendChild(fade); }
+  fade.style.opacity = a; fade.style.width = renderer.domElement.style.width || W + 'px'; fade.style.height = renderer.domElement.style.height || H + 'px'; fade.style.left = renderer.domElement.offsetLeft + 'px'; fade.style.top = renderer.domElement.offsetTop + 'px';
+}
+window.renderAt = renderAt;
+
+if (!RENDER) {
+  const hint = document.createElement('div'); hint.id = 'hint'; hint.textContent = 'Превью: пробел — пауза, ←/→ — ±1 с'; document.body.appendChild(hint);
+  let t0 = performance.now() / 1000, paused = false, off = 0;
+  addEventListener('keydown', e => { if (e.code === 'Space') { paused = !paused; if (!paused) t0 = performance.now() / 1000 - off; } if (e.code === 'ArrowRight') off += 1; if (e.code === 'ArrowLeft') off -= 1; });
+  (function loop() { if (!paused) off = (performance.now() / 1000 - t0) % window.DURATION; renderAt(((off % window.DURATION) + window.DURATION) % window.DURATION); requestAnimationFrame(loop); })();
+}
+window.READY = true;
+</script>
+</body>
+</html>
