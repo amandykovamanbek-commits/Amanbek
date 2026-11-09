@@ -9,7 +9,7 @@ AUD = os.path.join(ROOT, "..", "audio")
 OUTDIR = os.path.join(ROOT, "..", "out")
 os.makedirs(OUTDIR, exist_ok=True)
 W, H, FPS = 1080, 1920, 60
-BAN_Y = 1000  # Cash Worms banner occupies y 1000..1384 (full width)
+BAN_Y = 1100  # Cash Worms banner occupies y 1100..1484 (full width)
 END = 81.0
 FONT = "/usr/share/fonts/opentype/inter/"
 PREVIEW = "--preview" in sys.argv
@@ -28,15 +28,43 @@ def load(n):
     return Image.open(os.path.join(P, n)).convert("RGB")
 
 
-PL = {n: load(n + ".png") for n in ["landing", "face_med", "face_tight", "flashback", "doorplate",
-                                     "dog_bg", "reflection", "home_door", "peephole", "reveal"]}
-DOG = Image.open(os.path.join(P, "dog_sprite.png"))
-_db = np.asarray(PL["dog_bg"])
-PL["dog_bg"] = Image.fromarray(np.pad(_db, ((0, 700), (0, 0), (0, 0)), mode="edge"))
-_ds = DOG.resize(PL["dog_bg"].size[:1] + (int(DOG.height * PL["dog_bg"].width / DOG.width),), Image.LANCZOS)
-DOG_PL = Image.new("RGBA", PL["dog_bg"].size, (0, 0, 0, 0))
-DOG_PL.paste(_ds, (0, 0))
-LEGS = Image.open(os.path.join(P, "dog_legs.png"))
+import characters as C
+
+PL = {n: load(n + ".png") for n in ["doorplate", "home_door"]}
+RW = 1.5  # world plates are rendered at 1.5x the 1080x1920 frame
+WORLD = {
+    "stair": C.stairwell(RW),
+    "stair_warm": C.stairwell(RW, warm=True),
+    "entrance": C.entrance(RW),
+    "doghall": C.dog_hall(RW),
+}
+_dk = np.asarray(WORLD["stair"]).astype(np.float32) * np.array([0.42, 0.26, 0.28])
+WORLD["stair_dark"] = Image.fromarray(_dk.astype(np.uint8)).filter(ImageFilter.GaussianBlur(6))
+PL["landing"] = WORLD["stair"].resize((W, H))
+
+
+def _env(path, a, b):
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-ac", "1", "-ar", "6000", "-f", "f32le", "-"],
+                         capture_output=True, check=True).stdout
+    x = np.frombuffer(raw, np.float32)[int(a * 6000): int(b * 6000)]
+    hop = 100  # 60 per second
+    n = len(x) // hop
+    r = np.sqrt((x[: n * hop].reshape(n, hop) ** 2).mean(1))
+    r = np.convolve(r, np.ones(3) / 3, mode="same")
+    return np.clip(r / (np.percentile(r, 95) + 1e-6), 0, 1)
+
+
+ENV1 = _env(os.path.join(AUD, "neighbor.mp3"), 0.0, 2.2)
+ENV2 = _env(os.path.join(AUD, "neighbor.mp3"), 4.2, 7.52)
+
+
+def talk_at(t):
+    for at, env in ((5.3, ENV1), (59.6, ENV2)):
+        i = int((t - at) * 60)
+        if 0 <= i < len(env):
+            return float(env[i]) if env[i] > 0.12 else 0.0
+    return 0.0
+
 
 # ---------------------------------------------------------------- timing
 # narration pieces: (src_start, src_end, offset) -> timeline = src + offset
@@ -100,7 +128,7 @@ CAPS.sort()
 
 # ---------------------------------------------------------------- caption sprites
 CAP_FONT = font("Inter-Black.otf", 74)
-CAP_Y = 950
+CAP_Y = 990
 
 
 def caption_sprite(text, colors):
@@ -251,7 +279,7 @@ F_PH_T = font("Inter-Bold.otf", 30)
 F_PH_S = font("Inter-Medium.otf", 22)
 F_MSG = font("Inter-Medium.otf", 28)
 F_MSG_N = font("Inter-Bold.otf", 22)
-BG_BLUR = PL["landing"].resize((W, H)).filter(ImageFilter.GaussianBlur(28))
+BG_BLUR = PL["landing"].filter(ImageFilter.GaussianBlur(28))
 BG_BLUR = Image.eval(BG_BLUR, lambda v: int(v * 0.35))
 BG_BLUR_NIGHT = PL["home_door"].resize((W, H)).filter(ImageFilter.GaussianBlur(24))
 BG_BLUR_NIGHT = Image.eval(BG_BLUR_NIGHT, lambda v: int(v * 0.6))
@@ -390,32 +418,135 @@ def end_scene(t):
 FLASH_BUB = font("Inter-Black.otf", 64)
 
 
+def cam(t, t0, t1, z0, z1, cx0, cy0, cx1=None, cy1=None):
+    """Camera over the 1080x1920 world: returns (bx0, by0, z)."""
+    p = ease((t - t0) / max(t1 - t0, 1e-3))
+    z = z0 + (z1 - z0) * p
+    cx = cx0 + ((cx1 if cx1 is not None else cx0) - cx0) * p + 6 * math.sin(t * 0.71) / z
+    cy = cy0 + ((cy1 if cy1 is not None else cy0) - cy0) * p + 5 * math.sin(t * 0.53 + 1.3) / z
+    w, h = W / z, H / z
+    bx0 = min(max(cx - w / 2, 0), W - w)
+    by0 = min(max(cy - h / 2, 0), H - h)
+    return bx0, by0, z
+
+
+def world_bg(plate, c, shake=0.0):
+    bx0, by0, z = c
+    if shake:
+        bx0 += random.uniform(-shake, shake) / z
+        by0 += random.uniform(-shake, shake) / z
+    box = (bx0 * RW, by0 * RW, (bx0 + W / z) * RW, (by0 + H / z) * RW)
+    return plate.transform((W, H), Image.EXTENT, box, Image.BILINEAR)
+
+
+def draw_chars(fr, c, fn, clip=None):
+    """fn(d, M) where M(x, y, s) -> (ox, oy, s) in 2x supersampled screen space."""
+    bx0, by0, z = c
+    lay = Image.new("RGBA", (W * 2, H * 2), (0, 0, 0, 0))
+    d = ImageDraw.Draw(lay, "RGBA")
+    fn(d, lambda x, y, s: ((x - bx0) * z * 2, (y - by0) * z * 2, s * z * 2))
+    lay = lay.reduce(2)
+    if clip is not None:
+        m = Image.new("L", (W, H), 0)
+        x0, y0, x1, y1 = clip
+        ImageDraw.Draw(m).rectangle(((x0 - bx0) * z, (y0 - by0) * z, (x1 - bx0) * z, (y1 - by0) * z), fill=255)
+        a = lay.getchannel("A")
+        lay.putalpha(Image.composite(a, m, m))
+    base = fr.convert("RGBA")
+    base.alpha_composite(lay)
+    return base.convert("RGB")
+
+
+NB = dict(x=540, y=1480, s=1.0)  # neighbour stands here in the stairwell world
+
+
+def nb_pose(t, **kw):
+    p = dict(breathe=4 * math.sin(t * 1.6))
+    p.update(kw)
+    return p
+
+
+# peephole fisheye maps (computed once)
+PN, PSRC = 940, 1300
+_yy, _xx = np.mgrid[0:PN, 0:PN].astype(np.float32)
+_u, _v = (_xx - PN / 2) / (PN / 2), (_yy - PN / 2) / (PN / 2)
+_r = np.sqrt(_u ** 2 + _v ** 2)
+_rs = _r * (0.58 + 0.42 * _r ** 2) + 1e-6
+PSX = np.clip((_u / np.maximum(_r, 1e-6) * _rs * 0.5 + 0.5) * (PSRC - 1), 0, PSRC - 1).astype(np.int32)
+PSY = np.clip((_v / np.maximum(_r, 1e-6) * _rs * 0.5 + 0.5) * (PSRC - 1), 0, PSRC - 1).astype(np.int32)
+PMASK = (np.clip((1.0 - _r) * 60, 0, 1) * (1.12 - 0.8 * np.clip(_r, 0, 1) ** 2))[..., None]
+PTINT = np.array([1.0, 0.8, 0.46])
+_pbg = WORLD["stair"].crop((int(220 * RW), int(250 * RW), int(860 * RW), int(890 * RW))).resize((PSRC, PSRC))
+PEEP_BG = Image.eval(_pbg, lambda v: int(v * 0.55))
+
+
+def peephole_frame(t, s0, s1):
+    p = ease((t - s0) / (s1 - s0))
+    src = PEEP_BG.copy().convert("RGBA")
+    lay = Image.new("RGBA", (PSRC, PSRC), (0, 0, 0, 0))
+    d = ImageDraw.Draw(lay, "RGBA")
+    tk = talk_at(t)
+    C.neighbor(d, PSRC / 2 + 20 * math.sin(t * 0.4), PSRC * 0.5 + 900 * 1.55 - 40, 1.55,
+               nb_pose(t, wide=0.6 + 0.4 * p, grin=0.12 + 0.38 * p + 0.12 * tk, gaze=(0, 0.2)), pal=C.PEEP)
+    src.alpha_composite(lay)
+    a = np.asarray(src.convert("RGB")).astype(np.float32)
+    fish = a[PSY, PSX]
+    fish = (fish.mean(2, keepdims=True) * 0.5 + fish * 0.5) * PTINT * PMASK
+    fish *= 0.88 + 0.12 * math.sin(t * 9.0) * math.sin(t * 3.1)
+    fr = np.zeros((H, W, 3), np.float32)
+    zz = 1.0 + 0.25 * p
+    n = int(PN * zz)
+    fimg = Image.fromarray(np.clip(fish, 0, 255).astype(np.uint8)).resize((n, n), Image.BILINEAR)
+    out = Image.new("RGB", (W, H), (0, 0, 0))
+    out.paste(fimg, ((W - n) // 2, 620 - n // 2))
+    dd = ImageDraw.Draw(out)
+    cx, cy = W // 2, 620
+    dd.ellipse((cx - n // 2 - 8, cy - n // 2 - 8, cx + n // 2 + 8, cy + n // 2 + 8), outline=(34, 28, 22), width=16)
+    return out
+
+
 def scene_frame(t):
     for s0, s1, name in SCENES:
         if s0 <= t < s1:
             break
     lt = t - s0
     if name == "landing":
-        fr = kb(PL["landing"], t, 0, 5.3, 1.0, 1.25, 0.5, 0.3)
-        if 3.05 < t < 3.25 or 3.4 < t < 3.47:  # fluorescent flicker
+        c = cam(t, 0, 5.3, 1.0, 1.35, 540, 900, 540, 760)
+        fr = world_bg(WORLD["stair"], c)
+        wide = 0.15 + 0.5 * ease((t - 3.4) / 0.6)
+        fr = draw_chars(fr, c, lambda d, M: C.neighbor(d, *M(NB["x"], NB["y"], NB["s"]),
+                                                       nb_pose(t, wide=wide, smile=0.15)))
+        if 3.05 < t < 3.25 or 3.4 < t < 3.47:
             fr = darken(fr, 0.45)
     elif name == "face_med":
-        fr = kb(PL["face_med"], t, s0, s1, 1.0, 1.12, 0.5, 0.2)
+        c = cam(t, s0, s1, 2.5, 2.75, 540, 760)
+        fr = world_bg(WORLD["stair"], c)
+        tk = talk_at(t)
+        fr = draw_chars(fr, c, lambda d, M: C.neighbor(d, *M(NB["x"], NB["y"], NB["s"]),
+                                                       nb_pose(t, wide=0.55, talk=tk, smile=0.25)))
     elif name == "doorplate":
         fr = kb(PL["doorplate"], t, s0, s1, 1.0, 1.3, 0.5, 0.42)
     elif name == "flashback":
-        fr = kb(PL["flashback"], t, s0, s1, 1.05, 1.0, 0.5, 0.35)
+        c = cam(t, s0, s1, 1.2, 1.05, 540, 820)
+        fr = world_bg(WORLD["stair_warm"], c)
+        wv = ease((t - (s0 + 0.4)) / 0.5)
+        fr = draw_chars(fr, c, lambda d, M: C.neighbor(d, *M(NB["x"], NB["y"], NB["s"]),
+                                                       nb_pose(t, happy=1, smile=1, wave=wv, wave_t=t), pal=C.WARM))
         if t >= T(11.6):
             k = ease((t - T(11.6)) / 0.2)
             d = ImageDraw.Draw(fr, "RGBA")
-            bx, by = 600, 330 - int(20 * k)
+            bx, by = 600, 300 - int(20 * k)
             d.rounded_rectangle((bx, by, bx + 360, by + 130), 40, fill=(255, 255, 255, int(240 * k)), outline=(30, 30, 30, int(255 * k)), width=5)
             d.polygon([(bx + 60, by + 125), (bx + 20, by + 190), (bx + 120, by + 125)], fill=(255, 255, 255, int(240 * k)))
             d.text((bx + 180, by + 65), "Доброе!", font=FLASH_BUB, fill=(30, 30, 30, int(255 * k)), anchor="mm")
     elif name == "chat":
         fr = chat_scene(t)
     elif name == "sign1":
-        fr = kb(PL["face_tight"], t, s0, s1, 1.0, 1.35, 0.5, 0.3)
+        c = cam(t, s0, s1, 3.0, 3.5, 540, 665)
+        fr = world_bg(WORLD["stair"], c, shake=1.5)
+        p = ease((t - s0) / (s1 - s0))
+        fr = draw_chars(fr, c, lambda d, M: C.neighbor(d, *M(NB["x"], NB["y"], NB["s"]),
+                                                       nb_pose(t, wide=0.8 + 0.2 * p, smile=0.1, dark_eyes=0.35 * p)))
         sw0 = T(27.5)
         if t >= sw0:
             keys = [(sw0, 0), (T(28.0), 20), (T(28.7), 40), (T(29.9), 60)]
@@ -430,15 +561,31 @@ def scene_frame(t):
             d.text((540, 405), f"00:{v:02d}" if v < 60 else "01:00", font=font("Inter-Black.otf", 84),
                    fill=(255, 59, 59) if v >= 60 else (255, 255, 255), anchor="mm")
     elif name == "dog":
-        fr = kb(PL["dog_bg"], t, s0, s1, 1.0, 1.06, 0.3, 0.68)
-        dg = kb(DOG_PL, t, s0, s1, 1.0, 1.06, 0.3, 0.68)
-        jit = (random.randint(-3, 3), random.randint(-2, 2)) if int(t * 15) % 3 else (0, 0)
-        fr.paste(dg, jit, dg)
+        c = cam(t, s0, s1, 1.0, 1.08, 540, 900, 470, 860)
+        fr = world_bg(WORLD["doghall"], c)
+        tr = 3.0 * math.sin(t * 47) + 1.5 * math.sin(t * 31)
+        ear = max(0.0, math.sin(t * 2.3)) ** 6
+
+        def fn(d, M):
+            C.neighbor(d, *M(930, 1000, 0.62), nb_pose(t, wide=0.6))
+            C.dog(d, *M(300, 1000, 1.0), tremble=tr, ear=ear, look=1.0)
+        fr = draw_chars(fr, c, fn)
     elif name == "reflection":
-        fx = 0.5 if t < T(42.7) else 0.5 + 0.5 * ease((t - T(42.7)) / 0.6)
-        z = 1.0 if t < T(42.7) else 1.0 + 0.35 * ease((t - T(42.7)) / 0.6)
-        fr = kb(PL["reflection"], 0, 0, 1, z, z, fx, 0.45)
-        fr = kb(PL["reflection"], t, s0, T(42.7), 1.0, 1.06, 0.5, 0.45) if t < T(42.7) else fr
+        tz = T(42.7)
+        if t < tz:
+            c = cam(t, s0, tz, 1.0, 1.08, 540, 960)
+        else:
+            c = cam(t, tz, tz + 0.7, 1.08, 1.6, 540, 960, 790, 900)
+        fr = world_bg(WORLD["entrance"], c)
+        t_real, t_refl = T(41.2), T(43.2)
+        tr_real = -0.9 * ease((t - t_real) / 0.4)
+        tr_refl = -0.9 * ease((t - t_refl) / 0.4)
+        gz_real = (-1.0 * ease((t - t_real) / 0.4), 0)
+        fr = draw_chars(fr, c, lambda d, M: C.neighbor(d, *M(800, 1505, 0.82),
+                        nb_pose(t, turn=tr_refl, wide=0.7 if t < t_refl else 0.3, smile=0.35 if t < t_refl else 0.0,
+                                gaze=(tr_refl, 0)), pal=C.GHOST, alpha=150), clip=C.GLASS)
+        fr = draw_chars(fr, c, lambda d, M: C.neighbor(d, *M(300, 1600, 0.95),
+                        nb_pose(t, turn=tr_real, gaze=gz_real, wide=0.2)))
     elif name in ("home", "knock"):
         sh = 0
         for kt in KNOCKS[:3]:
@@ -448,20 +595,22 @@ def scene_frame(t):
         if name == "knock":
             fr = darken(fr, 0.75)
     elif name == "peephole":
-        fr = kb(PL["peephole"], t, s0, s1, 1.0, 1.45, 0.5, 0.36)
-    elif name == "reveal":
-        fr = kb(PL["reveal"], t, s0, s1, 1.15, 1.3, 0.5, 0.35, shake=4)
-        if lt < 0.35 or 1.9 < lt < 2.05:
+        fr = peephole_frame(t, s0, s1)
+    elif name in ("reveal", "black"):
+        if name == "black" and lt >= 0.6:
+            return Image.new("RGB", (W, H), (0, 0, 0)), name
+        c = cam(t, 63.2, 67.0, 3.2, 3.6, 540, 690)
+        fr = world_bg(WORLD["stair_dark"], c, shake=5)
+        fr = draw_chars(fr, c, lambda d, M: C.neighbor(d, *M(NB["x"], NB["y"], NB["s"]),
+                        nb_pose(t, wide=1.0, grin=1.0, dark_eyes=1.0, gaze=(0.3 * math.sin(t * 13), 0)), pal=C.CREEPY))
+        if name == "reveal" and (lt < 0.35 or 1.9 < lt < 2.05):
             fr = glitch(fr, 1.0, int(t * 30))
-    elif name == "phone2":
-        fr = phone2_scene(t)
-    elif name == "black":
-        if lt < 0.6:
-            fr = glitch(kb(PL["reveal"], 0, 0, 1, 1.3, 1.3, 0.5, 0.35), 1.0, int(t * 30))
+        if name == "black":
+            fr = glitch(fr, 1.0, int(t * 30))
             if int(t * 30) % 2:
                 fr = darken(fr, 0.3)
-        else:
-            fr = Image.new("RGB", (W, H), (0, 0, 0))
+    elif name == "phone2":
+        fr = phone2_scene(t)
     else:
         fr = end_scene(t)
     return fr, name
@@ -496,7 +645,7 @@ _pr = np.random.default_rng(5)
 DUST = _pr.random((70, 5))  # x, y, size, speed, phase
 SNOW = _pr.random((110, 5))
 DUST_SCENES = {"landing": (235, 245, 240), "face_med": (235, 245, 240), "flashback": (255, 225, 160),
-               "sign1": (235, 245, 240), "peephole": (255, 220, 140), "doorplate": (255, 225, 180)}
+               "sign1": (235, 245, 240), "doorplate": (255, 225, 180)}
 CUTS = [s0 for s0, _, _ in SCENES[1:]]
 
 
@@ -697,7 +846,7 @@ if __name__ == "__main__":
     wav = build_audio()
     out = os.path.join(OUTDIR, "sosed_ne_chelovek_ch1.mp4")
     gif = os.path.join(ROOT, "..", "banner", "cashworms_banner.gif")
-    out = os.path.join(OUTDIR, "sosed_ne_chelovek_ch1_cashworms.mp4")
+    out = os.path.join(OUTDIR, "sosed_ne_chelovek_ch1_cashworms_v2.mp4")
     cmd = ["ffmpeg", "-v", "error", "-y",
            "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
            "-stream_loop", "-1", "-i", gif,
