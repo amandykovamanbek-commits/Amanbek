@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>5 ошибок — лимиты Claude</title>
+<style>
+  html,body{margin:0;background:#000;overflow:hidden}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Inter,'DejaVu Sans',sans-serif;background:#efe9e0;transform-origin:0 0;color:#2a2622}
+  .layer{position:absolute;left:0;top:0;width:1080px;height:1920px;pointer-events:none}
+  #bgShapes div{position:absolute;border-radius:60px;background:#e6ded2}
+  #cam{position:absolute;inset:0;transform-origin:540px 900px}
+  #head{position:absolute;left:0;right:0;top:230px;text-align:center;font-size:30px;font-weight:900;letter-spacing:3px;color:#c4553a;text-transform:uppercase}
+  #head span{border-bottom:4px solid #c4553a;padding-bottom:4px}
+  #note{position:absolute;left:96px;top:300px;background:#f6e7b8;padding:10px 26px;font-size:34px;font-style:italic;font-weight:700;transform:rotate(-3deg);box-shadow:0 6px 14px rgba(0,0,0,.12);opacity:0}
+  #prog{position:absolute;right:96px;top:306px;display:flex;align-items:center;gap:10px;font-size:34px;font-weight:900;opacity:0}
+  #prog i{display:block;width:40px;height:18px;border-radius:6px;background:#ddd5c9}
+  #prog i.on{background:#d97757}
+  #win{position:absolute;left:90px;top:400px;width:900px;height:860px;background:#fbf8f3;border-radius:34px;box-shadow:0 24px 60px rgba(60,40,20,.18);overflow:hidden}
+  #wtop{height:96px;display:flex;align-items:center;padding:0 30px;gap:14px;border-bottom:2px solid #eee7dc}
+  .dot{width:18px;height:18px;border-radius:9px}
+  #logo{width:46px;height:46px;border-radius:12px;background:#d97757;display:flex;align-items:center;justify-content:center;margin-left:10px}
+  #wname{font-size:32px;font-weight:900}
+  #lim{margin-left:auto;display:flex;align-items:center;gap:14px;font-size:26px;font-weight:800;color:#8a8178}
+  #limV{font-size:30px;font-weight:900;color:#2a2622;width:110px;text-align:right;white-space:nowrap}
+  #limBar{width:170px;height:30px;border-radius:10px;border:3px solid #d97757;padding:3px;box-sizing:border-box}
+  #limBar i{display:block;height:100%;border-radius:5px;background:#d97757}
+  #wbody{position:absolute;left:0;right:0;top:98px;bottom:110px;padding:24px 34px;box-sizing:border-box}
+  #winput{position:absolute;left:30px;right:30px;bottom:24px;height:72px;border-radius:36px;border:3px solid #e5ddd1;display:flex;align-items:center;padding:0 30px;font-size:30px;color:#a39a8f;box-sizing:border-box}
+  #winput b{margin-left:auto;width:48px;height:48px;border-radius:24px;background:#e5ddd1;display:block}
+  .view{position:absolute;inset:24px 34px;opacity:0}
+  .um{background:#f2dfd4;color:#2a2622;font-size:32px;font-weight:700;padding:16px 26px;border-radius:24px 24px 6px 24px;margin:12px 0 12px auto;width:fit-content;max-width:640px}
+  .am{display:flex;gap:14px;margin:12px 0}
+  .am .ic{width:40px;height:40px;border-radius:10px;background:#d97757;flex:none}
+  .am .tx{background:#f1ece5;border-radius:24px 24px 24px 6px;padding:20px 24px;width:560px}
+  .ln{height:16px;border-radius:8px;background:#ddd5c9;margin:8px 0}
+  .tag{position:absolute;padding:12px 26px;border-radius:14px;font-size:32px;font-weight:900;letter-spacing:1px;background:#fff;box-shadow:0 8px 20px rgba(0,0,0,.12);opacity:0;white-space:nowrap}
+  .tag.bad{border-left:10px solid #d64545;color:#2a2622}
+  .tag.good{border-left:10px solid #3d9a5b;color:#2a2622}
+  .mark{position:absolute;width:96px;height:96px;border-radius:48px;display:flex;align-items:center;justify-content:center;font-size:58px;font-weight:900;color:#fff;opacity:0;box-shadow:0 8px 20px rgba(0,0,0,.2)}
+  #toast{position:absolute;left:150px;top:690px;width:780px;background:#fff;border-left:14px solid #d64545;border-radius:22px;box-shadow:0 20px 50px rgba(0,0,0,.2);padding:26px 34px;box-sizing:border-box;opacity:0;display:flex;align-items:center;gap:24px}
+  #cards{position:absolute;left:0;right:0;top:1060px;height:260px}
+  #cards div{position:absolute;left:540px;top:0;width:150px;height:210px;border-radius:22px;background:#d97757;border:6px solid #fff;box-shadow:0 12px 26px rgba(0,0,0,.2);color:#fff;font-size:84px;font-weight:900;display:flex;align-items:center;justify-content:center;opacity:0}
+  #big5{position:absolute;left:0;right:0;top:560px;text-align:center;font-size:96px;font-weight:900;opacity:0;line-height:1.05}
+  #big5 em{font-style:normal;color:#d97757}
+  .dd{border:3px solid #e5ddd1;border-radius:18px;background:#fff;width:520px;box-shadow:0 10px 24px rgba(0,0,0,.08)}
+  .dd .r{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;font-size:32px;font-weight:900}
+  .dd .r small{display:block;font-size:22px;color:#8a8178;font-weight:700}
+  .file{display:flex;align-items:center;gap:22px;background:#fff;border:3px solid #e5ddd1;border-radius:22px;padding:20px 26px;width:620px;margin-left:auto}
+  .tpl .row{display:flex;gap:16px;align-items:center;font-size:34px;font-weight:800;padding:14px 0;border-bottom:2px solid #eee7dc;opacity:0}
+  .tpl .row b{color:#d97757;min-width:170px}
+  #subs{position:absolute;left:50px;right:50px;top:1440px;text-align:center;font-weight:900;font-size:76px;line-height:1.1;letter-spacing:-1px;color:#fff;-webkit-text-stroke:15px #2a2622;paint-order:stroke fill}
+  #subs span{display:inline-block;margin:0 9px;transform-origin:50% 60%}
+  #subs span.on{color:#ffb38f}
+  #chan{position:absolute;left:90px;top:330px;width:900px;background:#fff;border-radius:34px;box-shadow:0 24px 60px rgba(60,40,20,.2);padding:34px;box-sizing:border-box;opacity:0}
+  #flash{position:absolute;inset:0;background:#fff;opacity:0}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bgShapes" class="layer"></div>
+  <div id="cam">
+    <div id="head"><span id="headT">5 ошибок · лимиты Claude</span></div>
+    <div id="note">ошибка №1</div>
+    <div id="prog"><span id="progN">1/5</span><i></i><i></i><i></i><i></i><i></i></div>
+
+    <div id="win">
+      <div id="wtop"><div class="dot" style="background:#e8705f"></div><div class="dot" style="background:#e9b94f"></div><div class="dot" style="background:#7cc27a"></div>
+        <div id="logo"><svg width="30" height="30" viewBox="-22 -22 44 44"><g stroke="#fff" stroke-width="6" stroke-linecap="round"><line x1="0" y1="-18" x2="0" y2="18"/><line x1="-18" y1="0" x2="18" y2="0"/><line x1="-13" y1="-13" x2="13" y2="13"/><line x1="-13" y1="13" x2="13" y2="-13"/></g></svg></div>
+        <div id="wname">Claude</div>
+        <div id="lim">лимит <span id="limV">100 %</span><div id="limBar"><i id="limFill"></i></div></div></div>
+      <div id="wbody">
+        <!-- l1: hook -->
+        <div class="view" id="v1">
+          <div class="um" id="v1m">напиши пост для канала</div>
+          <div class="am"><div class="ic"></div><div class="tx"><div class="ln" style="width:90%"></div><div class="ln" style="width:70%"></div><div class="ln" style="width:80%"></div></div></div>
+        </div>
+        <!-- l2: long chat -->
+        <div class="view" id="v2">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="border:3px solid #d97757;color:#d97757;border-radius:30px;padding:8px 22px;font-size:26px;font-weight:900">+ Новый чат</span><span style="font-size:26px;font-weight:800;color:#8a8178">↑ <span id="msgN">12</span> сообщений</span></div>
+          <div id="scroll" style="position:relative;height:520px;overflow:hidden;margin-top:10px"><div id="scrollIn" style="position:absolute;left:0;right:0;top:0"></div></div>
+        </div>
+        <div class="view" id="v2b">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="background:#d97757;color:#fff;border-radius:30px;padding:8px 22px;font-size:26px;font-weight:900">+ Новый чат</span></div>
+          <div style="text-align:center;font-size:36px;font-weight:900;color:#8a8178;margin-top:60px">Новый чат</div>
+          <div class="um" style="margin-top:60px">план поста на завтра</div>
+          <div class="am"><div class="ic"></div><div class="tx"><div class="ln" style="width:80%"></div><div class="ln" style="width:60%"></div></div></div>
+        </div>
+        <!-- l3: model -->
+        <div class="view" id="v3">
+          <div class="dd"><div class="r" style="border-bottom:2px solid #eee7dc"><span id="ddSel">Opus</span><span>⌄</span></div>
+            <div class="r" id="rOpus"><span>Opus<small>для сложных задач</small></span><span id="ckO" style="color:#d97757">✓</span></div>
+            <div class="r" id="rSon"><span>Sonnet<small>для повседневных</small></span><span id="ckS" style="color:#3d9a5b;opacity:0">✓</span></div></div>
+          <div class="um" id="v3m" style="opacity:0">исправь запятые в тексте</div>
+          <div class="am" id="v3a" style="opacity:0"><div class="ic"></div><div class="tx" style="width:auto;font-size:30px;font-weight:700">Готово: 3 запятые</div></div>
+        </div>
+        <!-- l4: file -->
+        <div class="view" id="v4">
+          <div class="file" id="fileBig"><div style="width:90px;height:110px;border-radius:12px;background:#d64545;color:#fff;font-size:28px;font-weight:900;display:flex;align-items:flex-end;justify-content:center;padding-bottom:12px;box-sizing:border-box">PDF</div>
+            <div><div style="font-size:34px;font-weight:900">отчёт_полный.pdf</div><div style="font-size:28px;font-weight:800;color:#8a8178"><span id="pgN">1</span> / 240 страниц</div></div></div>
+          <div class="um">найди один абзац про цены</div>
+          <div id="snip" style="opacity:0;background:#fff;border:3px dashed #3d9a5b;border-radius:22px;padding:20px 26px;margin-left:auto;width:620px;box-sizing:border-box">
+            <div style="font-size:26px;font-weight:900;color:#3d9a5b">вставлен фрагмент · 1 абзац</div><div class="ln" style="width:95%"></div><div class="ln" style="width:85%"></div><div class="ln" style="width:60%"></div></div>
+        </div>
+        <!-- l5: redo -->
+        <div class="view" id="v5">
+          <div id="redo" style="position:relative;height:600px"></div>
+          <div id="x10" style="position:absolute;left:0;top:20px;font-size:90px;font-weight:900;color:#d64545;opacity:0">×10</div>
+        </div>
+        <div class="view" id="v5b">
+          <div style="font-size:30px;font-weight:900;color:#8a8178;letter-spacing:2px">ХОРОШИЙ ПРОМПТ С ПЕРВОГО РАЗА</div>
+          <div class="tpl" style="margin-top:14px">
+            <div class="row"><b>Что:</b> пост про лимиты Claude</div>
+            <div class="row"><b>Для кого:</b> новички, 14–20 лет</div>
+            <div class="row"><b>Формат:</b> 5 пунктов, до 600 знаков</div>
+          </div>
+        </div>
+        <!-- l6: rewrite -->
+        <div class="view" id="v6">
+          <div class="um" id="v6m">перепиши весь текст, поменяй дату</div>
+          <div class="am"><div class="ic"></div><div class="tx" id="v6doc" style="width:600px"></div></div>
+        </div>
+        <div class="view" id="v6b">
+          <div class="um">поменяй дату — пришли только эту строку</div>
+          <div class="am"><div class="ic"></div><div class="tx" style="width:600px;font-size:32px;font-weight:800">Встреча: <span style="background:#d8f0dd;color:#2f7d48;padding:2px 10px;border-radius:8px">12 ноября</span> ✓</div></div>
+        </div>
+      </div>
+      <div id="winput"><span id="typed">Напиши Claude…</span><b></b></div>
+    </div>
+
+    <div id="toast"><div style="width:84px;height:84px;border-radius:42px;border:8px solid #d64545;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:900;color:#d64545">⏱</div>
+      <div><div style="font-size:52px;font-weight:900;color:#d64545">ЛИМИТ ИСЧЕРПАН</div><div style="font-size:30px;font-weight:700;color:#8a8178">возвращайся позже</div></div></div>
+    <div id="big5">ТЫ ДЕЛАЕШЬ<br><em>5 ОШИБОК</em></div>
+    <div id="cards"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div></div>
+
+    <div class="mark" id="mBad" style="left:60px;top:370px;background:#d64545">✕</div>
+    <div class="mark" id="mGood" style="left:60px;top:370px;background:#3d9a5b">✓</div>
+    <div class="tag bad" id="tBad" style="left:90px;top:1290px"></div>
+    <div class="tag good" id="tGood" style="left:90px;top:1290px"></div>
+    <div class="tag good" id="tGood2" style="right:90px;top:1360px"></div>
+
+    <div id="chan">
+      <div style="display:flex;align-items:center;gap:28px">
+        <img src="avatar.jpg" style="width:170px;height:170px;border-radius:85px;object-fit:cover;border:6px solid #d97757">
+        <div><div style="font-size:30px;font-weight:800;color:#8a8178">мой канал ✈️</div><div style="font-size:60px;font-weight:900;letter-spacing:-1px">@claudecode09</div>
+          <div style="font-size:28px;font-weight:800;color:#d97757">видео в Claude · промпты · разборы</div></div>
+      </div>
+      <div id="qrBox" style="margin-top:26px;opacity:0;text-align:center"><img src="qr_card.png" style="width:520px;border-radius:20px;border:4px solid #eee7dc"></div>
+      <div id="arrow" style="text-align:center;font-size:40px;font-weight:900;color:#d97757;opacity:0">наведи камеру 📷</div>
+    </div>
+  </div>
+  <div id="subs"></div>
+  <div id="flash"></div>
+</div>
+
+<script src="data/words.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const easeOut = k => 1 - Math.pow(1 - k, 3);
+const easeIn = k => k * k * k;
+const easeInOut = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+const easeOutBack = k => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+const decay = (t, t0, rate = 6) => t < t0 ? 0 : Math.exp(-(t - t0) * rate);
+const noise = (t, f, ph = 0) => Math.sin(t * f + ph) * .6 + Math.sin(t * f * 2.31 + ph * 1.7) * .4;
+
+const SCENES = [
+  { id: 'l1', bg: 'chat', text: 'Пишешь Claude пару сообщений — и снова «лимит исчерпан»? Скорее всего, ты делаешь одну из этих пяти ошибок.' },
+  { id: 'l2', bg: 'chat', text: 'Ошибка первая: один чат на всё. С каждым сообщением Claude перечитывает всю переписку, и лимит тает быстрее. Новая задача — новый чат.' },
+  { id: 'l3', bg: 'chat', text: 'Ошибка вторая: самая мощная модель на простые задачи. Opus — для сложного, а исправить запятые спокойно справится Sonnet.' },
+  { id: 'l4', bg: 'chat', text: 'Ошибка третья: кидаешь огромный файл ради одного абзаца. Claude читает его целиком. Вставь только нужный кусок.' },
+  { id: 'l5', bg: 'chat', text: 'Ошибка четвёртая: «не то, переделай» десять раз подряд. Каждая попытка ест лимит. Опиши сразу: что нужно, для кого и в каком формате.' },
+  { id: 'l6', bg: 'chat', text: 'Ошибка пятая: просишь переписать весь текст ради одной правки. Попроси только исправленный фрагмент.' },
+  { id: 'l7', bg: 'chan', text: 'А как делать такие же видео в Claude — подробнее в моём канале. Ищи claudecode09, QR-код на экране!' },
+];
+const norm = w => w.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/g, '');
+const TOK = [];
+SCENES.forEach((sc, si) => { sc.tokens = []; sc.text.split(/\s+/).forEach(w => { if (!norm(w)) return; const tk = { w, n: norm(w), si }; sc.tokens.push(tk); TOK.push(tk); }); });
+(function () {
+  const W = window.WORDS;
+  if (W && W.length === TOK.length) TOK.forEach((tk, i) => { tk.s = W[i].s; tk.e = W[i].e; });
+  else { let t = .3; TOK.forEach((tk, i) => { const d = .07 * tk.n.length + .1; tk.s = t; tk.e = t + d; t += d + .03; if (/[.!?…»]$/.test(tk.w)) t += .35; else if (/[,:—]$/.test(tk.w)) t += .15; }); }
+})();
+const VO_END = TOK[TOK.length - 1].e;
+const DURATION = VO_END + 3.8;
+SCENES.forEach((sc, i) => { sc.start = i === 0 ? 0 : sc.tokens[0].s - .15; });
+SCENES.forEach((sc, i) => { sc.end = i < SCENES.length - 1 ? SCENES[i + 1].start : DURATION; });
+function W(sid, pre, nth = 0, edge = 's') {
+  const sc = SCENES.find(s => s.id === sid), p = norm(pre);
+  let h = sc.tokens.filter(t => t.n === p); if (!h.length) h = sc.tokens.filter(t => t.n.startsWith(p));
+  if (!h.length) throw new Error('cue ' + sid + ' ' + pre);
+  return h[Math.min(nth, h.length - 1)][edge];
+}
+const S = id => SCENES.find(s => s.id === id);
+const CHUNKS = [];
+(function () {
+  let cur = []; const flush = () => { if (cur.length) CHUNKS.push(cur); cur = []; };
+  TOK.forEach((tk, i) => { const pv = TOK[i - 1]; if (cur.length && pv.si !== tk.si) flush(); cur.push(tk);
+    const len = cur.reduce((a, t) => a + t.w.length + 1, 0);
+    if (/[.!?…:»]$/.test(tk.w) || /[,—]$/.test(tk.w) && cur.length >= 2 || cur.length >= 3 || len > 17) flush(); });
+  flush();
+  CHUNKS.forEach((c, i) => { c.s = c[0].s - .05; c.e = i < CHUNKS.length - 1 ? CHUNKS[i + 1][0].s - .05 : c[c.length - 1].e + .6; });
+})();
+
+// ---------- cues
+const T = {
+  l1msg: S('l1').start + .1, l1drop: W('l1', 'лимит'), l1five: W('l1', 'пяти') - .2, l1cards: W('l1', 'ошибок'),
+  l2scroll: W('l2', 'каждым'), l2bad: W('l2', 'перечитывает'), l2tae: W('l2', 'тает'), l2good: W('l2', 'новая'),
+  l3opus: W('l3', 'мощная'), l3msg: W('l3', 'запятые'), l3son: W('l3', 'sonnet'), l3tag: W('l3', 'opus'),
+  l4file: W('l4', 'огромный'), l4read: W('l4', 'целиком'), l4good: W('l4', 'вставь'),
+  l5redo: W('l5', 'не'), l5x: W('l5', 'десять'), l5eat: W('l5', 'ест'), l5good: W('l5', 'опиши'), l5r: [W('l5', 'что'), W('l5', 'кого'), W('l5', 'формате')],
+  l6doc: W('l6', 'переписать'), l6bad: W('l6', 'ради'), l6good: W('l6', 'попроси'),
+  l7: S('l7').start, l7qr: W('l7', 'qr'), l7ch: W('l7', 'канале'),
+};
+const ERR = { l2: ['ошибка №1', 'Ошибка 1 · длинный чат', '1/5'], l3: ['ошибка №2', 'Ошибка 2 · тяжёлая модель', '2/5'], l4: ['ошибка №3', 'Ошибка 3 · огромный файл', '3/5'], l5: ['ошибка №4', 'Ошибка 4 · «переделай»', '4/5'], l6: ['ошибка №5', 'Ошибка 5 · всё целиком', '5/5'] };
+const BADS = [['l2', T.l2bad, 'ПЕРЕЧИТЫВАЕТ ВСЁ'], ['l3', T.l3msg, 'OPUS НА ЗАПЯТЫЕ'], ['l4', T.l4read, 'ЧИТАЕТ 240 СТРАНИЦ'], ['l5', T.l5eat, 'КАЖДАЯ ПОПЫТКА = ЛИМИТ'], ['l6', T.l6bad, 'ПЕРЕПИСЫВАЕТ ВСЁ']];
+const GOODS = [['l2', T.l2good, 'НОВАЯ ЗАДАЧА — НОВЫЙ ЧАТ'], ['l3', T.l3son, 'SONNET — ДЛЯ РУТИНЫ'], ['l4', T.l4good, 'ТОЛЬКО НУЖНЫЙ КУСОК'], ['l5', T.l5good, 'ЧТО · ДЛЯ КОГО · ФОРМАТ'], ['l6', T.l6good, 'ТОЛЬКО ПРАВКА']];
+// limit keyframes
+const LIM = [[0, 37], [T.l1drop - .3, 37], [T.l1drop + .3, 3], [S('l2').start, 3], [S('l2').start + .2, 100], [T.l2scroll, 100], [T.l2tae + .4, 27], [T.l2good, 27], [T.l2good + .5, 100],
+  [S('l3').start + .2, 100], [T.l3msg, 100], [T.l3msg + .5, 62], [T.l3son, 62], [T.l3son + .5, 95],
+  [S('l4').start + .2, 100], [T.l4read - .4, 100], [T.l4read + .6, 40], [T.l4good, 40], [T.l4good + .5, 92],
+  [S('l5').start + .2, 100], [T.l5redo, 100], [T.l5eat + .4, 20], [T.l5good, 20], [T.l5good + .5, 90],
+  [S('l6').start + .2, 100], [T.l6doc, 100], [T.l6bad + .6, 35], [T.l6good, 35], [T.l6good + .5, 93], [DURATION, 93]];
+function limAt(t) { for (let i = 1; i < LIM.length; i++) if (t <= LIM[i][0]) { const [a, va] = LIM[i - 1], [b, vb] = LIM[i]; return lerp(va, vb, easeInOut(clamp((t - a) / Math.max(.01, b - a)))); } return LIM[LIM.length - 1][1]; }
+const PUNCH = [T.l1drop, T.l1cards, ...BADS.map(b => b[1]), ...GOODS.map(g => g[1]), T.l7, T.l7qr];
+
+window.getSfx = function () {
+  const ev = [];
+  ev.push({ t: T.l1msg, k: 'send' }); ev.push({ t: T.l1drop, k: 'error' }); ev.push({ t: T.l1five, k: 'whoosh' });
+  for (let i = 0; i < 5; i++) ev.push({ t: T.l1cards + i * .09, k: 'pop' });
+  SCENES.forEach((s, i) => { if (i) ev.push({ t: s.start, k: 'whoosh' }); });
+  BADS.forEach(b => ev.push({ t: b[1], k: 'wah' })); GOODS.forEach(g => ev.push({ t: g[1], k: 'success' }));
+  for (let x = T.l2scroll; x < T.l2bad; x += .12) ev.push({ t: x, k: 'tick' });
+  ev.push({ t: T.l3msg, k: 'send' }); ev.push({ t: T.l3son - .1, k: 'click' });
+  ev.push({ t: T.l4file, k: 'pop' }); for (let x = T.l4read - .4; x < T.l4read + .6; x += .1) ev.push({ t: x, k: 'tick' });
+  for (let k = 0; k < 6; k++) ev.push({ t: T.l5redo + k * .25, k: 'send' }); T.l5r.forEach(x => ev.push({ t: x, k: 'tick' }));
+  ev.push({ t: T.l6doc, k: 'hum' });
+  ev.push({ t: T.l7, k: 'ding' }); ev.push({ t: T.l7qr, k: 'success' }); ev.push({ t: T.l7qr + .2, k: 'sparkle' });
+  return ev.filter(e => e.t >= 0 && e.t < DURATION);
+};
+window.DURATION = DURATION;
+
+// build dynamic bits
+(function () {
+  let s = ''; [[60, 140, 300, 300], [760, 80, 260, 340], [-80, 1300, 360, 260], [800, 1560, 320, 320], [380, 1720, 240, 200]].forEach(([x, y, w, h], i) => s += `<div data-p="${.2 + i * .07}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;transform:rotate(${i * 13 - 20}deg)"></div>`);
+  $('bgShapes').innerHTML = s;
+  let m = ''; for (let i = 0; i < 40; i++) m += i % 2 ? `<div class="am"><div class="ic"></div><div class="tx" style="width:${380 + (i * 37) % 180}px"><div class="ln" style="width:90%"></div><div class="ln" style="width:65%"></div></div></div>` : `<div class="um" style="min-width:${120 + (i * 53) % 260}px">${['а вот это', 'и ещё вопрос', 'теперь другое', 'а помнишь…', 'и вот это'][i / 2 % 5 | 0]}</div>`;
+  $('scrollIn').innerHTML = m;
+  let r = ''; for (let i = 0; i < 6; i++) r += `<div class="um rd" style="position:absolute;right:${(i % 2) * 40}px;top:${i * 92}px;opacity:0;background:${i % 2 ? '#f6d6c8' : '#f2dfd4'}">не то, переделай${'!'.repeat(i % 3)}</div>`;
+  $('redo').innerHTML = r;
+  let d = ''; for (let i = 0; i < 9; i++) d += `<div class="ln dl" style="width:0"></div>`; $('v6doc').innerHTML = d;
+})();
+const CARDS5 = [...document.querySelectorAll('#cards div')];
+const BGS = [...document.querySelectorAll('#bgShapes div')];
+
+function pop(el, t, a, b = 1e9, base = '') {
+  const pi = clamp((t - a) / .35), po = clamp((t - b) / .25);
+  if (t < a || po >= 1) { el.style.opacity = 0; return false; }
+  el.style.opacity = clamp((t - a) / .08) * (1 - po);
+  el.style.transform = `${base} scale(${Math.max(.001, easeOutBack(pi) * (1 - .15 * po))}) translateY(${-40 * easeIn(po)}px)`;
+  return true;
+}
+function show(el, on) { el.style.opacity = on ? 1 : 0; }
+
+window.renderAt = function (t) {
+  const sc = SCENES.find(s => t >= s.start && t < s.end) || SCENES[SCENES.length - 1];
+  const id = sc.id, lt = t - sc.start;
+  // camera
+  let z = 1 + .02 * noise(t, .4) + .015 * clamp(lt / 6);
+  PUNCH.forEach(p => z += .035 * decay(t, p, 6));
+  const cx = noise(t, .3) * 10, cy = noise(t, .25, 2) * 8, rot = noise(t, .2, 4) * .4;
+  let shake = 0; BADS.forEach(b => shake += decay(t, b[1], 7)); shake += decay(t, T.l1drop, 7);
+  $('cam').style.transform = `translate(${cx + Math.sin(t * 60) * 9 * shake}px, ${cy}px) rotate(${rot}deg) scale(${z})`;
+  BGS.forEach((b, i) => b.style.translate = `${noise(t, .2, i) * 40 * +b.dataset.p * 3}px ${Math.sin(t * .3 + i) * 30}px`);
+  // scene transition (slide)
+  const trans = SCENES.reduce((acc, s2, i) => { if (!i) return acc; const d = t - s2.start; return d > -.18 && d < .22 ? (d < 0 ? -easeIn((d + .18) / .18) : 1 - easeOut(d / .22)) : acc; }, 0);
+  $('win').style.transform = `translateX(${trans * 140}px)`; $('win').style.filter = Math.abs(trans) > .05 ? `blur(${Math.abs(trans) * 12}px)` : 'none';
+
+  // header
+  const er = ERR[id];
+  $('headT').textContent = er ? er[1] : id === 'l7' ? 'хочешь так же?' : '5 ошибок · лимиты Claude';
+  show($('note'), !!er); show($('prog'), !!er);
+  if (er) { $('note').textContent = er[0]; $('progN').textContent = er[2]; const n = +er[2][0]; document.querySelectorAll('#prog i').forEach((e, i) => e.className = i < n ? 'on' : ''); $('note').style.transform = `rotate(-3deg) scale(${1 + .2 * decay(t, sc.start, 6)})`; }
+
+  // window + views
+  const winOn = id !== 'l7';
+  { const k = id === 'l7' ? clamp((t - T.l7) / .3) : 0; $('win').style.opacity = 1 - k; }
+  const views = { v1: id === 'l1', v2: id === 'l2' && t < T.l2good, v2b: id === 'l2' && t >= T.l2good, v3: id === 'l3', v4: id === 'l4', v5: id === 'l5' && t < T.l5good, v5b: id === 'l5' && t >= T.l5good, v6: id === 'l6' && t < T.l6good, v6b: id === 'l6' && t >= T.l6good };
+  for (const [k, on] of Object.entries(views)) $(k).style.opacity = on ? 1 : 0;
+  const L = limAt(t); $('limV').textContent = Math.round(L) + ' %'; $('limFill').style.width = L + '%';
+  $('limFill').style.background = L < 50 ? '#d64545' : L > 85 && t > S('l2').start + .3 && GOODS.some(g => t > g[1]) && id !== 'l1' ? '#3d9a5b' : '#d97757';
+  $('limBar').style.borderColor = $('limFill').style.background;
+  $('limV').style.transform = `scale(${1 + .3 * Math.max(...BADS.map(b => decay(t, b[1] + .3, 5)), ...GOODS.map(g => decay(t, g[1] + .3, 5)))})`;
+  // typing line
+  const typing = { l1: ['напиши пост для канала', T.l1msg - .9, T.l1msg], l3: ['исправь запятые в тексте', T.l3msg - .9, T.l3msg], l2: ['и вот это', T.l2scroll - .5, T.l2scroll], l5: ['не то, переделай', T.l5redo - .6, T.l5redo] }[id];
+  if (typing && t >= typing[1] && t < typing[2]) { const n = Math.round(typing[0].length * clamp((t - typing[1]) / (typing[2] - typing[1]))); $('typed').textContent = typing[0].slice(0, n) + (Math.sin(t * 12) > 0 ? '|' : ''); $('typed').style.color = '#2a2622'; }
+  else { $('typed').textContent = 'Напиши Claude…'; $('typed').style.color = '#a39a8f'; }
+
+  // l1
+  { const k = clamp((t - T.l1msg) / .3); $('v1m').style.transform = `translateY(${(1 - easeOut(k)) * 40}px)`; $('v1m').style.opacity = k; }
+  pop($('toast'), t, T.l1drop, T.l1five);
+  { const k = clamp((t - T.l1five) / .35); const on = id === 'l1' && t >= T.l1five; $('big5').style.opacity = on ? k : 0; $('big5').style.transform = `scale(${lerp(1.5, 1, easeOut(k))})`;
+    if (on) { $('win').style.opacity = 1 - .85 * k; $('win').style.transform = `scale(${1 - .4 * easeOut(k)}) translateY(${-200 * easeOut(k)}px)`; } }
+  CARDS5.forEach((c, i) => { const a = T.l1cards + i * .09; const on = id === 'l1' && t >= a; const k = clamp((t - a) / .35);
+    c.style.opacity = on ? 1 : 0; c.style.transform = `translate(${-75 + (i - 2) * 175}px, ${(1 - easeOutBack(k)) * 200 + Math.abs(i - 2) * 14}px) rotate(${(i - 2) * 6 + Math.sin(t * 3 + i) * 2}deg)`; });
+  // l2 scroll
+  { const k = clamp((t - T.l2scroll) / Math.max(.5, T.l2tae + .4 - T.l2scroll)); $('scrollIn').style.transform = `translateY(${-easeInOut(k) * 2400}px)`; $('msgN').textContent = Math.round(12 + 202 * easeInOut(k)); }
+  // l3
+  { const sel = t >= T.l3son; $('ddSel').textContent = sel ? 'Sonnet' : 'Opus'; $('ckO').style.opacity = sel ? 0 : 1; $('ckS').style.opacity = sel ? 1 : 0;
+    $('rOpus').style.background = !sel && t >= T.l3opus ? '#fbeee7' : 'transparent'; $('rSon').style.background = sel ? '#e3f3e7' : 'transparent';
+    const k = clamp((t - T.l3msg) / .3); $('v3m').style.opacity = k; $('v3a').style.opacity = clamp((t - T.l3msg - .5) / .3); }
+  // l4
+  { pop($('fileBig'), t, T.l4file); const k = clamp((t - T.l4read + .4) / 1); $('pgN').textContent = Math.max(1, Math.round(240 * easeInOut(k))); const g = clamp((t - T.l4good) / .3); $('snip').style.opacity = g; $('snip').style.transform = `scale(${lerp(1.2, 1, easeOut(g))})`;
+    if (t >= T.l4good) $('fileBig').style.opacity = .25; }
+  // l5
+  document.querySelectorAll('#redo .rd').forEach((r, i) => { const a = T.l5redo + i * .25; const k = clamp((t - a) / .25); r.style.opacity = k; r.style.transform = `translateY(${(1 - easeOut(k)) * 30}px) rotate(${(i % 2 ? 2 : -2)}deg)`; });
+  { const k = clamp((t - T.l5x) / .25); $('x10').style.opacity = k; $('x10').style.transform = `rotate(-8deg) scale(${lerp(2, 1, easeOut(k))})`; }
+  document.querySelectorAll('#v5b .row').forEach((r, i) => { const k = clamp((t - T.l5r[i]) / .3); r.style.opacity = k; r.style.transform = `translateX(${(1 - easeOut(k)) * -40}px)`; });
+  // l6
+  document.querySelectorAll('#v6doc .dl').forEach((l, i) => { const k = clamp((t - T.l6doc - .3 - i * .18) / .3); l.style.width = (k * (60 + (i * 23) % 38)) + '%'; });
+
+  // bad/good marks + tags
+  let bad = null, good = null;
+  BADS.forEach(b => { if (id === b[0] && t >= b[1]) bad = b; }); GOODS.forEach(g => { if (id === g[0] && t >= g[1]) good = g; });
+  if (good) bad = null;
+  pop($('mBad'), t, bad ? bad[1] : 1e9); pop($('mGood'), t, good ? good[1] : 1e9);
+  if (bad) $('tBad').textContent = bad[2]; pop($('tBad'), t, bad ? bad[1] + .1 : 1e9);
+  if (good) $('tGood').textContent = good[2]; pop($('tGood'), t, good ? good[1] + .1 : 1e9);
+  const g2 = id === 'l3' && t >= T.l3son ? 'OPUS — ДЛЯ СЛОЖНОГО' : null;
+  if (g2) $('tGood2').textContent = g2; pop($('tGood2'), t, g2 ? T.l3son + .3 : 1e9);
+  if (g2) $('tGood2').style.borderLeftColor = '#d97757';
+
+  // l7 channel
+  pop($('chan'), t, T.l7 + .05);
+  { const k = clamp((t - T.l7ch) / .4); $('qrBox').style.opacity = k; $('qrBox').style.transform = `scale(${lerp(.6, 1, easeOutBack(k))})`; $('arrow').style.opacity = k; $('arrow').style.transform = `translateY(${Math.abs(Math.sin(t * 5)) * 12}px)`; }
+
+  // subtitles
+  const ch = CHUNKS.find(c => t >= c.s && t < c.e), subs = $('subs');
+  if (!ch || t > VO_END + .5) { subs.innerHTML = ''; subs._c = null; }
+  else {
+    if (subs._c !== ch) { subs.innerHTML = ch.map(tk => `<span>${tk.w.replace(/[«»]/g, '')}</span>`).join(' '); subs._c = ch; }
+    const sp = subs.children, k = clamp((t - ch.s) / .16);
+    subs.style.transform = `translateY(${(1 - easeOut(k)) * 24}px) scale(${.9 + .1 * easeOutBack(k)})`; subs.style.opacity = clamp((t - ch.s) / .08);
+    ch.forEach((tk, i) => { const on = t >= tk.s - .03 && (i === ch.length - 1 || t < ch[i + 1].s - .03); sp[i].className = on ? 'on' : ''; const kk = on ? clamp((t - tk.s + .03) / .12) : 0; sp[i].style.transform = `scale(${1 + .1 * Math.sin(Math.PI * kk) + (on ? .04 : 0)})`; });
+  }
+  $('subs').style.top = id === 'l7' ? '1560px' : '1440px';
+  $('flash').style.opacity = .5 * Math.max(...GOODS.map(g => decay(t, g[1], 9)), decay(t, T.l7qr, 8));
+  const fo = clamp((t - (DURATION - .35)) / .35); $('stage').style.filter = fo > 0 ? `brightness(${1 - fo})` : 'none';
+};
+window.READY = true;
+if (!/render/.test(location.search)) {
+  const fit = () => { const s = Math.min(innerWidth / 1080, innerHeight / 1920); $('stage').style.transform = `scale(${s})`; };
+  fit(); addEventListener('resize', fit);
+  const t0 = performance.now(); const loop = () => { renderAt(((performance.now() - t0) / 1000) % DURATION); requestAnimationFrame(loop); }; loop();
+}
+</script>
+</body>
+</html>
