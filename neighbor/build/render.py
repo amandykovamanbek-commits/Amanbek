@@ -1,4 +1,4 @@
-"""Render 'Сосед — не человек' part 1: 1080x1920 30fps, frames piped to ffmpeg, audio mixed in numpy."""
+"""Render 'Сосед — не человек' part 1: 1080x1920 60fps, frames piped to ffmpeg, audio mixed in numpy."""
 import os, sys, math, random, subprocess
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
@@ -8,7 +8,8 @@ P = os.path.join(ROOT, "plates")
 AUD = os.path.join(ROOT, "..", "audio")
 OUTDIR = os.path.join(ROOT, "..", "out")
 os.makedirs(OUTDIR, exist_ok=True)
-W, H, FPS = 1080, 1920, 30
+W, H, FPS = 1080, 1920, 60
+BAN_Y = 1000  # Cash Worms banner occupies y 1000..1384 (full width)
 END = 81.0
 FONT = "/usr/share/fonts/opentype/inter/"
 PREVIEW = "--preview" in sys.argv
@@ -30,6 +31,11 @@ def load(n):
 PL = {n: load(n + ".png") for n in ["landing", "face_med", "face_tight", "flashback", "doorplate",
                                      "dog_bg", "reflection", "home_door", "peephole", "reveal"]}
 DOG = Image.open(os.path.join(P, "dog_sprite.png"))
+_db = np.asarray(PL["dog_bg"])
+PL["dog_bg"] = Image.fromarray(np.pad(_db, ((0, 700), (0, 0), (0, 0)), mode="edge"))
+_ds = DOG.resize(PL["dog_bg"].size[:1] + (int(DOG.height * PL["dog_bg"].width / DOG.width),), Image.LANCZOS)
+DOG_PL = Image.new("RGBA", PL["dog_bg"].size, (0, 0, 0, 0))
+DOG_PL.paste(_ds, (0, 0))
 LEGS = Image.open(os.path.join(P, "dog_legs.png"))
 
 # ---------------------------------------------------------------- timing
@@ -94,7 +100,7 @@ CAPS.sort()
 
 # ---------------------------------------------------------------- caption sprites
 CAP_FONT = font("Inter-Black.otf", 74)
-CAP_Y = 1250
+CAP_Y = 950
 
 
 def caption_sprite(text, colors):
@@ -211,8 +217,8 @@ def kb(img, t, t0, t1, z0, z1, fx=0.5, fy=0.5, shake=0.0):
     z = z0 + (z1 - z0) * p
     iw, ih = img.size
     cw, ch = W / z, H / z  # plates are >= frame size; z=1 shows a frame-sized window
-    cx = (iw - cw) * fx + cw / 2
-    cy = (ih - ch) * fy + ch / 2
+    cx = (iw - cw) * fx + cw / 2 + 7 * math.sin(t * 0.71)
+    cy = (ih - ch) * fy + ch / 2 + 6 * math.sin(t * 0.53 + 1.3)
     if shake:
         cx += random.uniform(-shake, shake)
         cy += random.uniform(-shake, shake)
@@ -249,7 +255,7 @@ BG_BLUR = PL["landing"].resize((W, H)).filter(ImageFilter.GaussianBlur(28))
 BG_BLUR = Image.eval(BG_BLUR, lambda v: int(v * 0.35))
 BG_BLUR_NIGHT = PL["home_door"].resize((W, H)).filter(ImageFilter.GaussianBlur(24))
 BG_BLUR_NIGHT = Image.eval(BG_BLUR_NIGHT, lambda v: int(v * 0.6))
-PX0, PY0, PX1, PY1 = 250, 200, 830, 1110
+PX0, PY0, PX1, PY1 = 250, 170, 830, 800
 
 
 def wrap(text, fnt, maxw):
@@ -305,7 +311,14 @@ def chat_scene(t):
     fr, d = phone_frame(BG_BLUR, "Дом 12 · подъезд 2", "47 участников", (130, 130, 140), ("Д", (90, 150, 110)))
     y = PY0 + 150
     y = bubble(d, y, "Ольга, кв. 51", wrap("Кто опять оставил коляску у лифта?", F_MSG, 390))
-    y = bubble(d, y, "Пётр, кв. 44", wrap("У нас свет в подъезде моргает третий день", F_MSG, 390), name_col=(200, 120, 40))
+    if SVETA_SHOW - 1.1 <= t < SVETA_SHOW:
+        d.rounded_rectangle((PX0 + 24, y, PX0 + 330, y + 64), 22, fill=(255, 255, 255))
+        d.text((PX0 + 46, y + 32), "Света печатает", font=F_PH_S, fill=(200, 60, 120), anchor="lm")
+        for j in range(3):
+            ph = (t * 3 - j * 0.3) % 1.0
+            rr = 5 + 3 * max(0.0, math.sin(ph * math.pi))
+            cxp = PX0 + 250 + j * 22
+            d.ellipse((cxp - rr, y + 32 - rr, cxp + rr, y + 32 + rr), fill=(200, 60, 120))
     if t >= SVETA_SHOW:
         k = ease((t - SVETA_SHOW) / 0.3)
         yy = y + int(40 * (1 - k))
@@ -355,21 +368,21 @@ def end_scene(t):
     d = ImageDraw.Draw(fr, "RGBA")
     a0 = 75.4
     k1 = ease((t - a0 - 0.6) / 0.3)
-    d.text((W / 2, 560), "ОТКРЫТЬ", font=F_END1, fill=(255, 255, 255, int(255 * k1)), anchor="mm",
+    d.text((W / 2, 250), "ОТКРЫТЬ", font=F_END1, fill=(255, 255, 255, int(255 * k1)), anchor="mm",
            stroke_width=6, stroke_fill=(0, 0, 0, int(255 * k1)))
-    d.text((W / 2, 670), "ИЛИ НЕТ?", font=F_END1, fill=(255, 59, 59, int(255 * k1)), anchor="mm",
+    d.text((W / 2, 360), "ИЛИ НЕТ?", font=F_END1, fill=(255, 59, 59, int(255 * k1)), anchor="mm",
            stroke_width=6, stroke_fill=(0, 0, 0, int(255 * k1)))
     k2 = ease((t - a0 - 1.3) / 0.3)
     for i, (lab, col) in enumerate((("ОТКРЫТЬ", (46, 170, 80)), ("НЕ ОТКРЫВАТЬ", (200, 40, 50)))):
         x0 = 120 + i * 440
-        yb = 820 + int(30 * (1 - k2))
+        yb = 470 + int(30 * (1 - k2))
         d.rounded_rectangle((x0, yb, x0 + 400, yb + 110), 55, fill=col + (int(255 * k2),))
         d.text((x0 + 200, yb + 55), lab, font=F_END3, fill=(255, 255, 255, int(255 * k2)), anchor="mm")
     k3 = ease((t - a0 - 2.3) / 0.3)
-    d.text((W / 2, 1060), "ПИШИ В КОММЕНТАРИЯХ", font=F_END2, fill=(255, 214, 10, int(255 * k3)), anchor="mm")
+    d.text((W / 2, 660), "ПИШИ В КОММЕНТАРИЯХ", font=F_END2, fill=(255, 214, 10, int(255 * k3)), anchor="mm")
     k4 = ease((t - a0 - 3.2) / 0.3)
-    d.rounded_rectangle((300, 1160, 780, 1250), 18, fill=(235, 40, 60, int(255 * k4)))
-    d.text((W / 2, 1205), "ЧАСТЬ 2 — СКОРО", font=F_END3, fill=(255, 255, 255, int(255 * k4)), anchor="mm")
+    d.rounded_rectangle((300, 750, 780, 840), 18, fill=(235, 40, 60, int(255 * k4)))
+    d.text((W / 2, 795), "ЧАСТЬ 2 — СКОРО", font=F_END3, fill=(255, 255, 255, int(255 * k4)), anchor="mm")
     return fr
 
 
@@ -413,13 +426,14 @@ def scene_frame(t):
                     break
             v = int(v)
             d = ImageDraw.Draw(fr, "RGBA")
-            d.rounded_rectangle((330, 930, 750, 1060), 24, fill=(10, 10, 14, 200), outline=(255, 59, 59, 230), width=4)
-            d.text((540, 995), f"00:{v:02d}" if v < 60 else "01:00", font=font("Inter-Black.otf", 84),
+            d.rounded_rectangle((330, 340, 750, 470), 24, fill=(10, 10, 14, 200), outline=(255, 59, 59, 230), width=4)
+            d.text((540, 405), f"00:{v:02d}" if v < 60 else "01:00", font=font("Inter-Black.otf", 84),
                    fill=(255, 59, 59) if v >= 60 else (255, 255, 255), anchor="mm")
     elif name == "dog":
-        fr = kb(PL["dog_bg"], t, s0, s1, 1.0, 1.06, 0.3, 0.6)
+        fr = kb(PL["dog_bg"], t, s0, s1, 1.0, 1.06, 0.3, 0.68)
+        dg = kb(DOG_PL, t, s0, s1, 1.0, 1.06, 0.3, 0.68)
         jit = (random.randint(-3, 3), random.randint(-2, 2)) if int(t * 15) % 3 else (0, 0)
-        fr.paste(DOG, jit, DOG)
+        fr.paste(dg, jit, dg)
     elif name == "reflection":
         fx = 0.5 if t < T(42.7) else 0.5 + 0.5 * ease((t - T(42.7)) / 0.6)
         z = 1.0 if t < T(42.7) else 1.0 + 0.35 * ease((t - T(42.7)) / 0.6)
@@ -457,7 +471,7 @@ def scene_frame(t):
 yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
 VIG = np.clip(1.15 - 0.55 * (((xx - W / 2) / (W / 2)) ** 2 + ((yy - H / 2) / (H / 2)) ** 2), 0.35, 1.0)[..., None]
 rng = np.random.default_rng(1)
-GRAIN = [rng.normal(0, 7, (H // 2, W // 2, 1)).astype(np.float32).repeat(2, 0).repeat(2, 1) for _ in range(6)]
+GRAIN = [rng.normal(0, 4.5, (H // 2, W // 2, 1)).astype(np.float32).repeat(2, 0).repeat(2, 1) for _ in range(6)]
 
 
 def post(fr, i):
@@ -470,15 +484,61 @@ def post(fr, i):
 def draw_caption(fr, t):
     for a, b, spr in CAP_SPR:
         if a <= t < b:
-            k = ease((t - a) / 0.12)
-            sc = 0.82 + 0.18 * k
+            x = min(max((t - a) / 0.16, 0.0), 1.0)
+            c1, c3 = 1.9, 2.9
+            k = 1 + c3 * (x - 1) ** 3 + c1 * (x - 1) ** 2  # easeOutBack
+            sc = 0.78 + 0.22 * k
             s = spr if sc > 0.999 else spr.resize((int(spr.width * sc), int(spr.height * sc)), Image.BILINEAR)
             fr.paste(s, (int((W - s.width) / 2), int(CAP_Y - s.height / 2)), s)
+
+
+_pr = np.random.default_rng(5)
+DUST = _pr.random((70, 5))  # x, y, size, speed, phase
+SNOW = _pr.random((110, 5))
+DUST_SCENES = {"landing": (235, 245, 240), "face_med": (235, 245, 240), "flashback": (255, 225, 160),
+               "sign1": (235, 245, 240), "peephole": (255, 220, 140), "doorplate": (255, 225, 180)}
+CUTS = [s0 for s0, _, _ in SCENES[1:]]
+
+
+def particles(fr, t, name):
+    d = ImageDraw.Draw(fr, "RGBA")
+    if name in DUST_SCENES:
+        col = DUST_SCENES[name]
+        for x, y, sz, sp, ph in DUST:
+            px = (x * W + 40 * math.sin(t * (0.3 + sp) + ph * 6)) % W
+            py = (y * H - t * (8 + 18 * sp)) % H
+            r = 1.5 + sz * 3.5
+            a = int(60 + 90 * (0.5 + 0.5 * math.sin(t * 1.7 + ph * 9)))
+            d.ellipse((px - r * 2, py - r * 2, px + r * 2, py + r * 2), fill=col + (a // 5,))
+            d.ellipse((px - r, py - r, px + r, py + r), fill=col + (a,))
+    if name == "reflection":  # snow behind the glass + light drift in the hall
+        for x, y, sz, sp, ph in SNOW:
+            px = 560 + (x * 420 + 25 * math.sin(t * 0.8 + ph * 7))
+            py = (y * 1100 + t * (40 + 60 * sp)) % 1100 + 380
+            r = 1.5 + sz * 3
+            d.ellipse((px - r, py - r, px + r, py + r), fill=(235, 240, 255, 150))
+
+
+def flicker(t, name):
+    if name in ("landing", "face_med", "sign1", "dog", "reflection"):
+        n = math.sin(t * 37.0) * math.sin(t * 11.3 + 1.0)
+        return 0.96 + 0.04 * n - (0.25 if (int(t * 60) % 157) < 2 else 0.0)
+    if name == "peephole":
+        return 0.9 + 0.1 * math.sin(t * 9.0) * math.sin(t * 3.1)
+    return 1.0
 
 
 def render_frame(t, i):
     fr, name = scene_frame(t)
     fr = fr.convert("RGB")
+    particles(fr, t, name)
+    g = flicker(t, name)
+    for c in CUTS:  # quick dip to black on every cut
+        dt = abs(t - c)
+        if dt < 0.09:
+            g *= 0.25 + 0.75 * (dt / 0.09)
+    if g < 0.999:
+        fr = Image.eval(fr, lambda v, g=g: int(v * g))
     if name not in ("end",):
         if name != "black":
             draw_hud(fr, t)
@@ -619,7 +679,14 @@ def build_audio():
 if __name__ == "__main__":
     if PREVIEW:
         times = [float(x) for x in sys.argv[sys.argv.index("--preview") + 1].split(",")]
-        ims = [Image.fromarray(render_frame(tt, i)).resize((270, 480)) for i, tt in enumerate(times)]
+        gif = Image.open(os.path.join(ROOT, "..", "banner", "cashworms_banner.gif"))
+
+        def with_banner(arr, tt):
+            gif.seek(int((tt % 13.2) * 50) % gif.n_frames)
+            im = Image.fromarray(arr).convert("RGBA")
+            im.alpha_composite(gif.convert("RGBA"), (0, BAN_Y))
+            return im.convert("RGB")
+        ims = [with_banner(render_frame(tt, i), tt).resize((270, 480)) for i, tt in enumerate(times)]
         cols = 6
         rows = (len(ims) + cols - 1) // cols
         sheet = Image.new("RGB", (270 * cols, 480 * rows))
@@ -629,9 +696,20 @@ if __name__ == "__main__":
         sys.exit()
     wav = build_audio()
     out = os.path.join(OUTDIR, "sosed_ne_chelovek_ch1.mp4")
-    cmd = ["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
-           "-i", wav, "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-pix_fmt", "yuv420p",
-           "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", out]
+    gif = os.path.join(ROOT, "..", "banner", "cashworms_banner.gif")
+    out = os.path.join(OUTDIR, "sosed_ne_chelovek_ch1_cashworms.mp4")
+    cmd = ["ffmpeg", "-v", "error", "-y",
+           "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
+           "-ignore_loop", "0", "-i", gif,
+           "-i", wav,
+           "-filter_complex",
+           f"[1:v]fps={FPS},format=rgba[b];[0:v][b]overlay=0:{BAN_Y}:shortest=1:format=auto,format=yuv420p[v];"
+           "[2:a]acompressor=threshold=-24dB:ratio=3:attack=5:release=120:makeup=4,"
+           "loudnorm=I=-14:TP=-1.5:LRA=9,aresample=48000[a]",
+           "-map", "[v]", "-map", "[a]",
+           "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-maxrate", "16M", "-bufsize", "32M",
+           "-profile:v", "high", "-r", str(FPS),
+           "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", out]
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     nf = int(END * FPS)
     for i in range(nf):
