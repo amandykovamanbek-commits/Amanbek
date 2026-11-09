@@ -18,3 +18,4 @@ neighbor/build/plates/
 neighbor/build/mix.wav
 neighbor/audio/*.raw
 __pycache__/
+neighbor/build/render.log
