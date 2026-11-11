@@ -14,3 +14,4 @@ video/out/
 !video/howto/out/*.mp4
 !video/limits/out/*.mp4
 !video/whatif/out/*.mp4
+!video/battery/out/*.mp4
