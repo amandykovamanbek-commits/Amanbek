@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Что если — число над головой</title>
+<style>
+  html,body{margin:0;background:#000;overflow:hidden}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Inter,'DejaVu Sans',sans-serif;background:#14173a;transform-origin:0 0;color:#efe7d6}
+  #cv{position:absolute;left:0;top:0;width:1080px;height:1920px}
+  #tag{position:absolute;left:84px;top:168px;font-size:34px;font-weight:900;letter-spacing:6px;color:#efe7d6;opacity:.85}
+  #tag b{color:#ffc23d}
+  #clock{position:absolute;right:84px;top:156px;font:800 40px 'JetBrains Mono',monospace;color:#efe7d6;border:4px solid rgba(239,231,214,.7);border-radius:30px;padding:6px 26px;opacity:0}
+  #subs{position:absolute;left:70px;right:70px;top:1430px;text-align:center;font-size:74px;line-height:1.12;font-weight:900;color:#fff;
+        text-shadow:0 5px 0 #070818,0 0 22px rgba(7,8,24,.9);letter-spacing:-.5px}
+  #subs span{display:inline-block;transition:none}
+  #subs span.on{color:#ffc23d}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv" width="1080" height="1920"></canvas>
+  <div id="tag">ЧТО <b>ЕСЛИ</b>…</div>
+  <div id="clock">07:00</div>
+  <div id="subs"></div>
+</div>
+<script src="data/words.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const easeOut = k => 1 - Math.pow(1 - k, 3);
+const easeIn = k => k * k * k;
+const easeInOut = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+const easeOutBack = k => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+const decay = (t, t0, rate = 6) => t < t0 ? 0 : Math.exp(-(t - t0) * rate);
+const noise = (t, f, ph = 0) => Math.sin(t * f + ph) * .6 + Math.sin(t * f * 2.31 + ph * 1.7) * .4;
+const win = (t, a, d = .3) => clamp((t - a) / d);
+
+const SCENES = [
+  { id: 's1', bg: 'crowd', text: 'Что если бы над каждым человеком висело число — сколько раз он подумал о тебе сегодня?' },
+  { id: 's2', bg: 'room', text: 'Семь утра. Над мамой уже горит сорок семь. Она подумала о тебе раньше, чем о кофе.' },
+  { id: 's3', bg: 'bus', text: 'В автобусе — одни нули. Незнакомцам на тебя всё равно. И это даже успокаивает.' },
+  { id: 's4', bg: 'school', text: 'У лучшего друга — двенадцать. А у учителя — три. И все три — про твою домашку.' },
+  { id: 's5', bg: 'hall', text: 'А потом ты видишь её. Ту самую. Над её головой — ноль.' },
+  { id: 's6', bg: 'hall', text: 'Ты шутишь, проходишь мимо, ставишь лайк. Ноль. Ноль. Ноль.' },
+  { id: 's7', bg: 'kitchen', text: 'Вечером мама зовёт ужинать. Над ней уже сто три. А ты о ней сегодня не вспомнил ни разу.' },
+  { id: 's8', bg: 'night', text: 'Ночью телефон вибрирует. Сообщение от неё: «не спишь?» И над её аватаркой загорается — один.' },
+  { id: 's9', bg: 'cta', text: 'А какое число висело бы над тобой? Пиши в комментах.' },
+];
+const norm = w => w.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/g, '');
+const TOK = [];
+SCENES.forEach((sc, si) => { sc.tokens = []; sc.text.split(/\s+/).forEach(w => { if (!norm(w)) return; const tk = { w, n: norm(w), si }; sc.tokens.push(tk); TOK.push(tk); }); });
+(function () {
+  const W = window.WORDS;
+  if (W && W.length === TOK.length) TOK.forEach((tk, i) => { tk.s = W[i].s; tk.e = W[i].e; });
+  else { let t = .3; TOK.forEach((tk, i) => { const d = .065 * tk.n.length + .1; tk.s = t; tk.e = t + d; t += d + .03; if (/[.!?…»]$/.test(tk.w)) t += .4; else if (/[,:—]$/.test(tk.w)) t += .18; }); }
+})();
+const VO_END = TOK[TOK.length - 1].e;
+const DURATION = VO_END + 3.2;
+SCENES.forEach((sc, i) => { sc.start = i === 0 ? 0 : sc.tokens[0].s - .15; });
+SCENES.forEach((sc, i) => { sc.end = i < SCENES.length - 1 ? SCENES[i + 1].start : DURATION; });
+function W(sid, pre, nth = 0, edge = 's') {
+  const sc = SCENES.find(s => s.id === sid), p = norm(pre);
+  let h = sc.tokens.filter(t => t.n === p); if (!h.length) h = sc.tokens.filter(t => t.n.startsWith(p));
+  if (!h.length) throw new Error('cue ' + sid + ' ' + pre);
+  return h[Math.min(nth, h.length - 1)][edge];
+}
+const S = id => SCENES.find(s => s.id === id);
+const CHUNKS = [];
+(function () {
+  let cur = []; const flush = () => { if (cur.length) CHUNKS.push(cur); cur = []; };
+  TOK.forEach((tk, i) => { const pv = TOK[i - 1]; if (cur.length && pv.si !== tk.si) flush(); cur.push(tk);
+    const len = cur.reduce((a, t) => a + t.w.length + 1, 0);
+    if (/[.!?…:»]$/.test(tk.w) || /[,—]$/.test(tk.w) && cur.length >= 2 || cur.length >= 3 || len > 16) flush(); });
+  flush();
+  CHUNKS.forEach((c, i) => { c.s = c[0].s - .05; c.e = i < CHUNKS.length - 1 ? CHUNKS[i + 1][0].s - .05 : c[c.length - 1].e + .6; });
+})();
+
+// ---------- cues
+const T = {
+  s1: S('s1').start, s1num: W('s1', 'число'), s1think: W('s1', 'подумал'), s1you: W('s1', 'тебе'),
+  s2: S('s2').start, s2mom: W('s2', 'мамой'), s2burn: W('s2', 'горит'), s2n: W('s2', 'семь', 1, 'e'), s2before: W('s2', 'раньше'), s2coffee: W('s2', 'кофе'),
+  s3: S('s3').start, s3zero: W('s3', 'нули'), s3calm: W('s3', 'успокаивает'),
+  s4: S('s4').start, s4f: W('s4', 'друга'), s4n: W('s4', 'двенадцать'), s4t: W('s4', 'учителя'), s4n3: W('s4', 'три'), s4b: [W('s4', 'все'), W('s4', 'три', 1), W('s4', 'домашку')],
+  s5: S('s5').start, s5see: W('s5', 'видишь'), s5that: W('s5', 'ту'), s5zero: W('s5', 'ноль'),
+  s6: S('s6').start, s6pass: W('s6', 'проходишь'), s6like: W('s6', 'ставишь'), s6tap: W('s6', 'лайк'), s6z: [W('s6', 'ноль', 0), W('s6', 'ноль', 1), W('s6', 'ноль', 2)],
+  s7: S('s7').start, s7call: W('s7', 'зовёт'), s7n: W('s7', 'сто'), s7n2: W('s7', 'три', 0, 'e'), s7you: W('s7', 'ты'), s7none: W('s7', 'вспомнил'), s7end: W('s7', 'разу', 0, 'e'),
+  s8: S('s8').start, s8vib: W('s8', 'вибрирует'), s8msg: W('s8', 'сообщение'), s8typ: W('s8', 'не'), s8av: W('s8', 'аватаркой'), s8one: W('s8', 'один'),
+  s9: S('s9').start, s9q: W('s9', 'число'), s9cta: W('s9', 'пиши'),
+};
+const PUNCH = [T.s1you, T.s2mom, T.s3zero, T.s4n, T.s4n3, T.s5zero, ...T.s6z, T.s7n, T.s7none, T.s8vib, T.s8one, T.s9cta];
+
+window.getSfx = function () {
+  const ev = [];
+  SCENES.forEach((s, i) => { if (i) ev.push({ t: s.start, k: 'whoosh' }); });
+  for (let i = 0; i < 5; i++) ev.push({ t: T.s1num + i * .08, k: 'pop' });
+  for (let x = T.s1think; x < T.s1think + .7; x += .07) ev.push({ t: x, k: 'tick' });
+  ev.push({ t: T.s1you, k: 'ding' });
+  for (let i = 0; i < 4; i++) ev.push({ t: T.s2 + .1 + i * .22, k: 'beep' });
+  ev.push({ t: T.s2mom, k: 'pop' });
+  for (let x = T.s2burn; x < T.s2n; x += .06) ev.push({ t: x, k: 'tick' });
+  ev.push({ t: T.s2n, k: 'ding' }); ev.push({ t: T.s2before, k: 'pop' }); ev.push({ t: T.s2coffee, k: 'pop' });
+  ev.push({ t: T.s3 + .1, k: 'hum' });
+  for (let i = 0; i < 4; i++) ev.push({ t: T.s3zero + i * .14, k: 'pop' });
+  ev.push({ t: T.s3calm, k: 'sparkle' });
+  ev.push({ t: T.s4f, k: 'pop' }); for (let x = T.s4n - .4; x < T.s4n + .2; x += .05) ev.push({ t: x, k: 'tick' });
+  ev.push({ t: T.s4t, k: 'whoosh' }); ev.push({ t: T.s4n3, k: 'pop' });
+  T.s4b.forEach(x => ev.push({ t: x, k: 'pop' }));
+  for (let x = T.s5 + .2; x < T.s5zero - .1; x += .85) { ev.push({ t: x, k: 'knock' }); ev.push({ t: x + .18, k: 'knock' }); }
+  ev.push({ t: T.s5zero, k: 'wah' });
+  ev.push({ t: T.s6 + .15, k: 'pop' }); ev.push({ t: T.s6pass, k: 'whoosh' }); ev.push({ t: T.s6tap, k: 'click' }); ev.push({ t: T.s6tap + .05, k: 'coin' });
+  T.s6z.forEach(x => ev.push({ t: x, k: 'stamp' }));
+  ev.push({ t: T.s7call, k: 'pop' }); for (let x = T.s7n - .3; x < T.s7n2 + .2; x += .05) ev.push({ t: x, k: 'tick' });
+  ev.push({ t: T.s7none, k: 'pop' });
+  ev.push({ t: T.s8vib, k: 'buzz' }); ev.push({ t: T.s8vib + .8, k: 'buzz' });
+  for (let x = T.s8typ; x < T.s8typ + .6; x += .1) ev.push({ t: x, k: 'click' });
+  ev.push({ t: T.s8av, k: 'pop' }); ev.push({ t: T.s8one, k: 'ding' }); ev.push({ t: T.s8one + .05, k: 'sparkle' });
+  ev.push({ t: T.s9q, k: 'pop' }); ev.push({ t: T.s9cta, k: 'success' });
+  return ev.filter(e => e.t >= 0 && e.t < DURATION);
+};
+window.DURATION = DURATION;
+
+// ---------- chalk drawing kit
+const cv = $('cv'), g = cv.getContext('2d');
+const INK = '#efe7d6', DIM = 'rgba(239,231,214,.38)', AMB = '#ffc23d', ZERO = '#8390c2', PINK = '#ff6b8f', FILL = '#0d0f29', HAIR = '#2c3063';
+let SEED = 0, KEY = 0, TT = 0;
+const rnd = i => { const x = Math.sin(i * 12.9898 + SEED * 78.233) * 43758.5453; return x - Math.floor(x); };
+const wob = (pts, amp) => { const k = (KEY++) * 131; return pts.map((p, i) => [p[0] + (rnd(k + i) - .5) * 2 * amp, p[1] + (rnd(k + i + 977) - .5) * 2 * amp]); };
+function trace(p, close) {
+  g.beginPath(); if (p.length < 3) { g.moveTo(p[0][0], p[0][1]); g.lineTo(p[1][0], p[1][1]); return; }
+  const P = close ? [...p, p[0], p[1]] : p;
+  g.moveTo(close ? (P[0][0] + P[1][0]) / 2 : P[0][0], close ? (P[0][1] + P[1][1]) / 2 : P[0][1]);
+  for (let i = 1; i < P.length - 1; i++) g.quadraticCurveTo(P[i][0], P[i][1], (P[i][0] + P[i + 1][0]) / 2, (P[i][1] + P[i + 1][1]) / 2);
+  if (!close) g.lineTo(P[P.length - 1][0], P[P.length - 1][1]);
+}
+function chalk(pts, o = {}) {
+  const c = o.c || INK, w = o.w || 6, amp = o.amp ?? 1.8, close = !!o.close;
+  const p = wob(pts, amp);
+  if (o.fill) { g.fillStyle = o.fill; trace(p, close); g.fill(); }
+  if (o.nostroke) return;
+  g.strokeStyle = c; g.lineWidth = w; g.lineCap = g.lineJoin = 'round'; trace(p, close); g.stroke();
+  const a = g.globalAlpha; g.globalAlpha = a * .3; g.lineWidth = w * .45; trace(wob(pts, amp * 1.8), close); g.stroke(); g.globalAlpha = a;
+}
+const circ = (cx, cy, r, n = 26, ry = r, a0 = 0, a1 = Math.PI * 2) => { const p = []; for (let i = 0; i < n; i++) { const a = a0 + (a1 - a0) * i / (n - (a1 - a0 >= 6.28 ? 0 : 1)); p.push([cx + Math.cos(a) * r, cy + Math.sin(a) * ry]); } return p; };
+function rrect(x, y, w, h, r) { const p = [], seg = (cx, cy, a0) => { for (let i = 0; i <= 5; i++) { const a = a0 + Math.PI / 2 * i / 5; p.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); } };
+  r = Math.min(r, w / 2, h / 2); seg(x + w - r, y + r, -Math.PI / 2); seg(x + w - r, y + h - r, 0); seg(x + r, y + h - r, Math.PI / 2); seg(x + r, y + r, Math.PI); return p; }
+const line = (x1, y1, x2, y2, o) => { const n = Math.max(2, Math.round(Math.hypot(x2 - x1, y2 - y1) / 60)); const p = []; for (let i = 0; i <= n; i++) p.push([lerp(x1, x2, i / n), lerp(y1, y2, i / n)]); chalk(p, o); };
+const heartPts = (cx, cy, s) => { const p = []; for (let i = 0; i < 30; i++) { const a = i / 30 * Math.PI * 2; p.push([cx + 16 * Math.sin(a) ** 3 * s, cy - (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * s]); } return p; };
+function txt(s, x, y, o = {}) {
+  g.save(); g.font = o.font || '900 64px Inter'; g.textAlign = o.align || 'center'; g.textBaseline = 'middle';
+  g.translate(x + (rnd(KEY++) - .5) * 2, y + (rnd(KEY++) - .5) * 2); g.rotate((o.rot || 0) + (rnd(KEY++) - .5) * .012);
+  if (o.glow) { g.shadowColor = o.c || INK; g.shadowBlur = o.glow; }
+  g.fillStyle = o.c || INK; g.fillText(s, 0, 0); g.restore();
+}
+function star(x, y, r, c, a = 1) { g.save(); g.globalAlpha *= a; g.strokeStyle = c; g.lineWidth = 4; g.lineCap = 'round'; g.beginPath(); g.moveTo(x - r, y); g.lineTo(x + r, y); g.moveTo(x, y - r); g.lineTo(x, y + r); g.stroke(); g.restore(); }
+
+// person: feet at (x,y); local units, head center (0,-300), r 58
+function person(x, y, s, o = {}) {
+  const a = o.alpha ?? 1; if (a <= 0) return;
+  g.save(); g.globalAlpha *= a; g.translate(x, y); g.scale(s * (o.flip ? -1 : 1), s);
+  const wp = o.walk, ph = o.ph || 0;
+  const bob = wp != null ? -Math.abs(Math.sin(wp)) * 10 : Math.sin(TT * 2.2 + ph) * 3;
+  const sw = wp != null ? Math.sin(wp) * 34 : 0;
+  const ink = o.ink || INK;
+  if (o.sit) { chalk([[-22, -118], [34, -112], [36, -6]], { c: ink }); chalk([[18, -118], [70, -112], [74, -6]], { c: ink }); line(30, -6, 52, -6, { c: ink }); line(66, -6, 90, -6, { c: ink }); }
+  else if (!o.nolegs) { chalk([[-20, -118], [-22 + sw * .5, -60], [-24 + sw, 0]], { c: ink }); chalk([[20, -118], [22 - sw * .5, -60], [24 - sw, 0]], { c: ink }); line(-24 + sw, 0, -44 + sw, 0, { c: ink }); line(24 - sw, 0, 44 - sw, 0, { c: ink }); }
+  g.translate(0, bob);
+  const aL = o.armL || [-14, 104], aR = o.armR || [14, 104];
+  const arm = (sx, d) => { chalk([[sx, -206], [sx + d[0] * .5 + (sx < 0 ? -8 : 8), -206 + d[1] * .5], [sx + d[0], -206 + d[1]]], { c: ink }); chalk(circ(sx + d[0], -206 + d[1], 9, 10), { c: ink, w: 5, close: true, fill: FILL }); };
+  if (o.armsBack) { arm(-62, aL); arm(62, aR); }
+  chalk([[-38, -238], [-72, -206], [-62, -112], [62, -112], [72, -206], [38, -238]], { c: ink, close: true, fill: FILL });
+  const k = o.kind || 'stranger', v = o.v || 0;
+  if (k === 'hero') { chalk([[-40, -236], [-20, -214], [0, -208], [20, -214], [40, -236]], { c: ink, w: 5 }); line(-12, -210, -14, -180, { c: AMB, w: 4 }); line(12, -210, 14, -180, { c: AMB, w: 4 }); chalk(rrect(-34, -170, 68, 34, 10), { c: ink, w: 4, close: true }); }
+  if (k === 'teacher') { chalk([[0, -236], [-10, -220], [0, -150], [10, -220]], { c: ink, w: 4, close: true, fill: HAIR }); }
+  if (k === 'mom') { chalk([[-64, -150], [64, -150], [56, -112], [-56, -112]], { c: ink, w: 4, close: true }); }
+  if (k === 'her') { chalk([[-60, -112], [-70, -72], [70, -72], [60, -112]], { c: ink, close: true, fill: FILL }); }
+  if (!o.armsBack) { arm(-62, aL); arm(62, aR); }
+  if (o.item === 'phone') { const hx = 62 + aR[0], hy = -206 + aR[1]; g.save(); g.shadowColor = '#9fc3ff'; g.shadowBlur = 30; chalk(rrect(hx - 16, hy - 46, 32, 54, 6), { c: '#cfe0ff', w: 4, close: true, fill: 'rgba(160,195,255,.35)' }); g.restore(); }
+  if (o.item === 'mug') { const hx = 62 + aR[0], hy = -206 + aR[1]; chalk(rrect(hx - 22, hy - 44, 44, 50, 8), { c: ink, w: 5, close: true, fill: FILL }); chalk(circ(hx + 26, hy - 20, 12, 12, 14, -1.4, 1.4), { c: ink, w: 4 });
+    for (let i = 0; i < 2; i++) { const st = []; for (let j = 0; j < 6; j++) st.push([hx - 8 + i * 16 + Math.sin(TT * 3 + j + i * 2) * 7, hy - 56 - j * 14]); chalk(st, { c: DIM, w: 4 }); } }
+  // head
+  if (k === 'her') chalk([[-66, -320], [-80, -250], [-84, -196], [-50, -186], [-40, -230], [40, -230], [50, -186], [84, -196], [80, -250], [66, -320]], { c: ink, close: true, fill: HAIR });
+  if (k === 'mom') chalk(circ(0, -372, 26, 14), { c: ink, close: true, fill: HAIR });
+  if (k === 'stranger' && v === 3) chalk([[40, -340], [86, -330], [96, -280], [70, -290]], { c: ink, close: true, fill: HAIR });
+  chalk(circ(0, -300, 58, 26), { c: ink, close: true, fill: FILL });
+  // hair front
+  if (k === 'hero') chalk([...circ(0, -300, 64, 12, 64, Math.PI * 1.08, Math.PI * 1.92), [50, -326], [34, -318], [24, -334], [8, -320], [-6, -336], [-20, -320], [-34, -332], [-52, -318]], { c: ink, close: true, fill: HAIR });
+  if (k === 'mom') chalk([...circ(0, -300, 64, 12, 64, Math.PI * 1.05, Math.PI * 1.95), [44, -320], [10, -336], [-44, -318]], { c: ink, close: true, fill: HAIR });
+  if (k === 'friend') { const p = []; for (let i = 0; i <= 10; i++) { const an = Math.PI * (1.02 + .96 * i / 10); const r = i % 2 ? 96 : 62; p.push([Math.cos(an) * r, -300 + Math.sin(an) * r]); } chalk(p, { c: ink, close: true, fill: HAIR }); }
+  if (k === 'her') { chalk([...circ(0, -300, 66, 12, 66, Math.PI * 1.02, Math.PI * 1.98), [52, -318], [10, -326], [-30, -346], [-56, -312]], { c: ink, close: true, fill: HAIR }); chalk(circ(38, -346, 9, 10), { c: PINK, w: 4, close: true, fill: PINK }); }
+  if (k === 'teacher') { chalk([[-58, -318], [-66, -300], [-58, -282]], { c: ink, w: 5 }); chalk([[58, -318], [66, -300], [58, -282]], { c: ink, w: 5 }); }
+  if (k === 'stranger') {
+    if (v === 0) { chalk([...circ(0, -312, 60, 10, 50, Math.PI, Math.PI * 2), [60, -312], [104, -310], [-60, -312]], { c: ink, close: true, fill: HAIR }); }
+    if (v === 1) { chalk([[-40, -262], [-30, -238], [0, -228], [30, -238], [40, -262], [0, -256]], { c: ink, close: true, fill: HAIR }); }
+    if (v === 2 || v === 3) chalk([...circ(0, -300, 63, 12, 63, Math.PI * 1.05, Math.PI * 1.95), [40, -330], [-44, -322]], { c: ink, close: true, fill: HAIR });
+  }
+  // face
+  const L = o.look || [0, 0], ex = L[0] * 12, ey = L[1] * 7;
+  const eyes = (o.eyes || 'open');
+  const blink = eyes !== 'closed' && eyes !== 'happy' && o.blink !== false && ((TT + ph * 1.3) % 3.4) < .12;
+  for (const sx of [-21, 21]) {
+    const X = sx + ex, Y = -300 + ey;
+    if (blink || eyes === 'closed') line(X - 10, Y + 2, X + 10, Y + 2, { c: ink, w: 5 });
+    else if (eyes === 'happy') chalk([[X - 11, Y + 4], [X, Y - 6], [X + 11, Y + 4]], { c: ink, w: 5 });
+    else if (eyes === 'half') { chalk(circ(X, Y + 2, 8, 10, 8, 0, Math.PI), { c: ink, w: 5 }); line(X - 11, Y + 1, X + 11, Y + 1, { c: ink, w: 5 }); }
+    else if (eyes === 'big') { chalk(circ(X, Y, 13, 12), { c: ink, w: 3, close: true, fill: ink }); g.fillStyle = FILL; g.beginPath(); g.arc(X + 4, Y - 4, 4, 0, 7); g.fill(); }
+    else if (eyes === 'shades') { }
+    else chalk(circ(X, Y, 6.5, 8), { c: ink, w: 3, close: true, fill: ink });
+  }
+  if (eyes === 'shades') chalk(rrect(-44 + ex, -312 + ey, 88, 24, 8), { c: ink, w: 4, close: true, fill: '#05060f' });
+  if (k === 'teacher') { chalk(circ(-21 + ex, -300 + ey, 17, 14), { c: ink, w: 4, close: true }); chalk(circ(21 + ex, -300 + ey, 17, 14), { c: ink, w: 4, close: true }); line(-4 + ex, -302 + ey, 4 + ex, -302 + ey, { c: ink, w: 4 }); chalk([[-20, -276], [0, -282], [20, -276]], { c: ink, w: 5 }); }
+  if (o.blush) { g.save(); g.globalAlpha *= o.blush; g.fillStyle = PINK; for (const sx of [-34, 34]) { g.beginPath(); g.ellipse(sx + ex, -276, 12, 7, 0, 0, 7); g.fill(); } g.restore(); }
+  const m = o.mouth || 'smile', mx = ex * .8;
+  if (m === 'smile') chalk(circ(mx, -282, 16, 9, 10, .3, Math.PI - .3), { c: ink, w: 5 });
+  if (m === 'flat') line(mx - 12, -270, mx + 12, -270, { c: ink, w: 5 });
+  if (m === 'sad') chalk(circ(mx, -258, 14, 9, 9, Math.PI + .4, Math.PI * 2 - .4), { c: ink, w: 5 });
+  if (m === 'o') chalk(circ(mx, -268, 8, 10, 10), { c: ink, w: 5, close: true });
+  if (m === 'grin') chalk([[mx - 20, -280], [mx + 20, -280], [mx + 12, -262], [mx - 12, -262]], { c: ink, w: 4, close: true, fill: ink });
+  if (o.after) o.after();
+  g.restore();
+}
+// glowing counter pill above a head
+function counter(x, y, label, o = {}) {
+  const k = o.k ?? 1; if (k <= 0) return;
+  const col = o.c || AMB, s = (o.s || 1) * Math.max(.001, easeOutBack(clamp(k)));
+  g.save(); g.translate(x, y + Math.sin(TT * 2 + x) * 6); g.scale(s, s); g.rotate(Math.sin(TT * 1.3 + x) * .03);
+  g.font = "800 78px 'JetBrains Mono'"; const tw = g.measureText(label).width; const w = Math.max(124, tw + 70), h = 108;
+  for (let i = 0; i < 3; i++) chalk(circ(0, h / 2 + 18 + i * 16, 3.5, 6), { c: col, w: 3, close: true, fill: col, amp: .6 });
+  g.shadowColor = col; g.shadowBlur = 40 * (o.glow ?? 1);
+  chalk(rrect(-w / 2, -h / 2, w, h, 44), { c: col, w: 6, close: true, fill: 'rgba(10,11,30,.88)' });
+  g.shadowBlur = 24 * (o.glow ?? 1); g.fillStyle = col; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(label, 0, 5);
+  g.restore();
+}
+const roll = (t, t0, t1, a, b) => Math.round(lerp(a, b, easeOut(clamp((t - t0) / Math.max(.05, t1 - t0)))));
+function bubble(x, y, w, h, o = {}) { const k = o.k ?? 1; if (k <= 0) return; g.save(); g.translate(x, y); const s = Math.max(.001, easeOutBack(clamp(k))); g.scale(s, s);
+  if (o.thought) { chalk(circ(o.tx || -w / 2 + 20, h / 2 + 30, 12, 10), { close: true, fill: FILL }); chalk(circ((o.tx || -w / 2 + 20) * 1.3, h / 2 + 62, 8, 8), { close: true, fill: FILL }); }
+  else chalk([[o.tx || -w / 4 - 20, h / 2 - 4], [(o.tx || -w / 4) - 30, h / 2 + 40], [(o.tx || -w / 4) + 14, h / 2 - 4]], { close: true, fill: FILL });
+  chalk(rrect(-w / 2, -h / 2, w, h, o.thought ? h / 2 : 30), { close: true, fill: FILL, c: o.c || INK });
+  if (o.draw) o.draw(); g.restore(); }
+function miniFace(x, y, r, kind) { g.save(); g.translate(x, y); g.scale(r / 58, r / 58); g.translate(0, 300);
+  if (kind === 'her') chalk([[-66, -320], [-84, -230], [-40, -236], [40, -236], [84, -230], [66, -320]], { close: true, fill: HAIR });
+  chalk(circ(0, -300, 58, 22), { close: true, fill: FILL });
+  if (kind === 'hero') chalk([...circ(0, -300, 64, 10, 64, Math.PI * 1.08, Math.PI * 1.92), [50, -326], [24, -334], [-6, -336], [-34, -332], [-52, -318]], { close: true, fill: HAIR });
+  if (kind === 'her') { chalk([...circ(0, -300, 66, 10, 66, Math.PI * 1.02, Math.PI * 1.98), [52, -318], [-30, -346], [-56, -312]], { close: true, fill: HAIR }); chalk(circ(38, -346, 9, 8), { c: PINK, close: true, fill: PINK }); }
+  chalk(circ(-20, -298, 6, 6), { w: 3, close: true, fill: INK }); chalk(circ(20, -298, 6, 6), { w: 3, close: true, fill: INK });
+  chalk(circ(0, -282, 14, 8, 9, .3, Math.PI - .3), { w: 5 }); g.restore(); }
+
+// ---------- background
+const GRAIN = document.createElement('canvas'); GRAIN.width = 540; GRAIN.height = 960;
+{ const c = GRAIN.getContext('2d'), d = c.createImageData(540, 960); for (let i = 0; i < d.data.length; i += 4) { const v = Math.random() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } c.putImageData(d, 0, 0); }
+const BGC = { crowd: ['#191c45', '#0c0d26'], room: ['#24305a', '#121733'], bus: ['#1a2148', '#0d1029'], school: ['#1c2a3c', '#0d1520'], hall: ['#211b47', '#0e0b25'], kitchen: ['#3a2440', '#160e1f'], night: ['#0d0f26', '#05060f'], cta: ['#1b1d48', '#0a0a1f'] };
+function paintBg(bg) { const [a, b] = BGC[bg]; const gr = g.createRadialGradient(540, 820, 100, 540, 900, 1300); gr.addColorStop(0, a); gr.addColorStop(1, b); g.fillStyle = gr; g.fillRect(-400, -400, 1880, 2720); }
+function smudges(seed) { g.save(); g.globalAlpha = .05; g.fillStyle = INK; for (let i = 0; i < 6; i++) { const x = (Math.sin(seed * 7 + i * 3.1) * .5 + .5) * 1080, y = 380 + (Math.cos(seed * 3 + i * 1.7) * .5 + .5) * 1000; g.beginPath(); g.ellipse(x, y, 160, 50, i, 0, 7); g.fill(); } g.restore(); }
+
+// ---------- scenes
+const SC = {};
+SC.s1 = (t, lt) => {
+  line(-50, 1300, 1130, 1296, { c: DIM });
+  const k0 = win(t, T.s1, .5); txt('ЧТО ЕСЛИ…', 540, 470, { font: "900 128px Inter", c: INK, rot: -.03 }); g.globalAlpha = 1;
+  if (k0 < 1) { g.save(); g.globalCompositeOperation = 'destination-out'; g.fillRect(lerp(80, 1000, easeOut(k0)), 380, 1000, 180); g.restore(); }
+  const ppl = [[150, 1290, .92, { v: 0 }], [340, 1294, .97, { v: 2, kind: 'stranger' }], [740, 1294, .97, { v: 3 }], [930, 1290, .92, { v: 1 }]];
+  const nums = [3, 0, 18, 1], you = t >= T.s1you;
+  ppl.forEach(([x, y, s, o], i) => {
+    person(x, y, s, { kind: 'stranger', ...o, ph: i, alpha: you ? lerp(1, .35, win(t, T.s1you, .4)) : 1, look: [i < 2 ? .6 : -.6, 0], mouth: 'flat' });
+    const lab = t < T.s1think + i * .12 ? '?' : String(roll(t, T.s1think + i * .12, T.s1think + .5 + i * .12, 0, nums[i]));
+    counter(x, y - 470 * s, lab, { k: win(t, T.s1num + i * .08 + (i > 1 ? .08 : 0), .35), s: .85, c: nums[i] === 0 && t > T.s1think + .6 ? ZERO : AMB, glow: you ? .3 : 1 });
+  });
+  person(540, 1340, 1.18, { kind: 'hero', look: [0, .2], eyes: you ? 'big' : 'open', mouth: you ? 'o' : 'smile' });
+  counter(540, 1340 - 470 * 1.18, '?', { k: win(t, T.s1num + .16, .35), s: .95 });
+  if (you) { const k = win(t, T.s1you, .35); g.save(); g.globalAlpha = k; chalk([[250, 640], [340, 680], [420, 760]], { c: AMB, w: 7 }); chalk([[384, 752], [422, 764], [420, 724]], { c: AMB, w: 7 }); txt('ЭТО ТЫ', 220, 590, { font: '900 58px Inter', c: AMB, rot: -.08 }); g.restore(); }
+};
+SC.s2 = (t, lt) => {
+  chalk(rrect(600, 470, 330, 400, 10), { c: DIM, close: true, fill: 'rgba(255,214,140,.07)' }); line(765, 470, 765, 870, { c: DIM }); line(600, 670, 930, 670, { c: DIM });
+  g.save(); g.shadowColor = AMB; g.shadowBlur = 50; chalk(circ(690, 580, 44, 18), { c: '#ffe1a0', close: true, fill: 'rgba(255,200,90,.25)' }); g.restore();
+  line(110, 560, 420, 560, { c: DIM }); chalk(rrect(150, 470, 60, 90, 6), { c: DIM, close: true }); chalk(rrect(230, 500, 50, 60, 6), { c: DIM, close: true }); chalk(circ(340, 530, 28, 12), { c: DIM, close: true });
+  line(-50, 1290, 1130, 1294, { c: DIM });
+  // alarm
+  const al = 1 - win(t, T.s2mom - .2, .3);
+  if (al > 0) { g.save(); g.globalAlpha = al; const sh = Math.sin(t * 70) * 7 * (lt < 1.1 ? 1 : 0); txt('07:00', 540 + sh, 380, { font: "800 150px 'JetBrains Mono'", c: AMB, glow: 30 }); g.restore(); }
+  person(300, 1290, 1.1, { kind: 'hero', eyes: 'half', mouth: lt < 1.2 ? 'o' : 'flat', look: [.6, 0], ph: 1 });
+  const mk = win(t, T.s2mom, .35);
+  person(770, 1290, 1.14, { kind: 'mom', item: 'mug', armR: [-6, 40], look: [-.6, 0], mouth: 'smile', blush: .4 });
+  counter(770, 1290 - 470 * 1.14, String(roll(t, T.s2burn, T.s2n, 0, 47)), { k: mk });
+  bubble(470, 820, 200, 150, { k: win(t, T.s2before, .35), thought: true, tx: 60, draw: () => miniFace(0, 0, 44, 'hero') });
+  bubble(430, 620, 150, 110, { k: win(t, T.s2coffee, .35), thought: true, tx: 40, draw: () => { chalk(rrect(-24, -26, 48, 52, 8), { w: 5, close: true }); chalk(circ(28, 0, 12, 10, 14, -1.4, 1.4), { w: 4 }); txt('№2', 0, 90, { font: '900 40px Inter', c: DIM }); } });
+};
+SC.s3 = (t, lt) => {
+  const sway = Math.sin(t * 1.7) * .006; g.translate(540, 1300); g.rotate(sway); g.translate(-540, -1300);
+  line(-50, 470, 1130, 470, { c: DIM, w: 8 });
+  for (let i = 0; i < 6; i++) { const x = i * 220 + 40 + Math.sin(t * 2 + i) * 4; line(x, 470, x, 520, { c: DIM, w: 4 }); chalk(circ(x, 540, 20, 10), { c: DIM, w: 4, close: true }); }
+  chalk(rrect(-20, 600, 1120, 300, 18), { c: DIM, close: true, fill: 'rgba(120,160,255,.06)' });
+  const off = (t * 900) % 360; g.save(); g.beginPath(); g.rect(-20, 600, 1120, 300); g.clip();
+  for (let i = -1; i < 5; i++) { const x = 1150 - ((i * 360 + off) % 1800); line(x, 640, x, 900, { c: 'rgba(239,231,214,.25)', w: 5 }); chalk(circ(x + 150, 720, 60, 14), { c: 'rgba(239,231,214,.18)', close: true }); line(x + 150, 780, x + 150, 900, { c: 'rgba(239,231,214,.18)' }); }
+  g.restore(); for (let i = 0; i < 5; i++) line(i * 270 - 40, 600, i * 270 - 40, 900, { c: DIM, w: 8 });
+  line(-50, 1300, 1130, 1300, { c: DIM });
+  chalk(rrect(150, 1060, 260, 70, 14), { c: DIM, close: true }); chalk(rrect(700, 1060, 260, 70, 14), { c: DIM, close: true });
+  const calm = t >= T.s3calm;
+  const st = [[560, 1300, 1.0, { v: 2, item: 'phone', armR: [-30, 20] }], [830, 1130, .95, { v: 0, sit: true, item: 'phone', armR: [-40, 30] }], [1010, 1300, 1.0, { v: 3, item: 'phone', armR: [-30, 20] }], [70, 1300, .95, { v: 1, item: 'phone', armR: [-30, 20], flip: true }]];
+  st.forEach(([x, y, s, o], i) => { person(x, y, s, { kind: 'stranger', ...o, look: [.3, .8], mouth: 'flat', ph: i * 2 });
+    counter(x, y - 470 * s, '0', { k: win(t, T.s3zero + i * .14, .3), s: .8, c: ZERO, glow: .5 }); });
+  person(290, 1130, 1.05, { kind: 'hero', sit: true, eyes: calm ? 'closed' : 'open', mouth: calm ? 'smile' : 'flat', look: [.5, 0] });
+  if (calm) { const k = win(t, T.s3calm, .6); g.save(); g.globalAlpha = 1 - k * .6; chalk(circ(400 + k * 60, 760 - k * 40, 30 + k * 20, 14, 18 + k * 10), { c: DIM, close: true }); g.restore(); txt('ффух…', 420, 690, { font: 'italic 800 44px Inter', c: DIM }); }
+};
+SC.s4 = (t, lt) => {
+  const px = lerp(0, 980, easeInOut(win(t, T.s4t - .1, .7))); g.translate(-px, 0);
+  line(-50, 1300, 2200, 1300, { c: DIM });
+  // lockers left
+  for (let i = 0; i < 4; i++) chalk(rrect(40 + i * 150, 560, 130, 520, 8), { c: 'rgba(239,231,214,.2)', close: true });
+  // board right
+  chalk(rrect(1130, 520, 760, 400, 10), { c: DIM, close: true, fill: 'rgba(40,80,60,.35)' });
+  txt('x² + 2x = ?', 1420, 640, { font: "700 70px 'JetBrains Mono'", c: 'rgba(239,231,214,.75)', rot: -.02 });
+  txt('ДЗ: №145, №146', 1440, 760, { font: "700 52px 'JetBrains Mono'", c: 'rgba(239,231,214,.5)', rot: .01 });
+  const hf = Math.sin(clamp((t - T.s4f) / .4) * Math.PI);
+  person(190, 1300, 1.08, { kind: 'hero', armR: [40 + 20 * hf, -110], look: [.6, 0], mouth: 'grin', eyes: 'happy' });
+  person(520, 1300, 1.12, { kind: 'friend', armL: [-40 - 20 * hf, -110], look: [-.6, 0], mouth: 'grin', ph: 2 });
+  if (hf > .5) { for (let i = 0; i < 6; i++) { const a = i / 6 * 6.28; line(360 + Math.cos(a) * 40, 760 + Math.sin(a) * 40, 360 + Math.cos(a) * 70, 760 + Math.sin(a) * 70, { c: AMB, w: 5 }); } }
+  counter(520, 1300 - 470 * 1.12, String(roll(t, T.s4n - .4, T.s4n + .3, 0, 12)), { k: win(t, T.s4f, .35) });
+  person(1540, 1300, 1.14, { kind: 'teacher', armL: [-90, -40], look: [-.3, 0], mouth: 'flat', ph: 3 });
+  const cy = 1300 - 470 * 1.14;
+  counter(1540, cy, String(roll(t, T.s4t + .2, T.s4n3 + .1, 0, 3)), { k: win(t, T.s4t + .2, .35) });
+  [[-230, -40], [0, -190], [230, -40]].forEach(([dx, dy], i) => bubble(1540 + dx, cy + dy, 180, 100, { k: win(t, T.s4b[i], .3), thought: true, tx: dx > 0 ? -50 : dx < 0 ? 50 : 0, c: AMB, draw: () => txt('ДЗ?', 0, 4, { font: '900 50px Inter', c: AMB }) }));
+};
+let SPARK = []; for (let i = 0; i < 26; i++) SPARK.push([Math.random() * 1080, 400 + Math.random() * 1000, .4 + Math.random(), Math.random() * 6]);
+function hall(t) { for (let i = 0; i < 7; i++) chalk(rrect(-40 + i * 170, 560, 150, 560, 8), { c: 'rgba(239,231,214,.15)', close: true }); line(-50, 1300, 1130, 1300, { c: DIM }); line(-50, 1120, 1130, 1120, { c: 'rgba(239,231,214,.15)' }); }
+SC.s5 = (t, lt) => {
+  hall(t);
+  const z = t >= T.s5zero;
+  const sk = 1 - win(t, T.s5zero, .5);
+  SPARK.forEach(([x, y, s, p]) => star(x + Math.sin(t * .5 + p) * 30, y - (t * 20 * s) % 300, 8 + 6 * Math.sin(t * 3 + p), PINK, sk * (.4 + .4 * Math.sin(t * 2 + p))));
+  const wk = easeOut(win(t, T.s5, 1.8));
+  person(lerp(1250, 760, wk), 1300, 1.12, { kind: 'her', walk: wk < 1 ? t * 4.2 : null, look: [-.2, 0], mouth: 'smile', ph: 4, flip: false });
+  const hb = 1 + .12 * Math.max(Math.sin(t * 7.4) , 0) ** 4;
+  person(270, 1300, 1.1, { kind: 'hero', eyes: z ? 'open' : 'big', mouth: z ? 'sad' : 'o', blush: z ? 0 : clamp(lt / 1.5) * .9, look: [.8, -.2],
+    after: () => { g.save(); g.translate(0, -175); g.scale(z ? 1 : hb, z ? 1 : hb); g.shadowColor = PINK; g.shadowBlur = z ? 0 : 30; chalk(heartPts(0, 0, 2.2), { c: PINK, w: 5, close: true, fill: z ? 'rgba(255,107,143,.2)' : 'rgba(255,107,143,.6)' });
+      if (z) chalk([[0, -20], [-8, -6], [6, 6], [-4, 22]], { c: INK, w: 4 }); g.restore(); } });
+  counter(760, 1300 - 470 * 1.12, '0', { k: win(t, T.s5zero, .3), c: ZERO, glow: .6 });
+  if (z) { g.save(); g.globalAlpha = .25 * decay(t, T.s5zero, 3); g.fillStyle = '#7fb0ff'; g.fillRect(-300, -300, 1700, 2500); g.restore(); }
+};
+SC.s6 = (t, lt) => {
+  if (t < T.s6z[0]) hall(t);
+  if (t < T.s6pass) {
+    person(380, 1300, 1.1, { kind: 'hero', mouth: 'grin', eyes: 'happy', armR: [50, -60], look: [.6, 0] });
+    person(780, 1300, 1.12, { kind: 'her', look: [.6, .4], mouth: 'flat', item: 'phone', armR: [-40, 10] });
+    bubble(420, 700, 450, 120, { k: win(t, T.s6 + .1, .3), tx: -60, draw: () => txt('ха-ха, прикинь…', 0, 4, { font: '800 48px Inter' }) });
+    counter(780, 1300 - 470 * 1.12, '0', { c: ZERO, s: .85, glow: .5 });
+  } else if (t < T.s6like) {
+    const k = easeInOut(win(t, T.s6pass, T.s6like - T.s6pass));
+    person(780, 1300, 1.12, { kind: 'her', look: [.6, .4], mouth: 'flat', item: 'phone', armR: [-40, 10] });
+    counter(780, 1300 - 470 * 1.12, '0', { c: ZERO, s: .85, glow: .5 });
+    const hx = lerp(80, 1000, k);
+    for (let i = 0; i < 3; i++) line(hx - 150 - i * 30, 920 + i * 60, hx - 90 - i * 30, 920 + i * 60, { c: DIM, w: 5 });
+    person(hx, 1310, 1.14, { kind: 'hero', walk: t * 9, eyes: 'shades', mouth: 'smile', look: [-.2, 0] });
+  } else if (t < T.s6z[0]) {
+    const k = win(t, T.s6like, .3);
+    g.save(); g.translate(540, 900); g.scale(lerp(.7, 1, easeOutBack(k)), lerp(.7, 1, easeOutBack(k)));
+    chalk(rrect(-230, -400, 460, 800, 50), { close: true, fill: '#0a0b1f', w: 7 });
+    miniFace(-150, -300, 34, 'her'); txt('она', -60, -300, { font: '800 40px Inter', align: 'left' });
+    chalk(rrect(-190, -240, 380, 400, 20), { c: DIM, close: true, fill: 'rgba(255,107,143,.08)' }); miniFace(0, -40, 110, 'her');
+    const lk = t >= T.s6tap; g.save(); g.translate(-140, 230); const sc = 1 + .5 * decay(t, T.s6tap, 7); g.scale(sc, sc); if (lk) { g.shadowColor = PINK; g.shadowBlur = 30; }
+    chalk(heartPts(0, 0, 2.4), { c: lk ? PINK : INK, w: 6, close: true, fill: lk ? PINK : null }); g.restore();
+    if (lk) txt('+1', -40, 220 - 60 * win(t, T.s6tap, .6), { font: '900 46px Inter', c: PINK });
+    g.restore();
+  } else {
+    const icons = [() => { chalk(rrect(-60, -34, 120, 68, 20), { close: true }); txt('ха', 0, 2, { font: '900 40px Inter' }); }, () => { txt('→', 0, 0, { font: '900 80px Inter' }); }, () => chalk(heartPts(0, 4, 2.6), { c: PINK, close: true, fill: PINK })];
+    const lab = ['шутка', 'мимо', 'лайк'];
+    for (let i = 0; i < 3; i++) { const y = 560 + i * 280; const k = win(t, T.s6z[0] - .2 + i * .06, .3);
+      g.save(); g.globalAlpha = k; g.translate(0, (1 - easeOut(k)) * 60); chalk(rrect(140, y, 800, 230, 30), { c: DIM, close: true, fill: 'rgba(10,11,30,.6)' });
+      g.save(); g.translate(290, y + 115); icons[i](); g.restore(); txt(lab[i], 480, y + 115, { font: '800 60px Inter', align: 'left' }); g.restore();
+      const sk = win(t, T.s6z[i], .18); if (sk > 0) { g.save(); g.translate(820, y + 115); g.rotate(-.18); const s = lerp(2.4, 1, easeOut(sk)); g.scale(s, s); g.globalAlpha = sk; g.shadowColor = ZERO; g.shadowBlur = 20;
+        chalk(circ(0, 0, 80, 20), { c: ZERO, w: 8, close: true }); txt('0', 0, 6, { font: "900 110px 'JetBrains Mono'", c: ZERO }); g.restore(); } }
+  }
+};
+SC.s7 = (t, lt) => {
+  
+  line(540, 300, 540, 470, { c: DIM, w: 4 }); chalk([[460, 520], [480, 470], [600, 470], [620, 520]], { c: INK, close: true, fill: FILL });
+  const cone = g.createLinearGradient(0, 520, 0, 1300); cone.addColorStop(0, 'rgba(255,194,61,.28)'); cone.addColorStop(1, 'rgba(255,194,61,0)');
+  g.fillStyle = cone; g.beginPath(); g.moveTo(470, 520); g.lineTo(610, 520); g.lineTo(1000, 1300); g.lineTo(80, 1300); g.fill();
+  chalk(rrect(250, 1080, 580, 30, 8), { close: true, fill: FILL }); line(300, 1110, 300, 1300, { c: DIM }); line(780, 1110, 780, 1300, { c: DIM });
+  [[400, 1068], [680, 1068]].forEach(([x, y]) => { chalk(circ(x, y, 70, 18, 14), { close: true, fill: FILL }); for (let i = 0; i < 2; i++) { const st = []; for (let j = 0; j < 5; j++) st.push([x - 14 + i * 28 + Math.sin(t * 3 + j + i) * 7, y - 30 - j * 16]); chalk(st, { c: DIM, w: 4 }); } });
+  line(-200, 1300, 1300, 1300, { c: DIM });
+  const late = t >= T.s7end - .2;
+  person(850, 1300, 1.14, { kind: 'mom', armR: [30, -120], look: [-.7, 0], mouth: 'smile', ph: 1 });
+  bubble(760, 690, 280, 110, { k: win(t, T.s7call, .3) * (1 - win(t, T.s7n, .3)), tx: 60, draw: () => txt('ужинать!', 0, 4, { font: '800 50px Inter' }) });
+  counter(850, 1300 - 470 * 1.14, String(roll(t, T.s7n - .3, T.s7n2 + .2, 47, 103)), { k: 1, s: 1 + .15 * decay(t, T.s7n2, 4) });
+  person(190, 1300, 1.1, { kind: 'hero', item: late ? null : 'phone', armR: late ? undefined : [-30, 10], look: late ? [.8, -.1] : [.3, .8], mouth: late ? 'sad' : 'flat', eyes: late ? 'big' : 'open' });
+  const ck = win(t, T.s7none, .35);
+  if (ck > 0) { g.save(); g.translate(300, 560); const s = easeOutBack(ck); g.scale(s, s); chalk(rrect(-220, -70, 440, 140, 30), { c: ZERO, close: true, fill: 'rgba(10,11,30,.9)', w: 5 });
+    txt('ты о маме:', -60, 0, { font: '800 46px Inter', c: ZERO }); txt('0', 150, 4, { font: "900 80px 'JetBrains Mono'", c: ZERO }); g.restore(); }
+};
+SC.s8 = (t, lt) => {
+  const close = t >= T.s8msg - .1;
+  if (!close) {
+    chalk(rrect(620, 450, 300, 360, 10), { c: DIM, close: true, fill: 'rgba(120,150,255,.05)' }); line(770, 450, 770, 810, { c: DIM }); line(620, 630, 920, 630, { c: DIM });
+    g.save(); g.shadowColor = '#cfe0ff'; g.shadowBlur = 40; chalk(circ(700, 530, 34, 16), { c: '#e6eeff', close: true, fill: 'rgba(220,230,255,.35)' }); g.restore();
+    [[860, 500], [670, 720], [880, 740]].forEach(([x, y], i) => star(x, y, 8, INK, .4 + .4 * Math.sin(t * 3 + i)));
+    chalk(rrect(80, 1120, 760, 70, 16), { close: true, fill: FILL }); line(100, 1190, 100, 1300, { c: DIM }); line(820, 1190, 820, 1300, { c: DIM });
+    chalk(rrect(110, 1010, 200, 110, 40), { c: DIM, close: true, fill: FILL });
+    g.save(); g.translate(230, 1080); g.rotate(-Math.PI / 2 + .08); g.scale(.82, .82); g.translate(0, 300);
+    chalk(circ(0, -300, 58, 22), { close: true, fill: FILL }); chalk([...circ(0, -300, 64, 10, 64, Math.PI * 1.08, Math.PI * 1.92), [50, -326], [24, -334], [-6, -336], [-34, -332], [-52, -318]], { close: true, fill: HAIR });
+    const op = t >= T.s8vib; chalk(circ(-20, -296, op ? 6 : 1, 6), { w: op ? 3 : 5, close: true, fill: INK }); chalk(circ(20, -296, op ? 6 : 1, 6), { w: op ? 3 : 5, close: true, fill: INK }); g.restore();
+    chalk([[300, 1120], [360, 1040], [600, 1030], [800, 1060], [830, 1120]], { close: true, fill: '#1b1f4a' });
+    chalk(rrect(880, 1150, 160, 150, 8), { close: true, fill: FILL });
+    const vib = t >= T.s8vib ? Math.sin(t * 90) * 5 : 0, gl = t >= T.s8vib;
+    g.save(); g.translate(960 + vib, 1132); if (gl) { g.shadowColor = '#9fc3ff'; g.shadowBlur = 50; } chalk(rrect(-40, -16, 80, 26, 6), { c: gl ? '#cfe0ff' : DIM, close: true, fill: gl ? 'rgba(160,195,255,.7)' : FILL, w: 4 }); g.restore();
+    if (gl) for (let i = 0; i < 3; i++) { const a = -2.2 + i * .6; line(960 + Math.cos(a) * 70, 1120 + Math.sin(a) * 70, 960 + Math.cos(a) * 100, 1120 + Math.sin(a) * 100, { c: '#cfe0ff', w: 5 }); }
+  } else {
+    const k = win(t, T.s8msg - .1, .35), one = t >= T.s8one;
+    g.save(); g.translate(540, 850); const s = .88 * lerp(.6, 1, easeOutBack(k)); g.scale(s, s);
+    g.shadowColor = '#7fa6ff'; g.shadowBlur = 60; chalk(rrect(-290, -500, 580, 1000, 60), { close: true, fill: '#0b0e2a', w: 7 }); g.shadowBlur = 0;
+    txt('01:12', 0, -330, { font: "800 130px 'JetBrains Mono'", c: 'rgba(239,231,214,.9)' });
+    const nk = win(t, T.s8msg + .1, .3); g.save(); g.globalAlpha = nk; g.translate(0, (1 - easeOut(nk)) * 40);
+    chalk(rrect(-250, -120, 500, 190, 34), { close: true, fill: 'rgba(239,231,214,.1)', c: one ? PINK : INK });
+    miniFace(-170, -25, 50, 'her'); txt('она', -90, -65, { font: '800 40px Inter', align: 'left', c: DIM });
+    const msg = 'не спишь?', n = Math.round(msg.length * clamp((t - T.s8typ) / .55)); txt(msg.slice(0, n) + (n < msg.length && Math.sin(t * 14) > 0 ? '|' : ''), -90, 2, { font: '800 54px Inter', align: 'left' });
+    g.restore();
+    counter(-170, -200, one ? '1' : '0', { k: win(t, T.s8av, .3), s: .8 * (1 + .25 * decay(t, T.s8one, 5)), c: one ? PINK : ZERO, glow: one ? 1.6 : .5 });
+    if (one) { const bk = win(t, T.s8one, .8); for (let i = 0; i < 12; i++) { const a = i / 12 * 6.28; star(-170 + Math.cos(a) * (60 + 140 * easeOut(bk)), -200 + Math.sin(a) * (60 + 140 * easeOut(bk)), 10, PINK, 1 - bk); }
+      g.save(); g.translate(0, 300); const hb = 1 + .1 * Math.max(Math.sin(t * 7.4), 0) ** 4; g.scale(hb * easeOutBack(win(t, T.s8one + .2, .4)), hb * easeOutBack(win(t, T.s8one + .2, .4))); g.shadowColor = PINK; g.shadowBlur = 40; chalk(heartPts(0, 0, 4), { c: PINK, w: 6, close: true, fill: 'rgba(255,107,143,.55)' }); g.restore(); }
+    g.restore();
+    if (one) { g.save(); g.globalAlpha = .3 * decay(t, T.s8one, 3); g.fillStyle = PINK; g.fillRect(-300, -300, 1700, 2500); g.restore(); }
+  }
+};
+SC.s9 = (t, lt) => {
+  line(-50, 1330, 1130, 1326, { c: DIM });
+  person(540, 1330, 1.3, { kind: 'hero', look: [0, .3], mouth: 'smile', eyes: 'open' });
+  const slot = t < T.s9q + .2 ? '?' : t < T.s9cta ? String(Math.floor(rnd(Math.floor(t * 14)) * 999)) : '?';
+  counter(540, 1330 - 470 * 1.3, slot, { k: 1, s: 1.15 * (1 + .2 * decay(t, T.s9cta, 5)) });
+  const ck = win(t, T.s9cta, .4);
+  if (ck > 0) { g.save(); g.translate(540, 440); const s = easeOutBack(ck); g.scale(s, s); g.rotate(-.03); g.shadowColor = AMB; g.shadowBlur = 30;
+    chalk(rrect(-470, -80, 940, 160, 40), { c: AMB, w: 7, close: true, fill: 'rgba(10,11,30,.9)' }); g.shadowBlur = 0; txt('ПИШИ В КОММЕНТАХ ↓', 0, 4, { font: '900 60px Inter', c: AMB }); g.restore(); }
+};
+
+window.renderAt = function (t) {
+  TT = t; SEED = Math.floor(t * 8); KEY = 0;
+  const si = SCENES.findIndex(s => t >= s.start && t < s.end); const sc = SCENES[si < 0 ? SCENES.length - 1 : si];
+  const lt = t - sc.start;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.shadowBlur = 0; g.filter = 'none';
+  paintBg(sc.bg);
+  // camera
+  let z = 1.02 + .012 * noise(t, .4) + .03 * clamp(lt / 6);
+  PUNCH.forEach(p => z += .04 * decay(t, p, 6));
+  if (sc.id === 's5') z += .08 * easeInOut(win(t, T.s5that, 1.2));
+  const fx = sc.id === 's5' ? lerp(0, -120, easeInOut(win(t, T.s5that, 1.2))) : 0;
+  const cx = noise(t, .3) * 10 + fx, cy = noise(t, .25, 2) * 8, rot = noise(t, .2, 4) * .005;
+  let shake = decay(t, T.s5zero, 6) + T.s6z.reduce((a, x) => a + decay(t, x, 9), 0) + decay(t, T.s8vib, 4) * .6;
+  // slide transition
+  const trans = SCENES.reduce((acc, s2, i) => { if (!i) return acc; const d = t - s2.start; return d > -.18 && d < .22 ? (d < 0 ? -easeIn((d + .18) / .18) : 1 - easeOut(d / .22)) : acc; }, 0);
+  g.translate(540, 900); g.rotate(rot); g.scale(z, z); g.translate(-540 + cx + trans * 700 + Math.sin(t * 61) * 12 * shake, -900 + cy);
+  cv.style.filter = Math.abs(trans) > .05 ? `blur(${Math.abs(trans) * 10}px)` : 'none';
+  SC[sc.id](t, lt);
+  // overlays: grain + vignette
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = .07; g.globalCompositeOperation = 'overlay';
+  g.drawImage(GRAIN, (SEED * 37) % 200 - 200, (SEED * 53) % 300 - 300, 1480, 2560); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+  const vg = g.createRadialGradient(540, 900, 500, 540, 900, 1250); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.55)'); g.fillStyle = vg; g.fillRect(0, 0, 1080, 1920);
+  // header clock
+  const CL = { s2: ['07:00'], s3: ['07:40'], s4: ['09:15'], s5: ['12:30'], s7: ['19:30'], s8: ['01:12'] }[sc.id];
+  let clock = CL ? CL[0] : null;
+  if (sc.id === 's6') { const m = Math.round(lerp(12 * 60 + 31, 16 * 60 + 50, clamp(lt / (sc.end - sc.start)))); clock = String(m / 60 | 0).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+  $('clock').style.opacity = clock && t < T.s9 ? 1 : 0; if (clock) $('clock').textContent = clock;
+  $('clock').style.transform = `scale(${1 + .15 * decay(t, sc.start, 6)})`;
+  $('tag').style.opacity = sc.id === 's1' ? 0 : .85;
+  // subtitles
+  const ch = CHUNKS.find(c => t >= c.s && t < c.e), subs = $('subs');
+  if (!ch || t > VO_END + .5) { subs.innerHTML = ''; subs._c = null; }
+  else {
+    if (subs._c !== ch) { subs.innerHTML = ch.map(tk => `<span>${tk.w.replace(/[«»]/g, '')}</span>`).join(' '); subs._c = ch; }
+    const sp = subs.children, k = clamp((t - ch.s) / .16);
+    subs.style.transform = `translateY(${(1 - easeOut(k)) * 24}px) scale(${.9 + .1 * easeOutBack(k)})`; subs.style.opacity = clamp((t - ch.s) / .08);
+    ch.forEach((tk, i) => { const on = t >= tk.s - .03 && (i === ch.length - 1 || t < ch[i + 1].s - .03); sp[i].className = on ? 'on' : ''; const kk = on ? clamp((t - tk.s + .03) / .12) : 0; sp[i].style.transform = `scale(${1 + .1 * Math.sin(Math.PI * kk) + (on ? .04 : 0)})`; });
+  }
+  $('subs').style.top = sc.id === 's9' ? '1560px' : '1430px';
+  const fo = clamp((t - (DURATION - .4)) / .4); $('stage').style.filter = fo > 0 ? `brightness(${1 - fo})` : 'none';
+};
+window.READY = true;
+if (!/render/.test(location.search)) {
+  const fit = () => { const s = Math.min(innerWidth / 1080, innerHeight / 1920); $('stage').style.transform = `scale(${s})`; };
+  fit(); addEventListener('resize', fit);
+  const t0 = performance.now(); const loop = () => { renderAt(((performance.now() - t0) / 1000) % DURATION); requestAnimationFrame(loop); }; loop();
+}
+</script>
+</body>
+</html>
