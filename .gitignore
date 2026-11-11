@@ -17,3 +17,5 @@ video/out/
 !video/battery/out/*.mp4
 !video/lift/out/*.mp4
 !video/yt1/out/*.mp4
+!video/yt2/out/*.mp4
+video/yt2/assets/*.mov
