@@ -827,7 +827,6 @@ window.renderAt = function (t) {
   const fxDef = [
     [T.usd, T.feedOut, '$10 000', 150, '#FFD43B', 730],
     [T.school + .15, S('s3').end, 'ШКОЛА', 140, '#fff', 690],
-    [T.test + .5, T.calIn, 'КОНТРОЛЬНАЯ', 104, '#ff8787', 700],
     [T.shame, T.guiltIn, 'СТЫДНО', 170, '#ff6b6b', 520],
     [T.three, T.srOut, '3 ОШИБКИ', 150, '#ff6b6b', 720],
     [T.night, T.vwOut, 'ЗА НОЧЬ!', 120, '#FFD43B', 880],
@@ -853,7 +852,7 @@ window.renderAt = function (t) {
   const ch = CHUNKS.find(c => t >= c.s && t < c.e), subsEl = $('subs');
   if (!ch || t > VO_END + .5) { subsEl.innerHTML = ''; subsEl._c = null; }
   else {
-    if (subsEl._c !== ch) { subsEl.innerHTML = ch.map(tk => `<span>${tk.w.replace(/[«»]/g, '')}</span>`).join(' '); subsEl._c = ch; }
+    if (subsEl._c !== ch) { subsEl.innerHTML = ch.map(tk => `<span>${tk.w.replace(/[«»]/g, '')}</span>`).join(' '); subsEl._c = ch; subsEl.style.fontSize = ch.reduce((n, x) => n + x.w.length + 1, 0) > 18 ? '64px' : '78px'; }
     const sp = subsEl.children, k = clamp((t - ch.s) / .16);
     subsEl.style.transform = `translateY(${(1 - easeOut(k)) * 26}px) scale(${.9 + .1 * easeOutBack(k)})`; subsEl.style.opacity = clamp((t - ch.s) / .08);
     ch.forEach((tk, i) => { const on = t >= tk.s - .03 && (i === ch.length - 1 || t < ch[i + 1].s - .03); sp[i].className = on ? 'on' : ''; const q = on ? clamp((t - tk.s + .03) / .12) : 0; sp[i].style.transform = `scale(${1 + .1 * Math.sin(Math.PI * q) + (on ? .04 : 0)})`; });
