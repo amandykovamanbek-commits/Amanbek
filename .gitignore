@@ -14,3 +14,4 @@ video/out/
 !video/howto/out/*.mp4
 !video/limits/out/*.mp4
 video/pause/out/_seg/
+!video/pause/out/*.mp4
