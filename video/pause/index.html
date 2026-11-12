@@ -1,0 +1,1224 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Пауза на 10 секунд</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  html,body{margin:0;background:#000;overflow:hidden}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:#000;font-family:Unbounded,Inter,sans-serif;transform-origin:0 0}
+  .L{position:absolute;left:0;top:0;width:1080px;height:1920px}
+  .L>svg,.L>canvas{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:visible}
+  #ins{opacity:0}
+  #ripple{position:absolute;left:0;top:0;width:10px;height:10px;border-radius:50%;border:10px solid #7ff6ff;opacity:0;box-shadow:0 0 40px #7ff6ff,inset 0 0 40px #7ff6ff;transform-origin:50% 50%}
+  #ripple2{position:absolute;left:0;top:0;width:10px;height:10px;border-radius:50%;border:4px solid #fff;opacity:0}
+  #vign{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 52%,rgba(0,0,0,.45) 100%);pointer-events:none}
+  #pvig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(20,60,110,0) 40%,rgba(10,30,70,.55) 100%);opacity:0}
+  #flash{position:absolute;inset:0;background:#fff;opacity:0}
+  #glare{position:absolute;inset:0;opacity:0;mix-blend-mode:screen}
+  #cap{position:absolute;left:30px;right:30px;top:1585px;text-align:center;font-weight:900;font-size:70px;line-height:1.14;color:#fff;
+       -webkit-text-stroke:14px #0b0f1a;paint-order:stroke fill;text-transform:uppercase;letter-spacing:-1px}
+  #cap span{display:inline-block;margin:0 15px;transform-origin:50% 70%}
+  .kt{position:absolute;left:0;width:1080px;text-align:center;font-weight:900;color:#fff;white-space:nowrap;-webkit-text-stroke:16px #0b0f1a;paint-order:stroke fill;opacity:0}
+  .kt span{display:inline-block;transform-origin:50% 60%}
+  #hud{position:absolute;left:36px;top:52px;display:flex;align-items:center;gap:14px;background:rgba(11,15,26,.82);border-radius:46px;padding:12px 28px 12px 14px;opacity:0;box-shadow:0 10px 30px rgba(0,0,0,.35);border:3px solid rgba(127,246,255,.35)}
+  #hud .lb{font-family:Rubik,Inter,sans-serif;font-weight:800;font-size:22px;letter-spacing:2px;color:#9fb2c8}
+  #hud .v{font-weight:900;font-size:50px;color:#7ff6ff;line-height:1}
+  #day{position:absolute;right:36px;top:62px;background:#fff;color:#0b0f1a;border-radius:40px;padding:12px 26px;font-weight:900;font-size:30px;opacity:0;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+  #ring{position:absolute;left:390px;top:250px;width:300px;height:300px;opacity:0}
+  #cta{position:absolute;left:90px;width:900px;top:1160px;text-align:center;opacity:0}
+  #cta span{display:inline-block;background:#7ff6ff;color:#0b0f1a;font-weight:900;font-size:50px;line-height:1.2;padding:24px 40px;border-radius:40px;box-shadow:0 12px 40px rgba(0,0,0,.45)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <filter id="mb0" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb1" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb2" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb3" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb4" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb5" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb6" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb7" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mb8" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+    <filter id="mbI" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+  </defs>
+</svg>
+<div id="stage">
+  <div class="L" id="L0"><svg viewBox="0 0 1080 1920"><g id="c0"></g></svg></div>
+  <div class="L" id="L1"><svg viewBox="0 0 1080 1920"><g id="c1"></g></svg></div>
+  <div class="L" id="L2"><svg viewBox="0 0 1080 1920"><g id="c2"></g></svg></div>
+  <div class="L" id="L3"><svg viewBox="0 0 1080 1920"><g id="c3"></g></svg></div>
+  <div class="L" id="L4"><canvas id="rainB" width="1080" height="1920"></canvas></div>
+  <div class="L" id="L5"><svg viewBox="0 0 1080 1920"><g id="c5"></g></svg></div>
+  <div class="L" id="L6"><svg viewBox="0 0 1080 1920"><g id="c6"></g></svg></div>
+  <div class="L" id="L7"><svg viewBox="0 0 1080 1920"><g id="c7"></g></svg></div>
+  <div class="L" id="L8"><canvas id="rainF" width="1080" height="1920"></canvas></div>
+  <div id="glare"></div>
+  <div id="pvig"></div>
+  <div class="L" id="ins"><svg viewBox="0 0 1080 1920"><g id="ci"></g></svg></div>
+  <div id="ripple"></div><div id="ripple2"></div>
+  <div id="vign"></div>
+  <div id="kts"></div>
+  <svg id="ring" viewBox="0 0 300 300"></svg>
+  <div id="hud"><svg width="66" height="66" viewBox="0 0 66 66"><circle cx="33" cy="33" r="29" fill="#13203a" stroke="#c9ccd4" stroke-width="5"/><circle id="hudArc" cx="33" cy="33" r="20" fill="none" stroke="#7ff6ff" stroke-width="6" stroke-dasharray="125.7" stroke-dashoffset="0" transform="rotate(-90 33 33)"/><circle cx="33" cy="33" r="5" fill="#7ff6ff"/></svg>
+    <div><div class="lb">ПАУЗА</div><div class="v" id="hudV">×1</div></div></div>
+  <div id="day">ДЕНЬ 1</div>
+  <div id="cap"></div>
+  <div id="cta"><span>А ТЫ НА ЧТО<br>ПОТРАТИЛ БЫ?</span><br><span style="margin-top:18px;background:#ffd166;font-size:40px">ПИШИ В КОММЕНТАХ ↓</span></div>
+  <div id="flash"></div>
+</div>
+
+<script src="data/words.js"></script>
+<script>
+// ================================================================= utils
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const easeOut = k => 1 - Math.pow(1 - clamp(k), 3);
+const easeIn = k => Math.pow(clamp(k), 3);
+const easeInOut = k => { k = clamp(k); return k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
+const smooth = k => { k = clamp(k); return k * k * (3 - 2 * k); };
+const easeOutBack = k => { k = clamp(k); const c1 = 1.7, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+const spring = (k, f = 3.2, d = 5) => { if (k <= 0) return 0; return 1 - Math.exp(-d * k) * Math.cos(f * Math.PI * k); };
+const ramp = (t, a, b) => clamp((t - a) / (b - a));
+const win = (t, a, b, fi = .2, fo = .2) => Math.min(smooth((t - a) / fi), smooth((b - t) / fo));
+const decay = (t, t0, rate = 6) => t < t0 ? 0 : Math.exp(-(t - t0) * rate);
+function rng(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+const noise = (t, f, ph = 0) => Math.sin(t * f + ph) * .6 + Math.sin(t * f * 2.31 + ph * 1.7) * .4;
+const DEG = Math.PI / 180;
+function setA(id, k, v) { const e = typeof id === 'string' ? $(id) : id; if (e) e.setAttribute(k, v); }
+function tr(id, x, y, s = 1, r = 0, sy) { setA(id, 'transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${r.toFixed(2)}) scale(${s.toFixed(4)} ${(sy ?? s).toFixed(4)})`); }
+function op(id, v) { setA(id, 'opacity', clamp(v).toFixed(3)); }
+function disp(id, on) { setA(id, 'display', on ? 'inline' : 'none'); }
+
+// ================================================================= script
+const SCENES = [
+  { id: 's1', bg: 'city', text: 'Что если раз в день ты мог поставить весь мир на паузу? Ровно на десять секунд.' },
+  { id: 's2', bg: 'kitchen', text: 'Первый раз это случается случайно. Ты жмёшь кнопку на старых дедушкиных часах… и кружка зависает в воздухе. Вместе с каплями чая и котом в прыжке.' },
+  { id: 's3', bg: 'kitchen', text: 'Правила простые. Десять секунд. Один раз в сутки. Двигаешься только ты — и то, что держишь в руках.' },
+  { id: 's4', bg: 'bus', text: 'Первую неделю ты творишь что хочешь. Запрыгиваешь в закрывшийся автобус.' },
+  { id: 's5', bg: 'class', text: 'Подсматриваешь ответ у отличника.' },
+  { id: 's6', bg: 'yard', text: 'Ловишь мяч в сантиметре от лица.' },
+  { id: 's7', bg: 'city', text: 'Но пауза — одна. Потратил утром на автобус — и весь день ты обычный человек.' },
+  { id: 's8', bg: 'yard', text: 'Уронил бутерброд — и смотришь, как он падает маслом вниз.' },
+  { id: 's9', bg: 'bed', text: 'Поэтому ты начинаешь её беречь. На всякий случай. И каждую ночь, ровно в двенадцать, пауза сгорает — неиспользованная. Одна ночь. Вторая. Седьмая.' },
+  { id: 's10', bg: 'cross', text: 'А потом этот случай наступает. Вечер. Дождь. На дорогу выкатывается мяч. Девочка бежит за ним. И фары.' },
+  { id: 's11', bg: 'cross', text: 'Щелчок. Тишина. Капли висят в воздухе. Ты бежишь. Берёшь её на руки — и на секунду она тоже в паузе. Смотрит на тебя и не понимает, почему дождь стоит. Три… два… один.' },
+  { id: 's12', bg: 'cross', text: 'Визг тормозов. Машина проносится по пустой зебре. Девочка стоит на тротуаре — с мячом в руках.' },
+  { id: 's13', bg: 'cross', text: 'А ты смотришь на часы. Ноль пауз. И это лучший день за всю неделю.' },
+  { id: 's14', bg: 'cross', text: 'Иногда десять секунд — это целая жизнь. А на что потратил бы свои ты? Пиши в комментах.' },
+];
+const norm = w => w.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/g, '');
+const TOK = [];
+SCENES.forEach((sc, si) => {
+  sc.tokens = [];
+  sc.text.split(/\s+/).forEach(w => {
+    if (!norm(w)) { if (w.trim() === '—' && sc.tokens.length) sc.tokens[sc.tokens.length - 1].w += ' —'; return; }
+    const tk = { w, n: norm(w), si };
+    sc.tokens.push(tk); TOK.push(tk);
+  });
+});
+(function applyTimings() {
+  const Wd = window.WORDS;
+  if (Wd && Wd.length === TOK.length) { TOK.forEach((tk, i) => { tk.s = Wd[i].s; tk.e = Wd[i].e; }); window.PLACEHOLDER = false; return; }
+  window.PLACEHOLDER = true;
+  let t = 0.4;
+  TOK.forEach((tk, i) => {
+    const d = 0.042 * tk.n.length + 0.07;
+    tk.s = t; tk.e = t + d; t += d + 0.03;
+    if (/[.!?…]$/.test(tk.w)) t += 0.32; else if (/[,:—]$/.test(tk.w)) t += 0.12;
+    const nx = TOK[i + 1]; if (nx && nx.si !== tk.si) t += 0.25;
+  });
+})();
+const VO_END = TOK[TOK.length - 1].e;
+const DURATION = VO_END + 3.2;
+SCENES.forEach((sc, i) => { sc.start = i === 0 ? 0 : sc.tokens[0].s - 0.18; });
+SCENES.forEach((sc, i) => { sc.end = i < SCENES.length - 1 ? SCENES[i + 1].start : DURATION; });
+const SC = {}; SCENES.forEach(s => SC[s.id] = s);
+function W(sid, pre, nth = 0, edge = 's') {
+  const sc = SC[sid]; const p = norm(pre);
+  let hits = sc.tokens.filter(t => t.n === p);
+  if (!hits.length) hits = sc.tokens.filter(t => t.n.startsWith(p));
+  if (!hits.length) throw new Error('cue not found ' + sid + ' ' + pre);
+  return hits[Math.min(nth, hits.length - 1)][edge];
+}
+const E = (sid, pre, nth = 0) => W(sid, pre, nth, 'e');
+
+// ---------------------------------------------------------------- captions
+const ACCENT = new Set(['паузу', 'пауза', 'десять', 'секунд', 'один', 'только', 'руках', 'хочешь', 'одна', 'обычный', 'маслом', 'беречь', 'сгорает', 'седьмая', 'фары', 'тишина', 'три', 'два', 'бежишь', 'жизнь', 'комментах', 'ноль', 'лучший', 'кнопку', 'зависает', 'случай']);
+const NOCAP = [];   // [a,b] ranges where big kinetic type replaces captions
+const CHUNKS = [];
+(function () {
+  let cur = [];
+  const flush = () => { if (cur.length) CHUNKS.push(cur); cur = []; };
+  TOK.forEach((tk, i) => {
+    const prev = TOK[i - 1];
+    if (cur.length && prev.si !== tk.si) flush();
+    cur.push(tk);
+    const len = cur.reduce((a, t) => a + t.w.length + 1, 0);
+    if (/[.!?…:]$/.test(tk.w) || (/[,—]$/.test(tk.w) && cur.length >= 2) || cur.length >= 3 || len > 16) flush();
+  });
+  flush();
+  CHUNKS.forEach((c, i) => { c.s = c[0].s - 0.06; c.e = i < CHUNKS.length - 1 ? Math.min(CHUNKS[i + 1][0].s - 0.06, c[c.length - 1].e + 0.9) : c[c.length - 1].e + 0.8; });
+})();
+
+// ================================================================= time model: pauses, slow motion, world time
+const PAUSES = [], SLOW = [];
+function buildTime() {
+  PAUSES.push([W('s1', 'паузу') + 0.05, SC.s2.start]);
+  PAUSES.push([W('s2', 'кнопку') + 0.12, E('s3', 'руках') + 0.35]);
+  PAUSES.push([W('s4', 'запрыгиваешь') + 0.05, E('s4', 'автобус') + 0.1]);
+  PAUSES.push([W('s5', 'подсматриваешь') + 0.05, E('s5', 'отличника') + 0.05]);
+  PAUSES.push([W('s6', 'мяч') - 0.05, E('s6', 'лица') + 0.12]);
+  PAUSES.push([W('s11', 'щелчок') + 0.38, SC.s12.start + 0.05]);
+  SLOW.push([E('s2', 'случайно') + 0.25, W('s2', 'кнопку') + 0.12, 0.18]);
+  SLOW.push([W('s8', 'уронил') + 0.25, E('s8', 'вниз') - 0.05, 0.16]);
+}
+buildTime();
+function Pz(t) { // freeze amount (motion)
+  let v = 0;
+  for (const [a, b] of PAUSES) { if (t >= a && t < b + 0.3) v = Math.max(v, Math.min(clamp((t - a) / 0.09), 1 - clamp((t - b) / 0.3))); }
+  return v;
+}
+function Pc(t) { // colour drain amount
+  let v = 0;
+  for (const [a, b] of PAUSES) { if (t >= a && t < b + 0.25) v = Math.max(v, Math.min(smooth((t - a) / 0.45), 1 - smooth((t - b) / 0.22))); }
+  return v;
+}
+function TS(t) {
+  let s = 1;
+  for (const [a, b, f] of SLOW) { if (t > a - 0.2 && t < b + 0.2) s = Math.min(s, lerp(1, f, Math.min(smooth((t - a + 0.2) / 0.2), 1 - smooth((t - b) / 0.2)))); }
+  return s * (1 - Pz(t));
+}
+const WT_DT = 1 / 240, WT = [0];
+for (let i = 1; i * WT_DT <= DURATION + 1; i++) WT.push(WT[i - 1] + TS((i - .5) * WT_DT) * WT_DT);
+function wt(t) { const f = clamp(t, 0, DURATION + .99) / WT_DT, i = Math.floor(f); return lerp(WT[i], WT[Math.min(i + 1, WT.length - 1)], f - i); }
+
+// ================================================================= drawing helpers
+const R = (x, y, w, h, f, ex = '') => `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}" ${ex}/>`;
+const C = (x, y, r, f, ex = '') => `<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" ${ex}/>`;
+const PTH = (d, f, ex = '') => `<path d="${d}" fill="${f}" ${ex}/>`;
+const G = (id, inner, ex = '') => `<g ${id ? `id="${id}"` : ''} ${ex}>${inner}</g>`;
+const DEFS = [];
+function grad(id, stops, x2 = 0, y2 = 1) { DEFS.push(`<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}">${stops.map(([o, c, a = 1]) => `<stop offset="${o}" stop-color="${c}" stop-opacity="${a}"/>`).join('')}</linearGradient>`); return `url(#${id})`; }
+function rgrad(id, stops) { DEFS.push(`<radialGradient id="${id}">${stops.map(([o, c, a = 1]) => `<stop offset="${o}" stop-color="${c}" stop-opacity="${a}"/>`).join('')}</radialGradient>`); return `url(#${id})`; }
+function buildings(seed, x0, x1, yb, hmin, hmax, cols, win, lit = .5, wmin = 120, wmax = 230) {
+  const r = rng(seed); let s = '', x = x0;
+  while (x < x1) {
+    const w = wmin + r() * (wmax - wmin), h = hmin + r() * (hmax - hmin), c = cols[Math.floor(r() * cols.length)];
+    s += R(x.toFixed(0), (yb - h).toFixed(0), w.toFixed(0), h.toFixed(0) * 1 + 4, c);
+    if (r() < .35) s += R((x + w * .2).toFixed(0), (yb - h - 26).toFixed(0), (w * .25).toFixed(0), 28, c);
+    const ww = 22, wh = 30, gx = 20, gy = 26;
+    for (let yy = yb - h + 26; yy < yb - 60; yy += wh + gy) for (let xx = x + 16; xx < x + w - ww - 10; xx += ww + gx) {
+      const on = r() < lit; s += R(xx.toFixed(0), yy.toFixed(0), ww, wh, on ? win[0] : win[1], on && win[2] ? `opacity="${win[2]}"` : '');
+    }
+    x += w + 6 + r() * 14;
+  }
+  return s;
+}
+
+// ================================================================= characters
+const STY = {
+  hero: { skin: '#f1c6a0', coat: '#e8453c', coatD: '#b8322a', pants: '#2d3f6b', shoe: '#f2f2f2', hair: '#2a2130', kind: 'hero', hs: 1 },
+  girl: { skin: '#f7d2b1', coat: '#ffc928', coatD: '#e09e00', pants: '#ff7d96', shoe: '#e8453c', hair: '#7a4a2a', kind: 'girl', hs: 1.32 },
+  nerd: { skin: '#eabf98', coat: '#3a7bd5', coatD: '#2b5ea8', pants: '#3b3b48', shoe: '#222', hair: '#6b4a2e', kind: 'nerd', hs: 1 },
+  kid: { skin: '#c98e66', coat: '#7bc043', coatD: '#5a9a2c', pants: '#3b3b48', shoe: '#eee', hair: '#1d1410', kind: 'plain', hs: 1.1 },
+  p1: { skin: '#e8b48f', coat: '#f4a259', coatD: '#d07f35', pants: '#4b4453', shoe: '#2b2b2b', hair: '#3b2a20', kind: 'plain', hs: 1 },
+  p2: { skin: '#9b6b4b', coat: '#5b8e7d', coatD: '#3f6d5d', pants: '#2b2d42', shoe: '#2b2b2b', hair: '#111', kind: 'cap', hs: 1 },
+  p3: { skin: '#f3d0b5', coat: '#bc4b51', coatD: '#8f3439', pants: '#344055', shoe: '#2b2b2b', hair: '#c9a26b', kind: 'long', hs: 1 },
+  p4: { skin: '#d9a07c', coat: '#8e7dbe', coatD: '#6c5c9c', pants: '#3a3a3a', shoe: '#2b2b2b', hair: '#555', kind: 'hat', hs: 1 },
+};
+function personSVG(id, st, ex = '') {
+  const k = st.kind, d = '#1a1420';
+  let hair = '', back = '';
+  if (k === 'hero') {
+    back = st.hood ? `<path id="${id}_hood" d="M-84,-430 Q-90,-540 0,-548 Q90,-540 84,-430 Q70,-372 0,-366 Q-70,-372 -84,-430Z" fill="${st.coatD}"/>` : '';
+    hair = `<path d="M-66,-446 Q-74,-522 -8,-520 Q52,-530 66,-468 Q70,-446 62,-432 L56,-466 Q42,-448 30,-480 Q16,-456 0,-486 Q-16,-458 -34,-482 Q-46,-458 -58,-474 Q-60,-456 -66,-446Z" fill="${st.hair}"/>
+      <path d="M-30,-520 Q-20,-552 6,-540 Q-8,-530 -6,-518Z" fill="${st.hair}"/>`;
+  } else if (k === 'girl') {
+    back = `<path d="M-90,-430 Q-96,-548 0,-556 Q96,-548 90,-430 Q76,-370 0,-364 Q-76,-370 -90,-430Z" fill="${st.coat}"/><path d="M-90,-430 Q-96,-548 0,-556 Q96,-548 90,-430" fill="none" stroke="${st.coatD}" stroke-width="8"/>`;
+    hair = `<path d="M-60,-468 Q-50,-512 0,-512 Q50,-512 60,-468 Q40,-486 20,-470 Q0,-490 -20,-470 Q-40,-488 -60,-468Z" fill="${st.hair}"/>`;
+  } else if (k === 'nerd') {
+    hair = `<path d="M-64,-450 Q-70,-520 0,-520 Q66,-520 64,-450 Q58,-488 20,-492 L-10,-470 Q-40,-490 -64,-450Z" fill="${st.hair}"/>`;
+  } else if (k === 'cap') {
+    hair = `<path d="M-64,-460 Q-60,-525 0,-525 Q60,-525 64,-460Z" fill="#e63946"/><path d="M-10,-462 L96,-458 L90,-446 L-10,-450Z" fill="#b22a35"/>`;
+  } else if (k === 'long') {
+    back = `<path d="M-74,-470 Q-80,-540 0,-540 Q80,-540 74,-470 L80,-360 L-80,-360Z" fill="${st.hair}"/>`;
+    hair = `<path d="M-64,-450 Q-66,-522 0,-520 Q66,-522 64,-450 Q30,-500 -64,-450Z" fill="${st.hair}"/>`;
+  } else if (k === 'hat') {
+    hair = `<path d="M-70,-470 Q-64,-540 0,-540 Q64,-540 70,-470Z" fill="#2b2d42"/><rect x="-92" y="-476" width="184" height="14" rx="7" fill="#2b2d42"/>`;
+  } else {
+    hair = `<path d="M-64,-452 Q-68,-522 0,-522 Q68,-522 64,-452 Q50,-486 0,-488 Q-50,-486 -64,-452Z" fill="${st.hair}"/>`;
+  }
+  const coatLen = k === 'girl' ? -150 : -180;
+  const torso = `<path d="M-60,-372 Q-74,-280 -70,${coatLen} L70,${coatLen} Q74,-280 60,-372 Q0,-392 -60,-372Z" fill="${st.coat}"/>
+    <path d="M0,-372 L0,${coatLen}" stroke="${st.coatD}" stroke-width="5"/>
+    <path d="M-70,${coatLen + 4} L70,${coatLen + 4}" stroke="${st.coatD}" stroke-width="10"/>
+    ${k === 'hero' ? `<path d="M-36,-380 Q0,-350 36,-380" fill="none" stroke="${st.coatD}" stroke-width="10" stroke-linecap="round"/>` : ''}
+    ${k === 'girl' ? `<circle cx="-14" cy="-300" r="6" fill="${st.coatD}"/><circle cx="-14" cy="-250" r="6" fill="${st.coatD}"/><circle cx="-14" cy="-200" r="6" fill="${st.coatD}"/>` : ''}`;
+  const glasses = k === 'nerd' ? `<g fill="none" stroke="#222" stroke-width="5"><circle cx="-22" cy="-448" r="19"/><circle cx="22" cy="-448" r="19"/><path d="M-3,-450 L3,-450"/></g>` : '';
+  const watch = k === 'hero' ? `<g id="${id}_w"><rect x="-17" y="-12" width="34" height="24" rx="6" fill="#5a3a22"/><circle r="15" fill="#c9ccd4"/><circle r="11" fill="#13203a"/><circle id="${id}_wg" r="9" fill="#7ff6ff" opacity=".9"/><circle id="${id}_wh" r="26" fill="#7ff6ff" opacity="0"/></g>` : '';
+  return `<g id="${id}" ${ex}><g id="${id}_b">
+    ${back}
+    <path id="${id}_lL" fill="none" stroke="${st.pants}" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
+    <path id="${id}_lR" fill="none" stroke="${st.pants}" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
+    <ellipse id="${id}_fL" rx="30" ry="15" fill="${st.shoe}"/><ellipse id="${id}_fR" rx="30" ry="15" fill="${st.shoe}"/>
+    <g id="${id}_hd">
+      <rect x="-16" y="-395" width="32" height="30" fill="${st.skin}"/>
+      <circle cx="-62" cy="-440" r="13" fill="${st.skin}"/><circle cx="62" cy="-440" r="13" fill="${st.skin}"/>
+      <circle cx="0" cy="-445" r="63" fill="${st.skin}"/>
+      <ellipse cx="-36" cy="-418" rx="11" ry="7" fill="#ff8a8a" opacity=".45"/><ellipse cx="36" cy="-418" rx="11" ry="7" fill="#ff8a8a" opacity=".45"/>
+      <ellipse cx="-22" cy="-450" rx="13" ry="16" fill="#fff"/><ellipse cx="22" cy="-450" rx="13" ry="16" fill="#fff"/>
+      <circle id="${id}_pL" cx="-22" cy="-449" r="7.5" fill="${d}"/><circle id="${id}_pR" cx="22" cy="-449" r="7.5" fill="${d}"/>
+      <ellipse id="${id}_kL" cx="-22" cy="-466" rx="15" ry="0" fill="${st.skin}"/><ellipse id="${id}_kR" cx="22" cy="-466" rx="15" ry="0" fill="${st.skin}"/>
+      <path id="${id}_br" fill="none" stroke="${d}" stroke-width="6" stroke-linecap="round"/>
+      <path id="${id}_m" fill="${d}" stroke="${d}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${hair}${glasses}
+    </g>
+    ${torso}
+    <path id="${id}_aL" fill="none" stroke="${st.coat}" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+    <path id="${id}_aR" fill="none" stroke="${st.coat}" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle id="${id}_hL" r="19" fill="${st.skin}"/><circle id="${id}_hR" r="19" fill="${st.skin}"/>
+    ${watch}
+    <g id="${id}_hold"></g>
+  </g></g>`;
+}
+const MOUTH = {
+  smile: ['M-18,-420 Q0,-402 18,-420', 'none'],
+  grin: ['M-24,-422 Q0,-388 24,-422 Z', 'fill'],
+  o: ['M-9,-414 Q-9,-430 0,-430 Q9,-430 9,-414 Q9,-398 0,-398 Q-9,-398 -9,-414Z', 'fill'],
+  flat: ['M-14,-414 L14,-414', 'none'],
+  sad: ['M-16,-406 Q0,-424 16,-406', 'none'],
+  open: ['M-18,-422 Q0,-394 18,-422 Q0,-414 -18,-422Z', 'fill'],
+  tense: ['M-16,-414 Q-8,-420 0,-414 Q8,-408 16,-414', 'none'],
+  scream: ['M-14,-420 Q-16,-392 0,-390 Q16,-392 14,-420 Q0,-430 -14,-420Z', 'fill'],
+};
+const BROW = {
+  n: 'M-36,-480 L-12,-478 M12,-478 L36,-480',
+  up: 'M-36,-492 Q-24,-500 -12,-492 M12,-492 Q24,-500 36,-492',
+  worry: 'M-36,-478 L-12,-488 M12,-488 L36,-478',
+  det: 'M-36,-488 L-12,-476 M12,-476 L36,-488',
+  soft: 'M-36,-484 Q-24,-490 -12,-486 M12,-486 Q24,-490 36,-484',
+};
+const BASE = { x: 0, y: 0, s: 1, flip: 1, lean: 0, legs: [0, 0, 0, 0], arms: [12, -8, -12, 8], tilt: 0, look: [0, 0], expr: 'smile', brow: 'n', blink: 0, sit: 0, bob: 0, lid: 0 };
+function limb(x0, y0, a, e, l1, l2) {
+  const a1 = a * DEG, a2 = (a + e) * DEG;
+  const x1 = x0 + Math.sin(a1) * l1, y1 = y0 + Math.cos(a1) * l1;
+  return [x1, y1, x1 + Math.sin(a2) * l2, y1 + Math.cos(a2) * l2];
+}
+function pose(id, P) {
+  const p = Object.assign({}, BASE, P);
+  setA(id + '_b', 'transform', `translate(${p.x.toFixed(1)} ${(p.y + p.bob).toFixed(1)}) rotate(${p.lean.toFixed(2)}) scale(${(p.s * p.flip).toFixed(4)} ${p.s.toFixed(4)})`);
+  const lk = 1 - 0.72 * p.sit;
+  const hipY = -190;
+  [['L', -28, 0, 1], ['R', 28, 2, -1]].forEach(([sd, hx, i, sg]) => {
+    const [kx, ky, fx, fy] = limb(hx, hipY, p.legs[i], p.legs[i + 1] * sg, 96 * lk, 92);
+    setA(`${id}_l${sd}`, 'd', `M${hx},${hipY} L${kx.toFixed(1)},${ky.toFixed(1)} L${fx.toFixed(1)},${fy.toFixed(1)}`);
+    setA(`${id}_f${sd}`, 'cx', (fx - sg * 10).toFixed(1)); setA(`${id}_f${sd}`, 'cy', (fy + 6).toFixed(1));
+  });
+  const hands = {};
+  [['L', -62, 0], ['R', 62, 2]].forEach(([sd, sx, i]) => {
+    const [ex, ey, hx, hy] = limb(sx, -352, p.arms[i], p.arms[i + 1], 100, 92);
+    setA(`${id}_a${sd}`, 'd', `M${sx},-352 L${ex.toFixed(1)},${ey.toFixed(1)} L${hx.toFixed(1)},${hy.toFixed(1)}`);
+    setA(`${id}_h${sd}`, 'cx', hx.toFixed(1)); setA(`${id}_h${sd}`, 'cy', hy.toFixed(1));
+    hands[sd] = [hx, hy, ex, ey];
+  });
+  const w = $(id + '_w');
+  if (w) { const [hx, hy, ex, ey] = hands.R; const wx = lerp(ex, hx, .72), wy = lerp(ey, hy, .72); const ang = Math.atan2(hy - ey, hx - ex) / DEG; setA(w, 'transform', `translate(${wx.toFixed(1)} ${wy.toFixed(1)}) rotate(${(ang - 90).toFixed(1)})`); }
+  setA(id + '_hd', 'transform', `rotate(${p.tilt.toFixed(2)} 0 -380)`);
+  const lx = clamp(p.look[0], -1, 1) * 6, ly = clamp(p.look[1], -1, 1) * 7;
+  const cross = p.cross || 0;
+  setA(id + '_pL', 'cx', (-22 + lx + cross * 6).toFixed(1)); setA(id + '_pL', 'cy', (-449 + ly).toFixed(1));
+  setA(id + '_pR', 'cx', (22 + lx - cross * 6).toFixed(1)); setA(id + '_pR', 'cy', (-449 + ly).toFixed(1));
+  const lid = Math.max(p.blink, p.lid);
+  ['kL', 'kR'].forEach(k => { setA(`${id}_${k}`, 'ry', (17 * lid).toFixed(1)); setA(`${id}_${k}`, 'cy', (-467 + 17 * lid).toFixed(1)); });
+  const m = MOUTH[p.expr] || MOUTH.smile;
+  setA(id + '_m', 'd', m[0]); setA(id + '_m', 'fill', m[1] === 'fill' ? '#4a1820' : 'none');
+  setA(id + '_br', 'd', BROW[p.brow] || BROW.n);
+  return hands;
+}
+function walkP(ph, amp = 1, run = 0) {
+  const s = Math.sin(ph), c = Math.cos(ph);
+  const A = (18 + 14 * run) * amp;
+  return {
+    legs: [s * A * .5, Math.max(0, -c) * (30 + 50 * run) * amp + 4, -s * A * .5, Math.max(0, c) * (30 + 50 * run) * amp + 4],
+    arms: [-s * (22 + 30 * run) * amp + 10, -(20 + 50 * run) * amp, s * (22 + 30 * run) * amp - 10, (20 + 50 * run) * amp],
+    bob: -Math.abs(Math.sin(ph)) * (8 + 14 * run) * amp, lean: 0,
+  };
+}
+const blinkAt = (t, seed = 0) => { const ph = (t + seed * 1.7) % 3.3; return ph < .12 ? Math.sin(ph / .12 * Math.PI) : 0; };
+
+function catSVG(id) {
+  const c = '#f08a3c', d = '#c7652a';
+  return `<g id="${id}">
+   <g id="${id}_sit"><path d="M-46,0 Q-60,-70 -30,-96 Q0,-110 30,-96 Q60,-70 46,0Z" fill="${c}"/>
+     <path d="M40,-10 Q96,-20 84,-80" fill="none" stroke="${c}" stroke-width="16" stroke-linecap="round"/>
+     <circle cx="0" cy="-120" r="42" fill="${c}"/><path d="M-36,-140 L-30,-182 L-6,-156Z M36,-140 L30,-182 L6,-156Z" fill="${c}"/>
+     <circle cx="-15" cy="-124" r="6" fill="#1a1420"/><circle cx="15" cy="-124" r="6" fill="#1a1420"/><path d="M-6,-110 L0,-104 L6,-110" fill="none" stroke="#1a1420" stroke-width="4"/>
+     <path d="M-30,-60 L-10,-60 M10,-40 L30,-40" stroke="${d}" stroke-width="7"/></g>
+   <g id="${id}_jump"><ellipse cx="0" cy="-40" rx="86" ry="34" fill="${c}"/>
+     <path d="M-70,-30 L-120,10 M-50,-20 L-90,26 M60,-30 L120,-10 M50,-20 L104,6" stroke="${c}" stroke-width="15" stroke-linecap="round"/>
+     <path d="M80,-50 Q140,-90 170,-70" fill="none" stroke="${c}" stroke-width="15" stroke-linecap="round"/>
+     <circle cx="-92" cy="-66" r="38" fill="${c}"/><path d="M-120,-86 L-130,-124 L-100,-100Z M-70,-92 L-62,-128 L-80,-100Z" fill="${c}"/>
+     <circle cx="-104" cy="-70" r="9" fill="#fff"/><circle cx="-80" cy="-72" r="9" fill="#fff"/><circle cx="-104" cy="-70" r="5" fill="#1a1420"/><circle cx="-80" cy="-72" r="5" fill="#1a1420"/>
+     <ellipse cx="-92" cy="-46" rx="7" ry="9" fill="#1a1420"/>
+     <path d="M-20,-60 L-6,-20 M20,-62 L32,-24" stroke="${d}" stroke-width="7"/></g>
+  </g>`;
+}
+const MUG = id => `<g id="${id}"><path d="M30,-70 Q66,-70 64,-44 Q62,-20 30,-22" fill="none" stroke="#2f6fb5" stroke-width="12"/>
+  <path d="M-40,-92 L40,-92 L36,-6 Q34,0 26,0 L-26,0 Q-34,0 -36,-6Z" fill="#3d8bd9"/><path d="M-38,-60 L38,-60" stroke="#fff" stroke-width="9"/>
+  <ellipse cx="0" cy="-92" rx="40" ry="10" fill="#2f6fb5"/><ellipse id="${id}_tea" cx="0" cy="-90" rx="33" ry="7" fill="#8a5326"/></g>`;
+const BALL = (id, r = 34) => `<g id="${id}"><circle r="${r}" fill="#e63946"/><path d="M${-r},0 Q0,${-r * .5} ${r},0" fill="none" stroke="#fff" stroke-width="${r * .18}"/><path d="M0,${-r} Q${r * .45},0 0,${r}" fill="none" stroke="#fff" stroke-width="${r * .18}"/><circle cx="${-r * .35}" cy="${-r * .4}" r="${r * .22}" fill="#fff" opacity=".35"/></g>`;
+const SANDWICH = id => `<g id="${id}"><rect x="-58" y="-20" width="116" height="40" rx="16" fill="#e8b86a"/><rect x="-54" y="-30" width="108" height="16" rx="8" fill="#ffe066"/><rect x="-52" y="-24" width="104" height="10" rx="5" fill="#f4d03f"/><circle cx="-26" cy="-26" r="10" fill="#e76f51"/><circle cx="12" cy="-28" r="10" fill="#e76f51"/><rect x="-58" y="-6" width="116" height="26" rx="12" fill="#d9a35a"/></g>`;
+const PIGEON = id => `<g id="${id}"><ellipse cx="0" cy="0" rx="34" ry="18" fill="#8d99ae"/><circle cx="30" cy="-10" r="13" fill="#6c7a91"/><path d="M42,-10 L54,-6 L42,-3Z" fill="#f4a259"/><circle cx="33" cy="-13" r="3" fill="#111"/>
+  <path d="M-34,0 L-58,-8 L-56,10Z" fill="#6c7a91"/><path id="${id}_w1" d="M-6,-6 L-30,-60 L14,-10Z" fill="#a7b2c4"/><path id="${id}_w2" d="M-2,4 L-26,52 L16,6Z" fill="#7d899e"/></g>`;
+function personIn(id, st) { return personSVG(id, st); }
+
+// ================================================================= backgrounds
+const BGS = ['city', 'kitchen', 'bus', 'class', 'yard', 'bed', 'cross'];
+const LAYERS = 8; // c0..c3 env, (4 rainB canvas), c5 actors, c6 front-env, c7 fg
+const P_DEF = [0.15, 0.4, 0.7, 1, 1, 1, 1, 1.5];
+const LBUF = { 0: {}, 1: {}, 2: {}, 3: {}, 5: {}, 6: {}, 7: {} };
+function add(bg, L, s) { LBUF[L][bg] = (LBUF[L][bg] || '') + s; }
+
+// ---- CITY (day)
+(function () {
+  add('city', 0, R(-2000, -400, 6000, 2800, grad('gCitySky', [[0, '#8fd0ee'], [.6, '#d4f0f6'], [1, '#fdf3d8']])) + C(820, 330, 90, '#fff7d6', 'opacity=".95"') + C(820, 330, 150, '#fff3c4', 'opacity=".35"'));
+  add('city', 1, buildings(11, -1400, 3600, 1260, 380, 760, ['#b7cfdf', '#a6c2d6', '#c4d8e5'], ['#e3eef5', '#9db8cc']));
+  let mid = buildings(23, -1500, 3800, 1340, 320, 640, ['#f2a65a', '#e76f51', '#2a9d8f', '#e9c46a', '#8ab17d', '#d4836b'], ['#fff3c9', '#264653', .9], .35, 200, 330);
+  for (let x = -1500; x < 3800; x += 330) mid += R(x + 20, 1240, 240, 100, '#264653', 'opacity=".25"') + PTH(`M${x + 10},1236 L${x + 270},1236 L${x + 250},1270 L${x + 30},1270Z`, ['#e63946', '#2a9d8f', '#f4a261'][Math.abs(x / 330 | 0) % 3]);
+  add('city', 2, mid);
+  let m = R(-2000, 1330, 6000, 700, '#d8d0c3') + R(-2000, 1330, 6000, 14, '#bfb6a8');
+  for (let x = -2000; x < 4000; x += 180) m += R(x, 1344, 3, 700, '#c8bfb1');
+  for (let x = -1300; x < 3800; x += 700) m += R(x, 820, 16, 520, '#3d4554') + PTH(`M${x - 30},820 Q${x + 8},780 ${x + 46},820Z`, '#3d4554') + C(x + 8, 834, 14, '#fff6c9');
+  m += `<ellipse cx="760" cy="1560" rx="120" ry="22" fill="#9fb7c6" opacity=".8"/>`;
+  m += G('splash', Array.from({ length: 12 }, (_, i) => C(0, 0, 9 - (i % 3) * 2, '#bfe0ee', `id="spl${i}"`)).join(''));
+  for (let i = 0; i < 6; i++) m += personSVG('ped' + i, STY['p' + (1 + i % 4)]);
+  add('city', 3, m);
+  add('city', 7, G('pigs', Array.from({ length: 5 }, (_, i) => PIGEON('pig' + i)).join('')) + R(-60, 300, 46, 1700, '#2b303b') + C(-37, 300, 40, '#2b303b'));
+})();
+// ---- KITCHEN
+(function () {
+  let w = R(-800, -300, 2700, 2600, grad('gKw', [[0, '#f8e6c4'], [1, '#efcf9c']]));
+  w += R(90, 380, 400, 520, '#7a5640') + R(108, 398, 364, 484, grad('gKsky', [[0, '#9ad7f0'], [1, '#e5f6fb']]));
+  w += buildings(5, 110, 470, 880, 120, 300, ['#c3d7e4', '#b0c9da'], ['#e9f2f7', '#a3bccd'], .5, 50, 90);
+  w += R(282, 398, 16, 484, '#7a5640') + R(108, 632, 364, 14, '#7a5640');
+  w += PTH('M108,398 L472,398 L1100,1300 L460,1500Z', '#fff3c9', 'opacity=".22"');
+  add('kitchen', 0, w);
+  let s = R(560, 470, 380, 18, '#8b5e3c') + R(560, 640, 380, 18, '#8b5e3c');
+  [[590, '#e76f51'], [650, '#2a9d8f'], [710, '#e9c46a'], [800, '#8ab17d'], [870, '#f4a261']].forEach(([x, c], i) => s += R(x, 400 - (i % 2) * 20, 46, 70 + (i % 2) * 20, c, 'rx="8"') + R(x + 600 * 0, 570, 40, 70, ['#d4836b', '#9cc5a1', '#e9c46a'][i % 3], 'rx="8"'));
+  s += C(340, 250, 70, '#fff', 'stroke="#7a5640" stroke-width="10"') + `<line id="kClockS" x1="340" y1="250" x2="340" y2="196" stroke="#e63946" stroke-width="4"/><line x1="340" y1="250" x2="370" y2="232" stroke="#333" stroke-width="7"/>`;
+  add('kitchen', 1, s);
+  let m = R(790, 640, 300, 600, '#dfe7ec', 'rx="14"') + R(790, 860, 300, 8, '#b9c6cf') + R(810, 700, 12, 120, '#9aa8b3', 'rx="6"') + R(810, 900, 12, 160, '#9aa8b3', 'rx="6"');
+  m += C(900, 760, 18, '#e63946') + C(960, 800, 14, '#2a9d8f') + R(930, 940, 60, 70, '#fff', 'transform="rotate(6 960 975)"');
+  m += catSVG('cat');
+  add('kitchen', 3, m);
+  let f = R(-800, 1210, 2700, 44, '#e2cfb4') + R(-800, 1250, 2700, 900, '#7d5a49') + R(-800, 1250, 2700, 10, '#5f4337');
+  for (let x = -760; x < 1900; x += 300) f += R(x, 1290, 270, 560, '#8a6553', 'rx="10"') + R(x + 115, 1320, 40, 10, '#d9c3a6', 'rx="5"');
+  f += MUG('mugE') + G('teaDrops', Array.from({ length: 8 }, (_, i) => C(0, 0, 7 + i % 3 * 2, '#8a5326', `id="td${i}"`)).join(''));
+  f += `<g transform="translate(140 1212)"><path d="M-40,0 L-50,-90 L50,-90 L40,0Z" fill="#e76f51"/><path d="M0,-90 Q-60,-200 -20,-260 M0,-90 Q20,-210 60,-240 M0,-90 Q-10,-180 10,-280" stroke="#2a9d8f" stroke-width="16" fill="none" stroke-linecap="round"/></g>`;
+  add('kitchen', 6, f);
+  add('kitchen', 7, `<g transform="translate(1040 1260)"><path d="M-110,0 Q-120,-150 0,-170 Q120,-150 110,0Z" fill="#c0392b"/><rect x="-120" y="-10" width="240" height="30" rx="12" fill="#922b21"/><path d="M60,-150 Q120,-230 180,-200" fill="none" stroke="#333" stroke-width="16"/></g>`);
+})();
+// ---- BUS STOP (morning)
+(function () {
+  add('bus', 0, R(-2000, -400, 6000, 2800, grad('gBusSky', [[0, '#ffd6a5'], [.55, '#fde9cf'], [1, '#cdeaf5']])) + C(250, 520, 110, '#fff1c1', 'opacity=".9"'));
+  add('bus', 1, buildings(31, -1200, 2600, 1200, 300, 700, ['#d9b8a0', '#c9a790', '#e3c7b0'], ['#ffe8c4', '#b48f78'], .5));
+  add('bus', 2, buildings(37, -1300, 2700, 1220, 200, 420, ['#6d9dc5', '#80a4c0', '#5b8db8'], ['#ffeec8', '#3d5a80', .9], .3, 180, 300) + `<g transform="translate(-60 0)">${R(40, 880, 16, 460, '#3d4554')}${R(40, 880, 300, 20, '#3d4554')}${R(56, 900, 270, 300, '#bfe3f2', 'opacity=".45"')}</g>`);
+  let m = R(-2000, 1180, 6000, 160, '#5a6170') + R(-2000, 1340, 6000, 700, '#d8d0c3') + R(-2000, 1336, 6000, 14, '#a59c8e');
+  for (let x = -2000; x < 4000; x += 180) m += R(x, 1354, 3, 700, '#c8bfb1');
+  let bus = R(0, 0, 1160, 470, '#1fa58b', 'rx="40"') + R(0, 300, 1160, 34, '#fff') + R(20, 60, 1120, 170, '#24384a', 'rx="18"');
+  const rr = rng(5);
+  for (let x = 40; x < 1100; x += 150) { if (x > 290 && x < 470) continue; bus += C(x + 60, 200, 30, ['#e76f51', '#f4a261', '#8ab17d', '#e9c46a'][Math.floor(rr() * 4)], 'opacity=".8"') + R(x + 26, 228, 68, 60, '#3b3b48', 'opacity=".6"'); }
+  for (let x = 160; x < 1160; x += 150) bus += R(x, 60, 8, 170, '#1fa58b');
+  bus += R(310, 40, 180, 420, '#1a2a38', 'rx="8"') + G('doorL', R(0, 0, 90, 400, '#3fc1a5', 'rx="6"') + R(12, 20, 66, 230, '#bfe9f5', 'opacity=".7" rx="6"')) + G('doorR', R(0, 0, 90, 400, '#3fc1a5', 'rx="6"') + R(12, 20, 66, 230, '#bfe9f5', 'opacity=".7" rx="6"'));
+  bus += `<circle cx="190" cy="470" r="70" fill="#222"/><circle cx="190" cy="470" r="30" fill="#888"/><circle cx="930" cy="470" r="70" fill="#222"/><circle cx="930" cy="470" r="30" fill="#888"/>`;
+  bus += R(560, -60, 260, 70, '#13203a', 'rx="12"') + `<text x="690" y="-12" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="44" fill="#ffd166">17</text>`;
+  m += G('busG', bus);
+  add('bus', 3, m);
+  add('bus', 7, `<g transform="translate(990 0)">${R(0, 600, 26, 1400, '#3d4554')}${C(13, 560, 70, '#2a9d8f')}<text x="13" y="580" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="58" fill="#fff">A</text></g>`);
+})();
+// ---- CLASSROOM
+(function () {
+  add('class', 0, R(-1000, -400, 3000, 2800, grad('gCw', [[0, '#b8d8c2'], [1, '#93bfa3']])) + R(-1000, 1520, 3000, 600, '#c4b49a'));
+  let b = R(110, 330, 860, 520, '#8b5e3c', 'rx="14"') + R(130, 350, 820, 480, '#2f4f43');
+  b += `<g font-family="Rubik" font-weight="600" fill="#e8efe9" opacity=".9"><text x="180" y="450" font-size="58">x² − 5x + 6 = 0</text><text x="180" y="560" font-size="44">D = 25 − 24 = 1</text><text x="180" y="660" font-size="44">x = ?</text></g>`;
+  b += `<path d="M700,600 Q760,520 820,600 T940,600" stroke="#e8efe9" stroke-width="5" fill="none" opacity=".7"/>` + R(130, 830, 820, 20, '#a07850');
+  b += C(900, 230, 56, '#fff', 'stroke="#555" stroke-width="8"') + `<line id="cClockS" x1="900" y1="230" x2="900" y2="186" stroke="#e63946" stroke-width="4"/>`;
+  add('class', 1, b);
+  add('class', 2, R(-400, 360, 220, 300, '#e9c46a', 'rx="8"') + R(1200, 380, 200, 260, '#e76f51', 'rx="8"'));
+  add('class', 3, personSVG('nerd', STY.nerd));
+  let f = '';
+  [[120, 'L'], [580, 'R']].forEach(([x, k]) => {
+    f += R(x, 1226, 420, 34, '#d9a066', 'rx="6"') + R(x + 10, 1258, 400, 300, '#c98b52') + R(x + 20, 1556, 26, 120, '#6b4a2e') + R(x + 374, 1556, 26, 120, '#6b4a2e');
+  });
+  f += G('paperL', R(-80, -20, 160, 40, '#fdfdf6', 'transform="skewX(-25)"') + `<path d="M-70,-6 L60,-6 M-74,6 L50,6" stroke="#9db4c0" stroke-width="3"/>`, 'transform="translate(330 1238)"');
+  f += G('paperR', R(-80, -20, 160, 40, '#fdfdf6', 'transform="skewX(-25)"') + `<text x="-58" y="10" font-family="Rubik" font-weight="800" font-size="22" fill="#1d3557">x=2  x=3</text>`, 'transform="translate(790 1238)"');
+  f += G('ansGlow', `<ellipse cx="790" cy="1236" rx="110" ry="40" fill="none" stroke="#7ff6ff" stroke-width="6"/>`, 'opacity="0"');
+  f += `<g id="pencil"><rect x="-6" y="-70" width="12" height="70" fill="#ffd166"/><path d="M-6,0 L6,0 L0,14Z" fill="#333"/></g>`;
+  add('class', 6, f);
+  add('class', 7, R(-200, 1700, 700, 400, '#a8743f', 'rx="20"') + R(-120, 1650, 300, 60, '#e76f51', 'rx="8"') + R(-100, 1610, 240, 44, '#2a9d8f', 'rx="8"'));
+})();
+// ---- YARD
+(function () {
+  add('yard', 0, R(-2000, -400, 6000, 2800, grad('gYsky', [[0, '#7cc6ee'], [1, '#e2f4fb']])) + `<g fill="#fff" opacity=".9"><ellipse cx="260" cy="420" rx="120" ry="44"/><ellipse cx="330" cy="390" rx="90" ry="50"/><ellipse cx="860" cy="300" rx="130" ry="40"/></g>`);
+  let s = R(-300, 640, 1700, 560, '#c96f4a') + R(-300, 600, 1700, 50, '#a85a3a');
+  for (let x = -260; x < 1380; x += 130) for (let y = 690; y < 1150; y += 130) s += R(x, y, 80, 90, '#fde8c4', 'opacity=".85"') + R(x + 38, y, 4, 90, '#a85a3a');
+  s += R(470, 980, 140, 220, '#7a3e26') + `<text x="540" y="580" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="54" fill="#fff">ШКОЛА</text>`;
+  add('yard', 1, s);
+  let tr2 = '';
+  [[-80, 1.1], [180, .9], [820, 1.2], [1080, 1]].forEach(([x, k]) => tr2 += R(x - 14, 1000, 28, 260, '#6b4a2e') + C(x, 960 - 60 * k, 130 * k, '#3f9a5b') + C(x - 70, 1000 - 40 * k, 90 * k, '#4caf6a') + C(x + 70, 1010 - 40 * k, 90 * k, '#2f8a4c'));
+  for (let x = -600; x < 1700; x += 40) tr2 += R(x, 1150, 8, 140, '#4d5b6b');
+  tr2 += R(-600, 1160, 2300, 10, '#4d5b6b') + R(-600, 1240, 2300, 10, '#4d5b6b');
+  add('yard', 2, tr2);
+  let m = R(-2000, 1280, 6000, 800, '#bdb5a8') + `<path d="M-200,1500 Q540,1420 1300,1500" stroke="#fff" stroke-width="8" fill="none" opacity=".7"/>`;
+  m += G('benchBack', R(620, 1250, 440, 30, '#b5651d', 'rx="8"') + R(620, 1294, 440, 30, '#b5651d', 'rx="8"') + R(640, 1240, 16, 180, '#444') + R(1020, 1240, 16, 180, '#444'));
+  m += personSVG('kid', STY.kid);
+  m += `<g id="splat" opacity="0"><ellipse cx="0" cy="0" rx="76" ry="20" fill="#ffe066"/><circle cx="-60" cy="-8" r="8" fill="#ffe066"/><circle cx="70" cy="-4" r="6" fill="#ffe066"/></g>`;
+  add('yard', 3, m);
+  add('yard', 6, BALL('ballE', 38) + G('benchSeat', R(600, 1416, 480, 34, '#d07a2c', 'rx="10"') + R(630, 1450, 18, 150, '#444') + R(1030, 1450, 18, 150, '#444')) + G('measure', `<path d="M0,-30 L0,30 M70,-30 L70,30 M0,0 L70,0" stroke="#7ff6ff" stroke-width="6"/><text x="35" y="-40" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="34" fill="#7ff6ff" stroke="#0b0f1a" stroke-width="8" paint-order="stroke">1 СМ</text>`, 'opacity="0"'));
+  add('yard', 7, R(-120, 0, 120, 2000, '#4a3424') + C(-40, 300, 260, '#2f7a45'));
+})();
+// ---- BEDROOM (night)
+(function () {
+  let w = R(-1000, -400, 3000, 2800, grad('gBw', [[0, '#202a52'], [1, '#141a36']]));
+  w += R(500, 360, 480, 520, '#3b2f4a') + R(520, 380, 440, 480, grad('gBsky', [[0, '#0b1230'], [1, '#2a3366']]));
+  w += buildings(9, 520, 960, 860, 80, 260, ['#121a3a', '#1a2348'], ['#ffd27a', '#202b55'], .4, 50, 90);
+  w += G('moon', C(0, 0, 40, '#fff6d6') + C(18, -10, 36, '#2a3366', 'opacity=".0"')) + R(732, 380, 16, 480, '#3b2f4a') + R(520, 612, 440, 14, '#3b2f4a');
+  w += G('bSky', R(520, 380, 440, 480, '#9bd5f5'), 'opacity="0"');
+  add('bed', 0, w);
+  add('bed', 1, R(80, 420, 200, 280, '#e76f51', 'opacity=".55" rx="10"') + `<text x="180" y="580" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="40" fill="#fff" opacity=".7">GO!</text>` + R(60, 760, 300, 16, '#3b2f4a'));
+  let m = R(-1000, 1500, 3000, 600, '#2b2547') + R(30, 880, 60, 560, '#5a3f6b', 'rx="20"') + R(60, 1180, 760, 120, '#e8e6f0', 'rx="30"') + R(40, 1260, 800, 230, '#3f5fa8', 'rx="40"') + R(90, 1150, 220, 90, '#fff', 'rx="40"');
+  m += R(850, 1180, 200, 300, '#6b4a2e', 'rx="10"') + R(870, 1240, 160, 8, '#4a3220') + R(870, 1340, 160, 8, '#4a3220');
+  m += `<circle cx="1000" cy="1080" r="180" fill="${rgrad('gLamp', [[0, '#ffd27a', .55], [1, '#ffd27a', 0]])}"/>` + PTH('M960,1040 L1040,1040 L1060,1100 L940,1100Z', '#ffd27a') + R(992, 1100, 16, 80, '#6b4a2e');
+  m += `<g id="clock" transform="translate(905 1118)">${R(-50, -38, 120, 70, '#111', 'rx="10"')}<text id="clockT" x="10" y="12" text-anchor="middle" font-family="Rubik" font-weight="800" font-size="36" fill="#ff3b30">23:59</text></g>`;
+  add('bed', 3, m);
+  add('bed', 7, R(1000, 1500, 300, 600, '#3a2f50', 'rx="30"'));
+})();
+// ---- CROSSING (night, rain)
+(function () {
+  add('cross', 0, R(-2000, -1200, 6000, 3400, grad('gXsky', [[0, '#05081a'], [.6, '#141a3a'], [1, '#2a2147']])) + `<g opacity=".35" fill="#3a2f5a"><ellipse cx="200" cy="300" rx="400" ry="90"/><ellipse cx="900" cy="180" rx="450" ry="80"/><ellipse cx="500" cy="-200" rx="600" ry="100"/></g>`);
+  let f = buildings(41, -1200, 2400, 1080, 300, 820, ['#121933', '#18203f', '#0f1530'], ['#ffd27a', '#1f2950', .85], .35, 120, 220);
+  const r = rng(77); for (let i = 0; i < 26; i++) f += C((r() * 2400 - 700).toFixed(0), (900 + r() * 200).toFixed(0), (10 + r() * 22).toFixed(0), ['#ffd27a', '#ff3d7f', '#36e0ff'][i % 3], 'opacity=".5"');
+  add('cross', 1, f);
+  let m = buildings(43, -1300, 2500, 1110, 240, 520, ['#1c2448', '#232c55', '#1a2142'], ['#ffcf7a', '#2a335f', .9], .3, 200, 320);
+  m += `<g font-family="Unbounded" font-weight="900"><text x="180" y="760" font-size="58" fill="#ff3d7f" stroke="#ff3d7f" stroke-width="2" opacity=".95">КАФЕ</text><text x="700" y="700" font-size="50" fill="#36e0ff" opacity=".95">24/7</text></g>`;
+  m += C(255, 740, 160, rgrad('gNeonP', [[0, '#ff3d7f', .35], [1, '#ff3d7f', 0]])) + C(760, 690, 140, rgrad('gNeonC', [[0, '#36e0ff', .3], [1, '#36e0ff', 0]]));
+  add('cross', 2, m);
+  let s = R(-2000, 1080, 6000, 50, '#2f3446') + R(-2000, 1128, 6000, 280, '#181c28');
+  s += `<g opacity=".55"><rect x="190" y="1130" width="130" height="270" fill="url(#gRefP)"/><rect x="700" y="1130" width="110" height="270" fill="url(#gRefC)"/><rect x="60" y="1130" width="40" height="270" fill="url(#gRefY)"/><rect x="940" y="1130" width="40" height="270" fill="url(#gRefY)"/></g>`;
+  grad('gRefP', [[0, '#ff3d7f', .7], [1, '#ff3d7f', 0]]); grad('gRefC', [[0, '#36e0ff', .6], [1, '#36e0ff', 0]]); grad('gRefY', [[0, '#ffd27a', .7], [1, '#ffd27a', 0]]);
+  for (let i = 0; i < 7; i++) { const x = 380 + i * 62; s += PTH(`M${x},1132 L${x + 36},1132 L${x + 70},1404 L${x + 34},1404Z`, '#d9dde6', 'opacity=".9"'); }
+  for (let x = -2000; x < 4000; x += 220) if (x < 300 || x > 860) s += R(x, 1262, 110, 10, '#e9c46a', 'opacity=".7"');
+  s += R(-2000, 1404, 6000, 22, '#8d93a3') + R(-2000, 1426, 6000, 700, grad('gXside', [[0, '#3e4456'], [1, '#2a2f3d']]));
+  for (let x = -2000; x < 4000; x += 200) s += R(x, 1426, 3, 700, '#353a4a');
+  [[80, 1], [1000, 1]].forEach(([x]) => s += R(x - 8, 640, 16, 450, '#2b3040') + PTH(`M${x - 8},640 Q${x + 30},610 ${x + 70},640`, 'none', 'stroke="#2b3040" stroke-width="14"') + C(x + 70, 650, 16, '#ffe7a8') + PTH(`M${x + 70},650 L${x - 60},1090 L${x + 200},1090Z`, '#ffd27a', 'opacity=".12"') + C(x + 70, 650, 70, '#ffd27a', 'opacity=".25"'));
+  s += `<g transform="translate(300 0)">${R(-8, 1180, 16, 240, '#2b3040')}${R(-34, 1060, 68, 120, '#111', 'rx="10"')}${C(0, 1092, 20, '#ff3b30')}${C(0, 1148, 20, '#2a3a2a')}</g>`;
+  s += personSVG('girlE', STY.girl) + BALL('ballX', 30);
+  // car
+  let car = PTH('M0,-80 Q4,-150 70,-160 L180,-170 Q250,-260 380,-262 Q500,-262 560,-170 L640,-160 Q690,-150 690,-80 L690,-30 L0,-30Z', '#2b4f8a');
+  car += PTH('M200,-176 Q262,-246 370,-246 L370,-176Z', '#7fb3d5', 'opacity=".75"') + PTH('M390,-176 L390,-246 Q490,-244 540,-176Z', '#7fb3d5', 'opacity=".75"');
+  car += C(150, -30, 52, '#151515') + C(150, -30, 22, '#888') + C(560, -30, 52, '#151515') + C(560, -30, 22, '#888');
+  car += `<ellipse cx="14" cy="-100" rx="22" ry="16" fill="#fffbe0"/><rect x="660" y="-110" width="30" height="24" rx="6" fill="#ff3b30"/>`;
+  s += G('car', car + G('beam', `<path d="M14,-100 L-900,-320 L-900,140Z" fill="url(#gBeam)" opacity=".55"/>` + C(14, -100, 110, rgrad('gHL', [[0, '#fffbe0', .95], [.3, '#fff2b0', .5], [1, '#fff2b0', 0]])), 'style="mix-blend-mode:screen"'));
+  DEFS.push(`<linearGradient id="gBeam" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#fff6c9" stop-opacity=".9"/><stop offset="1" stop-color="#fff6c9" stop-opacity="0"/></linearGradient>`);
+  s += G('spray', Array.from({ length: 16 }, (_, i) => C(0, 0, 6 + i % 4 * 3, '#cfe3f5', `id="sp${i}"`)).join(''), 'opacity="0"');
+  add('cross', 3, s);
+  add('cross', 6, '');
+  add('cross', 7, R(1010, 200, 34, 1900, '#1d2130') + `<ellipse cx="160" cy="1840" rx="260" ry="40" fill="#5d6a8a" opacity=".5"/>`);
+})();
+// actors layer content (shared)
+const ACT = personSVG('hero', STY.hero) + personSVG('heroH', Object.assign({}, STY.hero, { hood: true })) + personSVG('girlA', STY.girl) + MUG('mugA') + BALL('ballA', 38) + BALL('ballXA', 30) + SANDWICH('sand') +
+  G('heroMini', `<circle r="34" fill="${STY.hero.skin}"/><path d="M-36,-6 Q-40,-50 0,-48 Q40,-50 36,-6 Q20,-30 0,-26 Q-20,-30 -36,-6Z" fill="${STY.hero.hair}"/><circle cx="-11" cy="0" r="5" fill="#1a1420"/><circle cx="11" cy="0" r="5" fill="#1a1420"/><path d="M-12,14 Q0,26 12,14" stroke="#1a1420" stroke-width="4" fill="none"/><path id="miniArm" d="M30,30 L60,-20" stroke="${STY.hero.coat}" stroke-width="18" stroke-linecap="round"/><circle id="miniHand" cx="60" cy="-20" r="12" fill="${STY.hero.skin}"/>`) +
+  G('bubble', `<ellipse cx="0" cy="0" rx="150" ry="100" fill="#fff"/><circle cx="-90" cy="110" r="22" fill="#fff"/><circle cx="-120" cy="150" r="12" fill="#fff"/><g transform="translate(-80 -40) scale(.14)">${R(0, 0, 1160, 470, '#1fa58b', 'rx="40"')}${R(20, 60, 1120, 170, '#24384a', 'rx="18"')}<circle cx="190" cy="470" r="70" fill="#222"/><circle cx="930" cy="470" r="70" fill="#222"/></g><path d="M-100,-60 L100,60 M100,-60 L-100,60" stroke="#e63946" stroke-width="16" stroke-linecap="round"/>`) +
+  G('burn', Array.from({ length: 28 }, (_, i) => C(0, 0, 4 + i % 4 * 2, i % 3 ? '#7ff6ff' : '#ffb347', `id="bn${i}"`)).join(''));
+
+(function buildWorld() {
+  const defs = `<defs>${DEFS.join('')}</defs>`;
+  [0, 1, 2, 3, 5, 6, 7].forEach(L => {
+    let s = L === 0 ? defs : '';
+    BGS.forEach(bg => s += `<g id="L${L}_${bg}" display="none">${LBUF[L][bg] || ''}</g>`);
+    if (L === 5) s = ACT;
+    $('c' + L).innerHTML = s;
+  });
+  // move defs into each svg that needs gradients (all reference same document ids -> fine in one document)
+})();
+
+// ================================================================= insert close-up (watch)
+$('ci').innerHTML = `
+  <rect x="-200" y="-200" width="1480" height="2320" id="insBg" fill="#f3d9a8"/>
+  <g id="insBlur" opacity=".55"><circle cx="200" cy="500" r="260" fill="#fff" opacity=".35"/><circle cx="900" cy="1500" r="320" fill="#000" opacity=".15"/><circle id="insBokeh" cx="850" cy="420" r="160" fill="#fff" opacity=".25"/></g>
+  <g id="insW">
+    <path d="M-300,820 L1400,880 L1400,1180 L-300,1150Z" fill="#f1c6a0"/>
+    <path d="M-300,800 L60,812 L60,1160 L-300,1150Z" fill="#e8453c"/><path d="M60,812 L60,1160" stroke="#b8322a" stroke-width="18"/>
+    <path d="M440,700 L700,700 L700,1340 L440,1340Z" fill="#5a3a22"/><path d="M440,760 L700,760 M440,1280 L700,1280" stroke="#3d2716" stroke-width="10"/>
+    <circle cx="570" cy="1020" r="230" fill="#9aa0ab"/><circle cx="570" cy="1020" r="214" fill="#d6d9e0"/><circle cx="570" cy="1020" r="186" fill="#13203a"/>
+    ${Array.from({ length: 12 }, (_, i) => `<rect x="566" y="846" width="8" height="${i % 3 ? 22 : 40}" fill="#c9d6ea" transform="rotate(${i * 30} 570 1020)"/>`).join('')}
+    <rect x="510" y="1090" width="120" height="74" rx="12" fill="#0b1224" stroke="#2c3d63" stroke-width="5"/>
+    <text id="insDig" x="570" y="1150" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="58" fill="#7ff6ff">1</text>
+    <line id="insHm" x1="570" y1="1020" x2="570" y2="900" stroke="#c9d6ea" stroke-width="12" stroke-linecap="round"/>
+    <line id="insHs" x1="570" y1="1020" x2="570" y2="860" stroke="#7ff6ff" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="570" cy="1020" r="14" fill="#7ff6ff"/>
+    <circle id="insGlow" cx="570" cy="1020" r="200" fill="#7ff6ff" opacity="0"/>
+    <g id="insCrown"><rect x="790" y="985" width="56" height="70" rx="12" fill="#c9ccd4"/><rect x="800" y="995" width="36" height="50" rx="8" fill="#7ff6ff" id="insCrownL"/></g>
+    <g id="insFinger"><g transform="rotate(-28 850 1020)"><path d="M880,962 L1400,930 L1400,1110 L880,1088 Q842,1025 880,962Z" fill="#f6cfad" stroke="#c98e6a" stroke-width="8"/><path d="M886,982 Q872,1025 886,1068" stroke="#e8b48f" stroke-width="10" fill="none"/><rect x="890" y="990" width="44" height="66" rx="18" fill="#fbe3cf" opacity=".8"/></g></g>
+    <g id="insRain" opacity="0">${Array.from({ length: 14 }, (_, i) => { const r = rng(i + 3); return `<ellipse cx="${(250 + r() * 640).toFixed(0)}" cy="${(830 + r() * 380).toFixed(0)}" rx="${(8 + r() * 10).toFixed(0)}" ry="${(10 + r() * 12).toFixed(0)}" fill="#e8f6ff" opacity=".55"/>`; }).join('')}</g>
+  </g>`;
+
+// ================================================================= kinetic type
+const KT = {};
+function mkKT(id, text, size, top, color = '#fff', font = 'Unbounded', ls = -2) {
+  const d = document.createElement('div'); d.className = 'kt'; d.id = id;
+  d.style.fontSize = size + 'px'; d.style.top = top + 'px'; d.style.color = color; d.style.fontFamily = font; d.style.letterSpacing = ls + 'px';
+  d.innerHTML = [...text].map(c => c === ' ' ? '<span style="width:.32em"> </span>' : `<span>${c}</span>`).join('');
+  $('kts').appendChild(d); KT[id] = { el: d, sp: [...d.children] };
+}
+mkKT('tPause', 'ПАУЗА', 210, 330, '#7ff6ff');
+mkKT('t10', '10 СЕКУНД', 92, 600);
+mkKT('r1', '10 СЕКУНД', 96, 300, '#7ff6ff');
+mkKT('r2', '1 РАЗ В СУТКИ', 80, 430);
+mkKT('r3', 'ДВИГАЕШЬСЯ', 74, 560);
+mkKT('r4', 'ТОЛЬКО ТЫ', 96, 660, '#ffd166');
+mkKT('x0', '×0', 260, 300, '#ff5a5f');
+mkKT('n1', '1', 420, 260, '#fff'); mkKT('n2', '2', 420, 260, '#fff'); mkKT('n7', '7', 420, 260, '#7ff6ff'); mkKT('nN', 'НОЧЬ', 80, 760);
+mkKT('fin1', 'ИНОГДА', 92, 360); mkKT('fin2', '10 СЕКУНД —', 112, 480, '#7ff6ff'); mkKT('fin3', 'ЭТО ЦЕЛАЯ', 92, 640); mkKT('fin4', 'ЖИЗНЬ', 200, 760, '#ffd166');
+mkKT('zero', 'НОЛЬ ПАУЗ', 90, 330, '#7ff6ff');
+function ktShow(id, o, fn) { const k = KT[id]; k.el.style.opacity = clamp(o).toFixed(3); if (o <= 0) return; k.sp.forEach((s, i) => { const [x, y, sc, r, a] = fn(i, k.sp.length); s.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) rotate(${r.toFixed(1)}deg) scale(${sc.toFixed(3)})`; s.style.opacity = a === undefined ? 1 : clamp(a).toFixed(3); }); }
+function ktIn(t, t0, i, n, stag = .045, from = 'up') { const k = spring((t - t0 - i * stag) / .55, 2.2, 6); const y = from === 'up' ? -140 : 140; return [0, (1 - k) * y, lerp(.4, 1, k), (1 - k) * (i % 2 ? 12 : -12), clamp((t - t0 - i * stag) / .12)]; }
+
+// ring timer
+$('ring').innerHTML = `<circle cx="150" cy="150" r="138" fill="rgba(11,15,26,.72)"/>` + Array.from({ length: 10 }, (_, i) => `<path id="rs${i}" d="${(() => { const a0 = (i * 36 + 3 - 90) * DEG, a1 = ((i + 1) * 36 - 3 - 90) * DEG, r = 122; return `M${150 + Math.cos(a0) * r},${150 + Math.sin(a0) * r} A${r},${r} 0 0 1 ${150 + Math.cos(a1) * r},${150 + Math.sin(a1) * r}`; })()}" stroke="#7ff6ff" stroke-width="18" fill="none" stroke-linecap="round"/>`).join('') + `<text id="ringT" x="150" y="190" text-anchor="middle" font-family="Unbounded" font-weight="900" font-size="120" fill="#fff">10</text>`;
+function ringSet(o, val, scale = 1, cx = 540, cy = 400) {
+  const r = $('ring'); r.style.opacity = clamp(o).toFixed(3);
+  r.style.transform = `translate(${cx - 540}px,${cy - 400}px) scale(${scale.toFixed(3)})`;
+  for (let i = 0; i < 10; i++) setA('rs' + i, 'opacity', i < Math.ceil(val - 1e-6) ? 1 : .15);
+  $('ringT').textContent = Math.max(0, Math.ceil(val - 1e-6));
+}
+
+// ================================================================= camera
+function hermite(keys, t) { // keys [[t, v...]]
+  const n = keys.length, dim = keys[0].length - 1;
+  if (t <= keys[0][0]) return keys[0].slice(1);
+  if (t >= keys[n - 1][0]) return keys[n - 1].slice(1);
+  let i = 0; while (t > keys[i + 1][0]) i++;
+  const a = keys[i], b = keys[i + 1], h = b[0] - a[0], u = (t - a[0]) / h;
+  const out = [];
+  for (let d = 1; d <= dim; d++) {
+    const sl = (p, q) => (q[d] - p[d]) / (q[0] - p[0]);
+    const ma = i > 0 ? (sl(keys[i - 1], a) + sl(a, b)) / 2 : sl(a, b) * .5;
+    const mb = i < n - 2 ? (sl(a, b) + sl(b, keys[i + 2])) / 2 : sl(a, b) * .5;
+    const h00 = 2 * u ** 3 - 3 * u ** 2 + 1, h10 = u ** 3 - 2 * u ** 2 + u, h01 = -2 * u ** 3 + 3 * u ** 2, h11 = u ** 3 - u ** 2;
+    out.push(h00 * a[d] + h10 * h * ma + h01 * b[d] + h11 * h * mb);
+  }
+  return out;
+}
+// transitions at scene starts
+const TRANS = { s2: ['whip', 1], s3: ['none'], s4: ['whip', -1], s5: ['whip', 1], s6: ['whip', -1], s7: ['zoom'], s8: ['whip', 1], s9: ['dip'], s10: ['up'], s11: ['none'], s12: ['none'], s13: ['none'], s14: ['none'] };
+function transOff(t) {
+  let dx = 0, dy = 0, dz = 1, fl = 0;
+  SCENES.forEach(sc => {
+    const tt = TRANS[sc.id]; if (!tt || tt[0] === 'none') return;
+    const T = sc.start, a = t - T;
+    if (tt[0] === 'whip') { if (a > -.22 && a < 0) dx += easeIn((a + .22) / .22) * 900 * tt[1]; if (a >= 0 && a < .3) dx -= (1 - easeOut(a / .3)) * 900 * tt[1]; }
+    if (tt[0] === 'up') { if (a > -.25 && a < 0) dy -= easeIn((a + .25) / .25) * 1400; if (a >= 0 && a < .35) dy += (1 - easeOut(a / .35)) * 1400; }
+    if (tt[0] === 'zoom') { if (a > -.22 && a < 0) dz *= 1 + easeIn((a + .22) / .22) * 1.2; if (a >= 0 && a < .3) dz *= 1 + (1 - easeOut(a / .3)) * .6; fl = Math.max(fl, a > -.06 && a < .1 ? 1 - Math.abs(a) / .1 : 0); }
+    if (tt[0] === 'dip') { if (a > -.3 && a < .3) fl = Math.max(fl, -(1 - Math.abs(a) / .3)); }
+  });
+  return { dx, dy, dz, fl };
+}
+
+// ================================================================= scene state
+let CUR = null;
+const ST = { pc: 0, dof: [0, 0, 0, 0, 0, 0, 0, 0], insert: null, glare: 0, flash: 0, ripple: null, hud: { o: 0, v: '×1', red: 0, arc: 1, burn: 0 }, day: { o: 0, txt: '' }, ring: null, rainOn: 0, rainA: 0, shake: 0, objs: [] };
+const show = { hero: 0, heroH: 0, girlA: 0, mugA: 0, ballA: 0, ballXA: 0, sand: 0, heroMini: 0, bubble: 0, burn: 0 };
+function actorsVisible() { Object.keys(show).forEach(k => disp(k, show[k])); }
+
+const DEFAULT_DOF = { city: [3, 2, 0, 0, 0, 0, 0, 8], kitchen: [2, 1.5, 0, 0, 0, 0, 0, 8], bus: [3, 2, 1, 0, 0, 0, 0, 10], class: [1.5, 1, 0, 0, 0, 0, 0, 10], yard: [3, 2, 1, 0, 0, 0, 0, 10], bed: [2, 1, 0, 0, 0, 0, 0, 9], cross: [3, 4, 1.5, 0, 0, 0, 0, 10] };
+
+// --- per-scene logic. Each returns camera {x,y,z,r}
+const FN = {};
+FN.s1 = (t, sc) => {
+  const lt = t - sc.start, w = wt(t), tp = W('s1', 'паузу');
+  // pedestrians walking (freeze with world time)
+  const peds = [[-120, 1430, .72, 1], [210, 1480, .8, -1], [700, 1440, .74, 1], [980, 1520, .86, -1], [1300, 1460, .76, 1], [-260, 1700, 1.05, 1]];
+  peds.forEach(([x0, y, s, dir], i) => { const x = x0 + dir * 90 * w; const wp = walkP(w * 6.5 + i, 1); pose('ped' + i, Object.assign({ x, y, s, flip: dir, expr: i % 2 ? 'smile' : 'flat', blink: 0, look: [dir * .5, 0] }, wp)); });
+  // splash loop
+  const sp = (w * .85) % 1.1;
+  for (let i = 0; i < 12; i++) { const a = (-160 + i * 26) * DEG, v = 300 + (i % 4) * 60; setA('spl' + i, 'cx', (760 + Math.cos(a) * v * sp * .9).toFixed(1)); setA('spl' + i, 'cy', (1560 + Math.sin(a) * v * sp + 900 * sp * sp).toFixed(1)); setA('spl' + i, 'opacity', sp < .95 ? 1 : 0); }
+  // pigeons
+  for (let i = 0; i < 5; i++) { const x = 1300 - ((w * (260 + i * 30) + i * 300) % 1900), y = 520 + i * 150 + Math.sin(w * 3 + i) * 30, s = 1.4 + (i % 3) * .5; tr('pig' + i, x, y, s, -8 + i * 3); const fl = Math.sin(w * 22 + i * 2); setA('pig' + i + '_w1', 'transform', `scale(1 ${fl.toFixed(2)})`); setA('pig' + i + '_w2', 'transform', `scale(1 ${(-fl * .7).toFixed(2)})`); }
+  // hero: presses watch at tp
+  show.hero = 1;
+  const press = smooth((t - (tp - .55)) / .3) * (1 - smooth((t - (tp + .5)) / .4));
+  const look = Math.sin(lt * 1.3) * .8 * smooth((t - tp - .6) / .5);
+  pose('hero', { x: 540, y: 1600, s: 1.05, arms: [lerp(12, -40, press), lerp(-8, 95, press), lerp(-12, -50, press), lerp(8, -60, press)], expr: t > tp + .5 ? 'grin' : 'smile', brow: t > tp + .5 ? 'up' : 'n', look: [look, press * .8], tilt: look * 6, blink: blinkAt(t) });
+  // titles
+  ktShow('tPause', win(t, tp - .1, sc.end + .1, .1, .15), (i, n) => { const fz = Pz(t); const k = ktIn(t, tp - .25, i, n, .06); const drift = (1 - fz) * 0; return [k[0], k[1] + drift, k[2], k[3] + fz * [-8, 5, -3, 7, -5][i], k[4]]; });
+  const t10 = W('s1', 'десять');
+  ktShow('t10', win(t, t10 - .05, sc.end + .1, .1, .15), (i, n) => ktIn(t, t10 - .1, i, n, .03, 'down'));
+  ST.ring = { o: win(t, t10, sc.end + .1, .2, .15), v: 10, s: .75, cx: 540, cy: 860 };
+  ST.dof = [3, 2, 0, 0, 0, 0, 0, 10];
+  const cam = hermite([[0, 420, 1050, 1.32, -3], [tp, 520, 1030, 1.22, -1], [tp + 1.2, 600, 980, 1.12, 1.5], [sc.end, 640, 960, 1.05, 2.5]], t);
+  const punch = decay(t, tp, 5) * .08;
+  return { x: cam[0], y: cam[1], z: cam[2] + punch, r: cam[3] };
+};
+function mugState(t) {
+  const tk = E('s2', 'случайно') + 0.25;
+  const w0 = wt(tk), tau = Math.max(0, wt(t) - w0);
+  const k = t >= tk;
+  const g = 2400;
+  return { k, tau, x: 650 + (k ? 40 * tau + 30 * smooth(tau / .15) : 0), y: 1224 + (k ? 0.5 * g * Math.max(0, tau - .08) ** 2 - 20 * smooth(tau / .08) : 0), r: k ? 40 * smooth(tau / .1) + 220 * tau : 0 };
+}
+function kitchenCommon(t, held) {
+  const w = wt(t);
+  setA('kClockS', 'transform', `rotate(${(Math.floor(w) * 6).toFixed(0)} 340 250)`);
+  const m = mugState(t);
+  const tk = E('s2', 'случайно') + 0.25;
+  for (let i = 0; i < 8; i++) {
+    const tau = Math.max(0, wt(t) - wt(tk) - .05), vx = (-120 + i * 45), vy = -260 - (i % 3) * 90;
+    const x = m.k ? 650 + vx * tau + 10 * i - 35 : 650, y = m.k ? 1135 + vy * tau + 1200 * tau * tau : 1135;
+    setA('td' + i, 'cx', x.toFixed(1)); setA('td' + i, 'cy', y.toFixed(1)); setA('td' + i, 'opacity', m.k && tau > 0 && y < 1500 ? 1 : 0);
+  }
+  if (held) { disp('mugE', 0); } else { disp('mugE', 1); tr('mugE', m.x, m.y, 1, m.r); }
+  // cat
+  const tj = tk + .1, tau = Math.max(0, wt(t) - wt(tj)), J = .85;
+  const jumping = t > tj && tau < J;
+  disp('cat_sit', !jumping); disp('cat_jump', jumping);
+  if (t <= tj) tr('cat', 930, 640, 1, 0);
+  else if (jumping) { const u = tau / J; tr('cat', lerp(930, 650, u), lerp(640, 1206, u) - 260 * Math.sin(Math.PI * u), 1, lerp(-10, 20, u)); }
+  else tr('cat', 650, 1206, .95, 0);
+  return m;
+}
+FN.s2 = (t, sc) => {
+  const lt = t - sc.start;
+  const tk = E('s2', 'случайно') + 0.25, tp = W('s2', 'кнопку'), tz = W('s2', 'зависает'), tc = W('s2', 'каплями'), tcat = W('s2', 'котом');
+  const m = kitchenCommon(t, false);
+  show.hero = 1;
+  const knock = smooth((t - tk + .25) / .2) * (1 - smooth((t - tk - .3) / .4));
+  const sleepy = t < tk;
+  const poke = smooth((t - tc + .1) / .4) * (1 - smooth((t - tcat) / .4));
+  const lookCat = smooth((t - tcat + .1) / .4);
+  pose('hero', {
+    x: 430, y: 1430, s: 1, lean: knock * -6,
+    arms: [lerp(lerp(12, -30, poke), 10, 0), lerp(-8, 60 - poke * 160, Math.max(knock * 0, poke)), lerp(-12, -70, knock), lerp(8, 40, knock)],
+    expr: sleepy ? 'flat' : (t < tp + .4 ? 'o' : (t < tc ? 'o' : 'grin')), brow: sleepy ? 'soft' : 'up', lid: sleepy ? .55 + .2 * Math.sin(lt * 2) : 0, blink: blinkAt(t, 1),
+    look: [lerp(lerp(.6, .9, poke), 1, lookCat), lerp(.6, -.6, lookCat)], tilt: lerp(sleepy ? 6 : 0, 8, lookCat),
+  });
+  // insert: watch press
+  const ia = W('s2', 'ты') - .05, ib = tp + .55;
+  ST.insert = t > ia && t < ib ? { t0: ia, t1: ib, tp: tp + .05, mode: 'day', dig: '1' } : null;
+  ST.dof = [2.5, 2, 0, 0, 0, 0, 0, 10];
+  const cam = hermite([[sc.start, 470, 1080, 1.0, -1], [tk, 560, 1110, 1.12, 0], [tp, 600, 1200, 1.25, 1], [tz, 640, 1320, 1.55, -2], [tc, 610, 1300, 1.75, 1], [tcat, 760, 900, 1.45, 3], [sc.end, 700, 1000, 1.2, 1]], t);
+  return { x: cam[0], y: cam[1], z: cam[2] + decay(t, tp + .55, 4) * .06, r: cam[3] };
+};
+FN.s3 = (t, sc) => {
+  const t10 = W('s3', 'десять'), t1 = W('s3', 'один'), tmv = W('s3', 'двигаешься'), tonly = W('s3', 'только'), thold = W('s3', 'держишь'), tres = PAUSES[1][1];
+  const grab = smooth((t - thold + .2) / .45);
+  const held = t > thold + .05;
+  const m = kitchenCommon(t, held);
+  show.hero = 1; show.mugA = held;
+  const wave = smooth((t - tmv) / .3) * (1 - smooth((t - thold + .3) / .3));
+  const ws = Math.sin((t - tmv) * 9);
+  const h = pose('hero', {
+    x: 430, y: 1430, s: 1, lean: wave * ws * 6,
+    arms: [lerp(12, -120 + ws * 30, wave), lerp(-8, -30, wave), lerp(lerp(-12, -95, grab), 120 - ws * 30, wave), lerp(lerp(8, -20, grab), 30, wave)],
+    expr: t > tres ? 'grin' : (wave > .3 ? 'grin' : 'smile'), brow: wave > .3 ? 'up' : 'n', blink: blinkAt(t, 2), look: [lerp(.6, .9, grab), lerp(-.2, .5, grab)],
+  });
+  if (held) { const hx = 430 + h.R[0], hy = 1430 + h.R[1]; const back = smooth((t - thold - .05) / .3); tr('mugA', lerp(m.x, hx + 30, back), lerp(m.y, hy + 40, back), 1, lerp(m.r, 0, back)); }
+  // rule cards
+  ktShow('r1', win(t, t10 - .05, sc.end, .1, .3), (i, n) => ktIn(t, t10 - .1, i, n, .03));
+  ktShow('r2', win(t, t1 - .05, sc.end, .1, .3), (i, n) => ktIn(t, t1 - .1, i, n, .03, 'down'));
+  ktShow('r3', win(t, tmv - .05, sc.end, .1, .3), (i, n) => { const k = ktIn(t, tmv - .1, i, n, .025); const fz = 1 - Pz(t); return [k[0] + Math.sin(t * 20 + i) * 4 * win(t, tmv, thold, .2, .2), k[1], k[2], k[3], k[4]]; });
+  ktShow('r4', win(t, tonly - .05, sc.end, .1, .3), (i, n) => ktIn(t, tonly - .05, i, n, .04));
+  NOCAP.length = 0;
+  ST.ring = { o: win(t, t10, tres + .3, .25, .3), v: 10 - 9 * ramp(t, t10, tres), s: .62, cx: 870, cy: 1010 };
+  ST.dof = [3, 2.5, 0, 0, 0, 0, 0, 10];
+  const cam = hermite([[sc.start, 690, 1010, 1.18, 1], [t10, 600, 980, 1.0, -1], [tmv, 540, 960, .96, 0], [thold, 520, 1060, 1.12, -2], [tres, 520, 1080, 1.2, 0], [sc.end, 560, 1040, 1.08, 2]], t);
+  return { x: cam[0], y: cam[1], z: cam[2] + decay(t, tres, 5) * .08, r: cam[3] };
+};
+FN.s4 = (t, sc) => {
+  const lt = t - sc.start, tf = PAUSES[2][0], tr2 = PAUSES[2][1];
+  const w = wt(t), wf = wt(tf);
+  // doors: closing starting tf-0.6 in world time
+  const dk = clamp((w - (wf - .6)) / .9);
+  tr('doorL', 310 + 0, 60, 1); setA('doorL', 'transform', `translate(${lerp(230, 310, dk).toFixed(1)} 50)`); setA('doorR', 'transform', `translate(${lerp(480, 400, dk).toFixed(1)} 50)`);
+  const drive = Math.max(0, w - wt(tr2) - .15);
+  const bx = -40 + 260 * drive * drive;
+  setA('busG', 'transform', `translate(${bx.toFixed(1)} ${(830 + Math.sin(w * 30) * (drive > 0 ? 1.5 : 0)).toFixed(1)})`);
+  // hero runs in from left
+  show.hero = t < tf + (tr2 - tf) * .75; show.heroMini = t > tr2 - .1;
+  const runK = clamp((t - sc.start) / (tf - sc.start));
+  const hx = lerp(-160, 470, easeOut(runK * 1.05)), hy = 1590;
+  const into = smooth((t - tf - .25) / ((tr2 - tf) * .55));
+  const wp = walkP(lt * 13, 1, 1);
+  if (show.hero) {
+    pose('hero', Object.assign({ x: lerp(hx, 560, into), y: lerp(hy, 1500, into), s: lerp(1.05, .82, into), expr: t > tf ? 'grin' : 'open', brow: 'det', look: [1, 0], blink: 0 }, t < tf ? wp : { legs: [10, 20, -10, 10], arms: [-30, -20, 60, -30], lean: -10 }));
+    setA('hero', 'opacity', (1 - smooth((into - .7) / .3)).toFixed(3));
+  }
+  tr('heroMini', bx + 310 + 290, 830 + 200, 1, 0); setA('miniArm', 'transform', `rotate(${(Math.sin(t * 14) * 25).toFixed(1)} 30 30)`); setA('miniHand', 'transform', `rotate(${(Math.sin(t * 14) * 25).toFixed(1)} 30 30)`);
+  ST.dof = [3, 2.5, 1, 0, 0, 0, 0, 10];
+  ST.dayTxt = 'ДЕНЬ 1';
+  const cam = hermite([[sc.start, 300, 1080, 1.12, -2], [tf, 520, 1100, 1.22, 0], [tr2, 600, 1060, 1.25, 2], [sc.end, 820, 1000, 1.1, 3]], t);
+  return { x: cam[0], y: cam[1], z: cam[2] + decay(t, tf, 6) * .1, r: cam[3] };
+};
+FN.s5 = (t, sc) => {
+  const tf = PAUSES[3][0], tr2 = PAUSES[3][1], w = wt(t);
+  setA('cClockS', 'transform', `rotate(${(Math.floor(w) * 6).toFixed(0)} 900 230)`);
+  const lean = smooth((t - tf - .1) / .45) * (1 - smooth((t - tr2 + .12) / .15));
+  show.hero = 1;
+  pose('hero', { x: lerp(320, 470, lean), y: 1470, s: 1, lean: lerp(0, 22, lean), arms: [lerp(20, 30, lean), lerp(-30, -50, lean), -20, 60], expr: t < tf ? 'tense' : (t < tr2 ? 'o' : 'grin'), brow: t < tf ? 'worry' : 'up', look: [lerp(-.2, 1, lean), lerp(.5, 1, lean)], blink: blinkAt(t, 3), tilt: lean * 8 });
+  const scrib = t > tr2 ? Math.sin(t * 40) * 6 : 0;
+  setA('pencil', 'transform', `translate(${(lerp(330, 360, lean) + scrib).toFixed(1)} 1236) rotate(${(20 + scrib).toFixed(1)})`);
+  const nw = Math.sin(w * 30) * 4;
+  pose('nerd', { x: 780, y: 1470, s: .97, arms: [10, -60, -30 + nw, -40], expr: 'flat', brow: 'n', look: [.2, 1], tilt: 4, blink: 0 });
+  setA('ansGlow', 'opacity', (win(t, tf + .5, tr2 + .1, .2, .2)).toFixed(3));
+  ST.dof = [2, 1.5, 0, 0, 0, 0, 0, 12];
+  ST.dayTxt = 'ДЕНЬ 2';
+  const cam = hermite([[sc.start, 420, 1100, 1.1, 2], [tf, 540, 1120, 1.2, 0], [tf + .6, 680, 1200, 1.75, -3], [tr2, 700, 1210, 1.85, -4], [sc.end, 560, 1140, 1.3, 0]], t);
+  return { x: cam[0], y: cam[1], z: cam[2] + decay(t, tf, 6) * .1, r: cam[3] };
+};
+function ballPath(t, tf) { // returns ball pos while flying toward hero face
+  const T = .9, launch = wt(tf) - T * .985;
+  const u = clamp((wt(t) - launch) / T);
+  return { u, x: lerp(180, 600, u), y: lerp(1240, 1112, u) - 160 * Math.sin(Math.PI * u) * .6, s: lerp(.45, 1, u), r: u * 600, launch };
+}
+FN.s6 = (t, sc) => {
+  const tf = PAUSES[4][0], tr2 = PAUSES[4][1], w = wt(t);
+  disp('benchBack', 1); disp('benchSeat', 1); setA('splat', 'opacity', 0);
+  const b = ballPath(t, tf);
+  const grab = smooth((t - tr2 + .45) / .35);
+  const held = t > tr2 - .1;
+  disp('ballE', !held); show.ballA = held;
+  if (!held) tr('ballE', b.x, b.y, b.s, b.r);
+  // kid kicks
+  const kick = smooth((w - (b.launch - .2)) / .2) * (1 - smooth((w - b.launch - .2) / .3));
+  pose('kid', { x: 140, y: 1300, s: .62, legs: [0, 0, lerp(0, 50, kick), lerp(0, -10, kick)], arms: [30, -10, -30, 10], expr: t > tr2 ? 'o' : 'grin', brow: t > tr2 ? 'up' : 'n', look: [1, 0] });
+  show.hero = 1;
+  const h = pose('hero', { x: 640, y: 1580, s: 1.05, arms: [lerp(12, -150, grab), lerp(-8, 70, grab), lerp(-12, 150, grab), lerp(8, -70, grab)], expr: t < tf ? 'smile' : (t < tr2 ? 'o' : 'grin'), brow: t < tf ? 'n' : 'up', cross: t > tf + .2 && t < tr2 ? 1 : 0, look: t < tf ? [-1, 0] : [-.3, .3], blink: t < tf ? blinkAt(t) : 0 });
+  if (held) tr('ballA', lerp(b.x, 640 + (h.L[0] + h.R[0]) / 2 * 1.05, smooth((t - tr2 + .1) / .2)), lerp(b.y, 1580 + (h.L[1] + h.R[1]) / 2 * 1.05 - 10, smooth((t - tr2 + .1) / .2)), 1, 0);
+  const tm = W('s6', 'сантиметре');
+  setA('measure', 'opacity', win(t, tm - .1, tr2 - .1, .15, .15).toFixed(3)); setA('measure', 'transform', `translate(${(b.x + 36).toFixed(1)} ${(b.y - 70).toFixed(1)}) scale(.8)`);
+  ST.dof = [4, 3, 2, 0, 0, 0, 0, 12];
+  ST.dayTxt = 'ДЕНЬ 3';
+  const cam = hermite([[sc.start, 380, 1150, 1.15, -2], [tf - .3, 500, 1120, 1.4, 0], [tf + .3, 600, 1090, 2.5, -4], [tr2, 610, 1095, 2.75, 3], [sc.end, 600, 1150, 1.6, 2]], t);
+  return { x: cam[0], y: cam[1], z: cam[2] + decay(t, tf, 6) * .14, r: cam[3] };
+};
+FN.s7 = (t, sc) => {
+  const lt = t - sc.start, w = wt(t);
+  const hx = 300 + 170 * lt;
+  show.hero = 1;
+  pose('hero', Object.assign({ x: hx, y: 1600, s: 1.05, expr: 'flat', brow: 'soft', look: [.4, 0], blink: blinkAt(t), lid: .2 }, walkP(lt * 7.5, .8)));
+  const peds = [[hx + 500, 1430, .72, -1, 1.1], [hx - 300, 1480, .8, 1, 1], [hx + 900, 1440, .74, -1, .9], [hx + 200, 1520, .86, 1, 1], [hx + 1300, 1460, .76, -1, 1], [hx - 700, 1700, 1.05, 1, 1.05]];
+  peds.forEach(([x0, y, s, dir, sp], i) => { const x = x0 + (dir > 0 ? 170 * lt * 0 : -120 * lt); const wp = walkP(lt * 7.5 * sp + i, .8); pose('ped' + i, Object.assign({ x, y, s, flip: dir, expr: 'flat', look: [dir * .5, 0] }, wp)); });
+  for (let i = 0; i < 12; i++) setA('spl' + i, 'opacity', 0);
+  for (let i = 0; i < 5; i++) tr('pig' + i, -3000, 0, 1, 0);
+  // thought bubble with crossed bus
+  const tb = W('s7', 'потратил');
+  show.bubble = t > tb - .1 && t < W('s7', 'весь') + .2;
+  tr('bubble', hx + 200, 900 - 10 * Math.sin(t * 3), .9 * easeOutBack((t - tb + .1) / .35), 0);
+  const tx0 = W('s7', 'одна');
+  ktShow('x0', win(t, tx0 - .1, tb + .3, .1, .3), (i, n) => { const k = spring((t - tx0 + .1) / .5, 2, 5); const fly = smooth((t - tb) / .3); return [lerp(0, -380, fly), lerp((1 - k) * -80, -280, fly), lerp(.3, 1, k) * lerp(1, .25, fly), (1 - k) * 20, 1]; });
+  ST.hud.red = win(t, tx0, sc.end, .1, .2);
+  ST.dof = [3, 2, .5, 0, 0, 0, 0, 10];
+  ST.dayTxt = 'ДЕНЬ 4';
+  const cam = hermite([[sc.start, hx + 40, 1000, 1.22, -1], [sc.end, 300 + 170 * (sc.end - sc.start) + 90, 1040, 1.1, 1.5]], t);
+  return { x: cam[0], y: cam[1], z: cam[2], r: cam[3] };
+};
+FN.s8 = (t, sc) => {
+  const td = W('s8', 'уронил'), tl = E('s8', 'вниз') - .05, w = wt(t);
+  disp('benchBack', 1); disp('benchSeat', 1); disp('ballE', 0); setA('measure', 'opacity', 0);
+  pose('kid', { x: -400, y: 1300, s: .6 });
+  show.hero = 1; show.sand = 1;
+  const tap = win(t, td + .15, tl - .3, .15, .2);
+  const h = pose('hero', { x: 830, y: 1600, s: 1, sit: 1, legs: [0, 0, 0, 0], arms: [lerp(30, -40, tap), lerp(-100, 90 + Math.sin(t * 30) * 15 * tap, tap), lerp(-20, -40, tap), lerp(60, -40, tap)], expr: t < td ? 'smile' : (t < tl ? 'o' : 'sad'), brow: t < td ? 'n' : 'worry', look: [-.6, 1], blink: blinkAt(t, 4), tilt: t > tl ? -6 : 0 });
+  const wd = wt(td + .1), tau = Math.max(0, w - wd);
+  const hx = 830 + h.L[0], hy = 1600 + h.L[1];
+  const fallen = t > td + .1;
+  const groundY = 1660;
+  const y = fallen ? Math.min(groundY, hy - 10 + 0.5 * 2200 * tau * tau) : hy - 10;
+  const landed = fallen && y >= groundY;
+  const rot = fallen ? Math.min(180, 520 * tau) : 0;
+  tr('sand', fallen ? hx - 80 * Math.min(tau, .35) : hx, y, 1.35, landed ? 180 : rot);
+  setA('splat', 'opacity', landed ? 1 : 0); setA('splat', 'transform', `translate(${(hx - 28).toFixed(1)} ${groundY + 18})`);
+  ST.hud.red = 1;
+  ST.watchRed = win(t, td + .1, tl, .05, .2) * (Math.sin(t * 30) > 0 ? 1 : .3);
+  ST.dof = [4, 3, 2, 0, 0, 0, 0, 12];
+  ST.dayTxt = 'ДЕНЬ 4';
+  const tland = (() => { for (let x = td; x < sc.end; x += .01) { if (wt(x) - wd > Math.sqrt(2 * (groundY - hy + 10) / 2200)) return x; } return tl; })();
+  ST.shake = decay(t, tland, 9) * 18;
+  const cam = hermite([[sc.start, 760, 1200, 1.3, 2], [td, 790, 1250, 1.45, 0], [tl - .4, 760, 1520, 1.9, -5], [tl + .3, 760, 1560, 2.0, -6], [sc.end, 780, 1380, 1.5, -2]], t);
+  return { x: cam[0], y: cam[1], z: cam[2], r: cam[3] };
+};
+FN.s9 = (t, sc) => {
+  const lt = t - sc.start;
+  const t12 = W('s9', 'двенадцать'), tb = W('s9', 'сгорает'), n1 = W('s9', 'одна'), n2 = W('s9', 'вторая'), n7 = W('s9', 'седьмая'), tsave = W('s9', 'беречь');
+  // clock
+  let clk = t < t12 ? '23:59' : '00:00';
+  [n1, n2, n7].forEach(tn => { if (t > tn - .35 && t < tn) clk = '23:59'; if (t >= tn) clk = '00:00'; });
+  $('clockT').textContent = clk;
+  const cyc = [n1, n2, n7].filter(x => t > x - .3).length;
+  const mph = (t - sc.start) / (sc.end - sc.start);
+  tr('moon', lerp(600, 900, (mph * 3) % 1), 470 + Math.sin(((mph * 3) % 1) * Math.PI) * -40, 1, 0);
+  let skyF = 0; [n1, n2, n7].forEach(tn => skyF = Math.max(skyF, win(t, tn - .3, tn - .05, .12, .12) * .8));
+  setA('bSky', 'opacity', skyF.toFixed(3));
+  show.hero = 1;
+  const tired = cyc / 3;
+  const cradle = smooth((t - tsave + .3) / .4);
+  pose('hero', { x: 470, y: 1520, s: 1, sit: 1, legs: [0, 0, 0, 0], arms: [lerp(12, 25, cradle), lerp(-8, -95, cradle), lerp(-12, -40, cradle), lerp(8, -70, cradle)], expr: cyc ? 'flat' : 'smile', brow: cyc ? 'worry' : 'soft', look: t > t12 - .3 && t < tb + .6 ? [1, -.2] : [.4, .9], lid: tired * .5, blink: blinkAt(t, 5), tilt: lerp(0, 10, tired), lean: lerp(0, 5, tired) });
+  // burn sparks from watch at each burn
+  const bursts = [tb, n1, n2, n7];
+  show.burn = 0;
+  for (const b0 of bursts) if (t > b0 - .05 && t < b0 + 1.0) { show.burn = 1; const u = (t - b0 + .05) / 1.05; for (let i = 0; i < 28; i++) { const a = (i * 47 % 360) * DEG, sp = 120 + (i * 37 % 140); setA('bn' + i, 'cx', (Math.cos(a) * sp * u).toFixed(1)); setA('bn' + i, 'cy', (Math.sin(a) * sp * u * .6 - 300 * u * u).toFixed(1)); setA('bn' + i, 'opacity', (1 - u).toFixed(3)); } }
+  tr('burn', 470 + 40, 1520 - 300, 1, 0);
+  ST.hud.burn = Math.max(...bursts.map(b0 => win(t, b0, b0 + .5, .05, .3)));
+  // numbers
+  [['n1', n1], ['n2', n2], ['n7', n7]].forEach(([id, tn], j) => { const nx = [n2, n7, sc.end + .2][j]; ktShow(id, win(t, tn - .08, nx - .1, .06, .12), () => { const k = spring((t - tn + .08) / .5, 2, 6); return [0, 0, lerp(2.2, 1, k), (1 - k) * -15, 1]; }); });
+  ktShow('nN', win(t, n1 - .05, sc.end + .1, .1, .1), (i, n) => ktIn(t, n1, i, n, .03, 'down'));
+  ST.dof = [2, 1.5, 0, 0, 0, 0, 0, 10];
+  ST.dayTxt = 'НОЧЬ ' + (t < n1 ? 1 : t < n2 ? 1 : t < n7 ? 2 : 7);
+  const cam = hermite([[sc.start, 560, 1180, 1.25, -2], [tsave + .6, 520, 1150, 1.45, 0], [t12 - .5, 760, 1120, 1.5, 2], [t12 + .3, 880, 1110, 1.9, 3], [tb + .5, 640, 1080, 1.3, 0], [n1, 560, 1060, 1.12, -2], [n7, 540, 1020, 1.05, 1], [sc.end, 540, 1000, 1.0, 1]], t);
+  let punch = 0; [n1, n2, n7].forEach(tn => punch += decay(t, tn, 7) * .07);
+  return { x: cam[0], y: cam[1], z: cam[2] + punch, r: cam[3] };
+};
+// --- crossing scenes
+const CAR_FREEZE_X = 760;
+function crossState(t) {
+  const tb = W('s10', 'выкатывается'), tg = W('s10', 'девочка'), tf = W('s10', 'фары'), tz = PAUSES[5][0], tres = PAUSES[5][1];
+  const w = wt(t), wz = wt(tz);
+  // car: front x(t) ; at freeze = CAR_FREEZE_X ; speed 1300 px/s before; after resume brakes and passes left
+  let cx;
+  if (t < tres) cx = CAR_FREEZE_X + 1300 * (wz - w);
+  else { const u = w - wt(tres); cx = CAR_FREEZE_X - 1300 * u + 380 * u * u; }
+  cx = Math.min(cx, 3000);
+  // ball rolls
+  const bu = clamp((w - wt(tb)) / 1.3);
+  const ball = { x: lerp(180, 610, easeOut(bu)), y: lerp(1560, 1300, easeOut(bu)), s: lerp(1, .82, bu), r: bu * 900 };
+  // girl runs
+  const gu = clamp((w - wt(tg)) / 1.6);
+  return { tb, tg, tf, tz, tres, cx, ball, gu, bu };
+}
+FN.s10 = (t, sc) => {
+  const cs = crossState(t), lt = t - sc.start;
+  ST.rainOn = 1;
+  tr('car', cs.cx, 1330, 1, 0); setA('beam', 'opacity', 1);
+  tr('ballX', cs.ball.x, cs.ball.y, cs.ball.s, cs.ball.r); disp('ballX', 1);
+  const gx = lerp(150, 560, easeInOut(cs.gu)), gy = lerp(1570, 1320, easeInOut(cs.gu));
+  const running = cs.gu > 0 && cs.gu < 1;
+  const turn = smooth((t - cs.tf) / .3);
+  pose('girlE', Object.assign({ x: gx, y: gy, s: lerp(.62, .55, cs.gu), expr: t > cs.tf ? 'o' : 'smile', brow: t > cs.tf ? 'up' : 'n', look: [lerp(.8, 1, turn), 0], blink: 0 }, running ? walkP(lt * 12, 1, .6) : { arms: cs.gu >= 1 ? [-20, -60, 20, 60] : [10, -10, -10, 10] }));
+  disp('girlE', 1); show.girlA = 0;
+  show.heroH = 1;
+  const alarm = smooth((t - cs.tf + .1) / .3);
+  pose('heroH', { x: 860, y: 1640, s: 1.06, arms: [12, -8, lerp(-12, -40, alarm), lerp(8, -50, alarm)], expr: t > cs.tf ? 'o' : 'flat', brow: t > cs.tf ? 'up' : 'soft', look: [lerp(-.3, -1, smooth((t - cs.tg) / .4)), 0], blink: blinkAt(t, 6) });
+  ST.glare = smooth((t - cs.tf + .3) / .5) * .85;
+  ST.dof = [3, 5, 2, 0, 0, 0, 0, 12];
+  ST.dayTxt = 'ДЕНЬ 8';
+  const cam = hermite([[sc.start, 540, -120, 1.15, -3], [sc.start + 1.8, 540, 900, 1.05, -1], [W('s10', 'вечер'), 540, 1060, 1.0, 0], [cs.tb, 420, 1240, 1.12, -1], [cs.tg, 380, 1250, 1.2, 1], [cs.tf, 520, 1240, 1.3, 2], [sc.end, 560, 1180, 1.55, -1]], t);
+  ST.shake = smooth((t - cs.tf) / .4) * 6;
+  return { x: cam[0], y: cam[1], z: cam[2], r: cam[3] };
+};
+FN.s11 = (t, sc) => {
+  const cs = crossState(t);
+  const tsil = W('s11', 'тишина'), tdr = W('s11', 'капли'), trun = W('s11', 'ты'), ttake = W('s11', 'берешь'), tsec = W('s11', 'секунду'), tlook = W('s11', 'смотрит'), train = W('s11', 'почему'), t3 = W('s11', 'три'), t2 = W('s11', 'два'), t1 = W('s11', 'один');
+  ST.rainOn = 1;
+  tr('car', cs.cx, 1330, 1, 0); setA('beam', 'opacity', 1);
+  disp('ballX', 0);
+  show.heroH = 1;
+  // hero path: stand(860,1640) -> girl(600,1360) -> sidewalk(400,1620)
+  const g0 = [560, 1320];
+  const run1 = clamp((t - trun) / (ttake - trun + .1));
+  const carry = t > ttake + .1;
+  const run2 = clamp((t - t3 + .3) / (t1 + .5 - t3 + .3));
+  let hx, hy, hs;
+  if (!carry) { hx = lerp(860, g0[0] + 70, easeInOut(run1)); hy = lerp(1640, g0[1] + 40, easeInOut(run1)); hs = lerp(1.06, .98, run1); }
+  else { hx = lerp(g0[0] + 70, 420, easeInOut(run2)); hy = lerp(g0[1] + 40, 1630, easeInOut(run2)); hs = lerp(.98, 1.06, run2); }
+  const running = (run1 > 0 && run1 < 1) || (run2 > 0 && run2 < 1);
+  const lift = smooth((t - ttake) / .45);
+  const touch = win(t, tdr + .1, trun - .1, .3, .2);
+  const wp = running ? walkP(t * 13, 1, 1) : {};
+  const armsCarry = [-20, -90, -55, -45];
+  pose('heroH', Object.assign({ x: hx, y: hy, s: hs, expr: carry ? 'smile' : (t > trun ? 'open' : 'o'), brow: carry ? 'soft' : 'det', look: carry ? [-.4, .6] : [-1, 0], blink: 0, lean: running ? (carry ? 8 : -10) : 0 },
+    running && !carry ? wp : {}, carry ? { legs: (wp.legs || [0, 0, 0, 0]), bob: wp.bob || 0, arms: armsCarry } : (t < trun ? { arms: [lerp(12, -150, touch), lerp(-8, 40, touch), -12, 8] } : {})));
+  // girl: frozen env copy until carried, then actor copy (colored)
+  const gPose = { expr: 'o', brow: 'up', look: [1, 0], arms: [-20, -60, 20, 60], legs: [0, 0, 0, 0] };
+  if (!carry) {
+    disp('girlE', 1); show.girlA = 0;
+    pose('girlE', Object.assign({ x: g0[0], y: g0[1], s: .55 }, gPose));
+  } else {
+    disp('girlE', 0); show.girlA = 1;
+    const gl = smooth((t - tlook) / .4), gr = smooth((t - train) / .4);
+    const wake = smooth((t - tsec) / .4);
+    pose('girlA', { x: hx - lerp(0, 75, lift) * hs, y: hy - lerp(0, 175, lift) * hs + (wp.bob || 0), s: .5, legs: [-20, 40, 20, -40], expr: wake > .5 ? (gr > .5 ? 'o' : 'smile') : 'o', brow: 'up', look: gr > .5 ? [1, -1] : (gl > .5 ? [-.6, -.8] : [1, 0]), blink: wake > .2 && wake < .9 ? Math.sin(wake * Math.PI) : blinkAt(t, 7), arms: gr > .5 ? [-20, -60, lerp(20, -120, gr), lerp(60, 40, gr)] : [-20, -60, 20, 60], tilt: gl * 8 });
+  }
+  // countdown
+  const countV = t < t3 ? lerp(10, 3, ramp(t, cs.tz, t3)) : t < t2 ? 3 : t < t1 ? 2 : t < cs.tres ? 1 : 0;
+  ST.ring = { o: win(t, tsil, cs.tres + .1, .3, .1), v: countV, s: t > t3 - .1 ? 1 + .25 * (decay(t, t3, 6) + decay(t, t2, 6) + decay(t, t1, 6)) : .8, cx: 540, cy: 420 };
+  ST.glare = .55;
+  ST.insert = t > sc.start - .1 && t < W('s11', 'щелчок', 0, 'e') + .45 ? { t0: sc.start - .1, t1: W('s11', 'щелчок', 0, 'e') + .45, tp: W('s11', 'щелчок') + .3, mode: 'night', dig: '1' } : null;
+  ST.dof = [3, 5, 2.5, 0, 0, 0, 0, 12];
+  ST.dayTxt = 'ДЕНЬ 8';
+  const cam = hermite([[sc.start, 640, 1200, 1.5, 0], [tsil, 700, 1150, 1.25, -2], [tdr, 840, 1090, 1.9, 3], [trun, 760, 1180, 1.4, 0], [ttake, 640, 1170, 1.45, -2], [tsec, 610, 1090, 2.15, 2], [train, 620, 1050, 2.3, -2], [t3, 560, 1200, 1.4, 0], [t1, 470, 1310, 1.35, 2], [sc.end, 520, 1260, 1.3, 0]], t);
+  return { x: cam[0], y: cam[1], z: cam[2] + decay(t, cs.tz, 4) * .12, r: cam[3] };
+};
+FN.s12 = (t, sc) => {
+  const cs = crossState(t), lt = t - sc.start;
+  const tstand = W('s12', 'девочка');
+  ST.rainOn = 1;
+  tr('car', cs.cx, 1330, 1, Math.sin(t * 50) * .3 * decay(t, sc.start, 2)); setA('beam', 'opacity', 1);
+  // spray behind wheels
+  setA('spray', 'opacity', clamp(1 - lt / 1.4)); for (let i = 0; i < 16; i++) { const u = ((lt * 2 + i / 16) % 1); setA('sp' + i, 'cx', (cs.cx + 150 + (i % 2) * 410 + u * 220).toFixed(1)); setA('sp' + i, 'cy', (1300 - 140 * u + 260 * u * u).toFixed(1)); }
+  disp('ballX', 0); disp('girlE', 0); show.girlA = 1; show.heroH = 1;
+  const down = smooth((t - tstand + .6) / .5);
+  pose('heroH', { x: lerp(420, 520, down), y: lerp(1630, 1640, down), s: 1.06, arms: down > .5 ? [12, -8, -12, 8] : [-20, -90, -55, -45], expr: 'o', brow: 'up', look: [down > .5 ? -1 : .8, 0], blink: blinkAt(t, 8) });
+  show.ballXA = 1;
+  const gx = lerp(420 - 75 * 1.06, 360, down), gy = lerp(1630 - 175 * 1.06, 1640, down);
+  const gh = pose('girlA', { x: gx, y: gy, s: lerp(.5, .58, down), legs: down > .5 ? [0, 0, 0, 0] : [-20, 40, 20, -40], expr: 'o', brow: 'up', look: [Math.sin(lt * 2) * .8, 0], arms: [-40, -80, 40, 80], blink: blinkAt(t, 9) });
+  tr('ballXA', gx + (gh.L[0] + gh.R[0]) / 2 * .58, gy + (gh.L[1] + gh.R[1]) / 2 * .58 - 6, 1, 0);
+  ST.glare = .45 * (1 - smooth(lt / 1.2));
+  ST.dof = [3, 5, 2, 0, 0, 0, 0, 12];
+  ST.dayTxt = 'ДЕНЬ 8';
+  ST.shake = decay(t, sc.start, 3) * 14;
+  const cam = hermite([[sc.start, 520, 1240, 1.35, 3], [W('s12', 'машина'), 300, 1260, 1.15, -1], [tstand, 420, 1380, 1.45, 0], [sc.end, 440, 1400, 1.6, 1]], t);
+  return { x: cam[0], y: cam[1], z: cam[2], r: cam[3] };
+};
+FN.s13 = (t, sc) => {
+  const tw = W('s13', 'часы'), tz = W('s13', 'ноль'), tbest = W('s13', 'лучший');
+  ST.rainOn = 1;
+  tr('car', -3000, 1330, 1, 0); setA('spray', 'opacity', 0);
+  disp('ballX', 0); disp('girlE', 0); show.girlA = 1; show.heroH = 1; show.ballXA = 1;
+  const wave = smooth((t - tbest) / .4);
+  pose('heroH', { x: 520, y: 1640, s: 1.06, arms: [12, -8, -12, 8], expr: t > tbest - .2 ? 'grin' : 'smile', brow: 'soft', look: [-.8, .4], blink: blinkAt(t, 10), tilt: -4 });
+  const gh = pose('girlA', { x: 360, y: 1640, s: .58, expr: t > tbest ? 'grin' : 'smile', brow: 'n', look: [1, -.6], arms: [-40, -80, lerp(40, -150, wave), lerp(80, 20 + Math.sin(t * 12) * 30 * wave, wave)], blink: blinkAt(t, 11) });
+  tr('ballXA', 360 + gh.L[0] * .58, 1640 + gh.L[1] * .58, 1, 0);
+  ST.insert = t > tw - .15 && t < tz + .55 ? { t0: tw - .15, t1: tz + .55, tp: -1, mode: 'night', dig: '0' } : null;
+  ktShow('zero', win(t, tz - .05, tbest - .05, .1, .2), (i, n) => ktIn(t, tz - .1, i, n, .03));
+  ST.hud.red = 0;
+  ST.dof = [3, 5, 2, 0, 0, 0, 0, 12];
+  ST.dayTxt = 'ДЕНЬ 8';
+  const cam = hermite([[sc.start, 470, 1360, 1.5, 1], [tbest, 450, 1250, 1.3, -1], [sc.end, 520, 1100, 1.05, 0]], t);
+  return { x: cam[0], y: cam[1], z: cam[2], r: cam[3] };
+};
+FN.s14 = (t, sc) => {
+  const lt = t - sc.start;
+  ST.rainOn = 1;
+  tr('car', -3000, 1330, 1, 0); setA('spray', 'opacity', 0);
+  disp('ballX', 0); disp('girlE', 0); show.girlA = 1; show.heroH = 1; show.ballXA = 1;
+  const leave = smooth((t - sc.start - 1.2) / 2.5);
+  pose('heroH', { x: 520, y: 1640, s: 1.06, arms: [12, -8, -12, 8], expr: 'smile', brow: 'soft', look: [-.6, -.6], blink: blinkAt(t, 12), tilt: 4 });
+  const gh = pose('girlA', Object.assign({ x: lerp(360, -120, leave), y: 1640, s: .58, expr: 'grin', brow: 'n', look: [1, -.6], flip: leave > 0 ? -1 : 1, blink: blinkAt(t, 13) }, leave > 0 && leave < 1 ? walkP(t * 11, 1, .4) : { arms: [-40, -80, -150, 20 + Math.sin(t * 12) * 30] }));
+  tr('ballXA', lerp(360, -120, leave) + gh.L[0] * .58 * (leave > 0 ? -1 : 1), 1640 + gh.L[1] * .58, 1, 0);
+  const tA = W('s14', 'иногда'), tL = W('s14', 'жизнь'), tQ = W('s14', 'а'), tend = DURATION;
+  ktShow('fin1', win(t, tA - .1, tQ - .1, .1, .3), (i, n) => ktIn(t, tA - .1, i, n, .03));
+  ktShow('fin2', win(t, W('s14', 'десять') - .1, tQ - .1, .1, .3), (i, n) => ktIn(t, W('s14', 'десять') - .1, i, n, .03, 'down'));
+  ktShow('fin3', win(t, W('s14', 'это') - .1, tQ - .1, .1, .3), (i, n) => ktIn(t, W('s14', 'это') - .1, i, n, .03));
+  ktShow('fin4', win(t, tL - .1, tQ - .1, .1, .3), (i, n) => { const k = spring((t - tL + .1 - i * .05) / .7, 2, 5); return [0, (1 - k) * 120, lerp(.3, 1, k), 0, 1]; });
+  ST.cta = win(t, tQ, tend + 1, .3, .1);
+  ST.dof = [3, 5, 2, 0, 0, 0, 0, 12];
+  ST.dayTxt = 'ДЕНЬ 8';
+  const cam = hermite([[sc.start, 520, 1100, 1.05, 0], [tQ - .5, 540, 820, 1.0, -1.5], [tend, 540, 700, 1.04, 1]], t);
+  return { x: cam[0], y: cam[1], z: cam[2], r: cam[3] };
+};
+
+// ================================================================= rain
+const RD = (() => { const r = rng(2024), A = []; for (let i = 0; i < 420; i++) A.push({ x: r() * 2600 - 800, y0: r() * 2600, v: 1700 + r() * 900, len: 30 + r() * 40, w: 2 + r() * 2, front: i < 70, z: r() }); return A; })();
+function drawRain(t, cams) {
+  const cb = $('rainB').getContext('2d'), cf = $('rainF').getContext('2d');
+  cb.setTransform(1, 0, 0, 1, 0, 0); cb.clearRect(0, 0, 1080, 1920);
+  cf.setTransform(1, 0, 0, 1, 0, 0); cf.clearRect(0, 0, 1080, 1920);
+  if (!ST.rainOn) return;
+  const w = wt(t), fz = Pz(t);
+  const hero = ST.heroPos;
+  [[cb, cams.b, false], [cf, cams.f, true]].forEach(([ctx, m, front]) => {
+    ctx.setTransform(m.a, m.b, m.c, m.d, m.e, m.f);
+    for (const d of RD) {
+      if (d.front !== front) continue;
+      const sc = front ? 2.4 : 1;
+      let y = ((d.y0 + w * d.v) % 2600) - 500 + (front ? 0 : 0), x = d.x + y * .12;
+      if (hero && fz > .5) { const dx = x - hero[0], dy = y - hero[1]; const dd = Math.hypot(dx, dy); if (dd < 160) { x += dx / dd * (160 - dd) * .8; y += dy / dd * (160 - dd) * .5; } }
+      const L = d.len * (1 - fz) * sc;
+      ctx.strokeStyle = front ? 'rgba(200,225,255,.55)' : `rgba(190,215,250,${(.35 + d.z * .3).toFixed(2)})`;
+      ctx.fillStyle = front ? 'rgba(220,240,255,.6)' : 'rgba(210,232,255,.75)';
+      if (L > 3) { ctx.lineWidth = d.w * sc * .6; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - L * .12, y - L); ctx.stroke(); }
+      else { ctx.beginPath(); ctx.ellipse(x, y, d.w * sc * 1.2, d.w * sc * 1.7, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.beginPath(); ctx.arc(x - d.w * sc * .4, y - d.w * sc * .6, d.w * sc * .45, 0, Math.PI * 2); ctx.fill(); }
+    }
+  });
+}
+
+// ================================================================= render
+const LDIV = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => $('L' + i));
+let lastCam = null;
+function camAt(t) {
+  let sc = SCENES.find(s => t >= s.start && t < s.end) || SCENES[SCENES.length - 1];
+  return { sc, cam: FN[sc.id](t, sc) };
+}
+function layerMat(cam, p) {
+  const zl = Math.max(.05, 1 + (cam.z - 1) * p), cx = 540 + (cam.x - 540) * p, cy = 960 + (cam.y - 960) * p, r = cam.r * DEG;
+  const cs = Math.cos(r) * zl, sn = Math.sin(r) * zl;
+  return { a: cs, b: sn, c: -sn, d: cs, e: 540 - cs * cx + sn * cy, f: 960 - sn * cx - cs * cy };
+}
+const LAYER_P = [0.15, 0.4, 0.7, 1, 1, 1, 1, 1.5, 1.35];
+function fullCam(t) {
+  const { sc, cam } = camAt(t);
+  const to = transOff(t);
+  const c = { x: cam.x + to.dx + noise(t, 1.3) * 6, y: cam.y + to.dy + noise(t, 1.1, 2) * 5, z: cam.z * to.dz * (1 + noise(t, .7, 4) * .006), r: cam.r + noise(t, .9, 1) * .4 };
+  return { sc, c, to };
+}
+window.renderAt = function (t) {
+  // reset per-frame state
+  ST.insert = null; ST.ring = null; ST.glare = 0; ST.rainOn = 0; ST.shake = 0; ST.hud.red = 0; ST.hud.burn = 0; ST.watchRed = 0; ST.cta = 0; ST.heroPos = null; ST.dayTxt = null;
+  Object.keys(show).forEach(k => show[k] = 0); setA('hero', 'opacity', 1);
+  Object.keys(KT).forEach(k => KT[k].el.style.opacity = 0);
+  // previous camera for motion blur (evaluate first, then current to leave DOM in current state)
+  const prev = fullCam(t - 1 / 60).c;
+  ST.insert = null; ST.ring = null; Object.keys(show).forEach(k => show[k] = 0); Object.keys(KT).forEach(k => KT[k].el.style.opacity = 0); ST.hud.red = 0; ST.hud.burn = 0; ST.shake = 0; ST.glare = 0; ST.rainOn = 0; ST.cta = 0; ST.watchRed = 0;
+  setA('hero', 'opacity', 1);
+  const { sc, c, to } = fullCam(t);
+  if (ST.shake) { c.x += noise(t, 47) * ST.shake; c.y += noise(t, 53, 1) * ST.shake; }
+  // scene switch
+  if (CUR !== sc.bg) { BGS.forEach(bg => [0, 1, 2, 3, 5, 6, 7].forEach(L => { if (L !== 5) disp(`L${L}_${bg}`, bg === sc.bg); })); CUR = sc.bg; }
+  actorsVisible();
+  if (show.heroH && $('heroH')) { ST.heroPos = null; }
+  // layer transforms + blur + pause colour
+  const pc = Pc(t);
+  const colF = pc > .001 ? `grayscale(${(pc * .92).toFixed(3)}) sepia(${(pc * .35).toFixed(3)}) hue-rotate(${(pc * 175).toFixed(1)}deg) brightness(${(1 - pc * .12).toFixed(3)}) contrast(${(1 + pc * .08).toFixed(3)})` : '';
+  const dof = ST.dof || DEFAULT_DOF[sc.bg];
+  const mats = {};
+  [0, 1, 2, 3, 4, 5, 6, 7, 8].forEach(i => {
+    const p = LAYER_P[i];
+    const m = layerMat(c, p), mp = layerMat(prev, p);
+    mats[i] = m;
+    const gi = { 0: 'c0', 1: 'c1', 2: 'c2', 3: 'c3', 5: 'c5', 6: 'c6', 7: 'c7' }[i];
+    if (gi) setA(gi, 'transform', `matrix(${m.a.toFixed(5)} ${m.b.toFixed(5)} ${m.c.toFixed(5)} ${m.d.toFixed(5)} ${m.e.toFixed(2)} ${m.f.toFixed(2)})`);
+    // screen velocity of a reference point (centre of frame)
+    const px = 540, py = 1000;
+    const inv = (M) => { const det = M.a * M.d - M.b * M.c; return [(M.d * (px - M.e) - M.c * (py - M.f)) / det, (-M.b * (px - M.e) + M.a * (py - M.f)) / det]; };
+    const wpnt = inv(m); const sx = mp.a * wpnt[0] + mp.c * wpnt[1] + mp.e, sy = mp.b * wpnt[0] + mp.d * wpnt[1] + mp.f;
+    const vx = Math.abs(sx - px), vy = Math.abs(sy - py), vz = Math.abs(m.a - mp.a) * 900;
+    const zoomDof = Math.max(0, c.z - 1.25) * 3.2 * Math.abs(1 - p);
+    const di = i === 4 ? dof[3] : i === 8 ? dof[7] * .8 : dof[Math.min(i, 7)];
+    const bx = Math.min(45, vx * .4 + vz * .12 + di + zoomDof), by = Math.min(45, vy * .4 + vz * .12 + di + zoomDof);
+    const fid = 'mb' + i;
+    $(fid).firstChild.setAttribute('stdDeviation', `${bx.toFixed(2)} ${by.toFixed(2)}`);
+    const blurOn = bx > .25 || by > .25;
+    const isEnv = i !== 5;
+    const f = [blurOn ? `url(#${fid})` : '', isEnv ? colF : ''].join(' ').trim();
+    LDIV[i].style.filter = f || 'none';
+  });
+  // rain
+  drawRain(t, { b: mats[4], f: mats[8] });
+  // pause vignette & glare
+  $('pvig').style.opacity = (pc * .9).toFixed(3);
+  const gl = $('glare');
+  gl.style.opacity = (ST.glare * (1 - pc * .35)).toFixed(3);
+  gl.style.background = `radial-gradient(ellipse at ${(1100 - (c.x - 540) * 1).toFixed(0)}px 1180px, rgba(255,246,200,.95) 0%, rgba(255,230,160,.35) 22%, rgba(255,230,160,0) 55%)`;
+  // ripple at freeze moments
+  let rp = null;
+  for (const [a, b] of PAUSES) { if (t > a - .02 && t < a + .7) rp = { u: (t - a) / .7, inv: 0 }; if (t > b - .02 && t < b + .55) rp = { u: (t - b) / .55, inv: 1 }; }
+  const rip = $('ripple'), rip2 = $('ripple2');
+  if (rp) {
+    const R0 = rp.inv ? lerp(1400, 0, easeOut(rp.u)) : lerp(0, 1500, easeOut(rp.u));
+    rip.style.opacity = (rp.inv ? 1 - rp.u : (1 - rp.u)).toFixed(3); rip.style.width = rip.style.height = (R0 * 2).toFixed(0) + 'px';
+    rip.style.left = (540 - R0).toFixed(0) + 'px'; rip.style.top = (980 - R0).toFixed(0) + 'px'; rip.style.borderWidth = lerp(26, 4, rp.u).toFixed(1) + 'px';
+    const R1 = R0 * .82; rip2.style.opacity = ((1 - rp.u) * .6).toFixed(3); rip2.style.width = rip2.style.height = (R1 * 2).toFixed(0) + 'px'; rip2.style.left = (540 - R1).toFixed(0) + 'px'; rip2.style.top = (980 - R1).toFixed(0) + 'px';
+  } else { rip.style.opacity = 0; rip2.style.opacity = 0; }
+  // insert close-up
+  const I = ST.insert, ins = $('ins');
+  if (I) {
+    const a = t - I.t0, b = I.t1 - t;
+    const o = Math.min(clamp(a / .08), clamp(b / .1));
+    ins.style.opacity = o.toFixed(3);
+    const night = I.mode === 'night';
+    setA('insBg', 'fill', night ? '#141a36' : '#f3d9a8'); setA('insRain', 'opacity', night ? 1 : 0); setA('insBokeh', 'fill', night ? '#ff3d7f' : '#fff');
+    const pr = I.tp > 0 ? smooth((t - I.tp + .12) / .12) * (1 - smooth((t - I.tp - .25) / .2)) : 0;
+    const after = I.tp > 0 && t > I.tp;
+    setA('insFinger', 'transform', `translate(${(I.tp > 0 ? lerp(260, 0, smooth((t - I.t0) / (I.tp - I.t0))) - pr * 30 : 400).toFixed(1)} 0)`);
+    setA('insCrown', 'transform', `translate(${(-pr * 22).toFixed(1)} 0)`);
+    setA('insGlow', 'opacity', ((after ? decay(t, I.tp, 3) * .7 : 0) + (I.dig === '0' ? .06 : 0)).toFixed(3));
+    $('insDig').textContent = I.dig === '0' ? '0' : (after ? '0' : '1');
+    setA('insDig', 'fill', I.dig === '0' || after ? '#ff6b6b' : '#7ff6ff');
+    const sec = after ? Math.floor(wt(I.tp) * 1) * 6 : (I.dig === '0' ? 140 : wt(t) * 120);
+    setA('insHs', 'transform', `rotate(${sec.toFixed(1)} 570 1020)`); setA('insHm', 'transform', `rotate(${(sec / 12 + 40).toFixed(1)} 570 1020)`);
+    const pz = 1.0 + a * .06 + decay(t, I.tp, 6) * .05;
+    setA('insW', 'transform', `translate(540 1000) rotate(${(-6 + a * 4).toFixed(2)}) scale(${pz.toFixed(4)}) translate(-570 -1020)`);
+    $('mbI').firstChild.setAttribute('stdDeviation', '0 0');
+  } else ins.style.opacity = 0;
+  // ring
+  const RG = ST.ring; if (RG) ringSet(RG.o, RG.v, RG.s, RG.cx, RG.cy); else $('ring').style.opacity = 0;
+  // HUD
+  const hudOn = t > W('s3', 'один') - .05;
+  $('hud').style.opacity = hudOn ? 1 : 0;
+  let hv = '×1', paused = Pz(t) > .5;
+  if (paused || ST.hud.red > .5) hv = '×0';
+  if (sc.id === 's13' || sc.id === 's14' || (sc.id === 's12')) hv = '×0';
+  $('hudV').textContent = hv;
+  $('hudV').style.color = hv === '×0' ? '#ff6b6b' : '#7ff6ff';
+  const burn = ST.hud.burn;
+  $('hud').style.transform = `scale(${(1 + burn * .15 + (ST.watchRed ? .06 * Math.sin(t * 40) : 0)).toFixed(3)})`;
+  $('hud').style.borderColor = burn > .1 ? `rgba(255,179,71,${burn.toFixed(2)})` : (hv === '×0' ? 'rgba(255,107,107,.6)' : 'rgba(127,246,255,.35)');
+  let arc = 1; for (const [a, b] of PAUSES) if (t > a && t < b) arc = 1 - (t - a) / (b - a); if (hv === '×0' && !paused) arc = 0;
+  setA('hudArc', 'stroke-dashoffset', (125.7 * (1 - arc)).toFixed(1)); setA('hudArc', 'stroke', hv === '×0' ? '#ff6b6b' : '#7ff6ff');
+  const dayEl = $('day'); dayEl.style.opacity = ST.dayTxt && hudOn ? 1 : 0; if (ST.dayTxt) dayEl.textContent = ST.dayTxt;
+  // hero watch glow
+  ['hero', 'heroH'].forEach(id => { const g = $(id + '_wh'); if (g) { let gl2 = 0; for (const [a] of PAUSES) gl2 = Math.max(gl2, decay(t, a - .05, 3)); g.setAttribute('opacity', (gl2 * .8).toFixed(3)); setA(id + '_wg', 'fill', ST.watchRed ? '#ff3b30' : '#7ff6ff'); setA(id + '_wh', 'fill', ST.watchRed ? '#ff3b30' : '#7ff6ff'); if (ST.watchRed) g.setAttribute('opacity', (ST.watchRed * .8).toFixed(3)); } });
+  // captions
+  renderCaps(t);
+  // cta
+  $('cta').style.opacity = (ST.cta || 0).toFixed(3); $('cta').style.transform = `translateY(${((1 - easeOutBack(ST.cta || 0)) * 60).toFixed(1)}px)`;
+  // flash
+  let fl = to.fl > 0 ? to.fl : 0; for (const [a, b] of PAUSES) fl = Math.max(fl, decay(t, a, 14) * .55, decay(t, b, 12) * .35);
+  const fe = $('flash'); fe.style.opacity = clamp(Math.abs(fl) + (to.fl < 0 ? -to.fl : 0)).toFixed(3); fe.style.background = to.fl < 0 ? '#000' : '#fff';
+  if (t > DURATION - .6) { fe.style.background = '#000'; fe.style.opacity = clamp((t - (DURATION - .6)) / .6).toFixed(3); }
+  if (t < .25) { fe.style.background = '#000'; fe.style.opacity = (1 - t / .25).toFixed(3); }
+};
+function renderCaps(t) {
+  const cap = $('cap');
+  const ch = CHUNKS.find(c => t >= c.s && t < c.e);
+  const kill = ['s14'].includes((SCENES.find(s => t >= s.start && t < s.end) || {}).id) && t < W('s14', 'а');
+  if (!ch || kill) { cap.innerHTML = ''; return; }
+  if (cap._ch !== ch) { cap.innerHTML = ch.map(tk => `<span>${tk.w.replace(/[—]/g, '—')}</span>`).join(''); cap._ch = ch; }
+  const sp = cap.children;
+  ch.forEach((tk, i) => {
+    const k = spring((t - tk.s + .04) / .32, 1.8, 6);
+    const on = t >= tk.s - .03;
+    const acc = ACCENT.has(tk.n);
+    sp[i].style.opacity = on ? 1 : 0;
+    sp[i].style.transform = `translateY(${((1 - k) * 40).toFixed(1)}px) scale(${(on ? lerp(.6, 1, k) * (t < tk.e && t > tk.s ? 1.06 : 1) : .6).toFixed(3)})`;
+    sp[i].style.color = acc ? '#7ff6ff' : (t >= tk.s && t < tk.e + .1 ? '#ffd166' : '#fff');
+  });
+}
+// ================================================================= SFX + music cues for the audio script
+window.getAudioCues = function () {
+  const ev = [], add = (t, k, v = 1) => ev.push({ t: +t.toFixed(3), k, v });
+  PAUSES.forEach(([a, b], i) => { add(a - .02, 'freeze'); add(b - .02, 'unfreeze'); });
+  add(W('s1', 'паузу') - .5, 'click'); add(W('s2', 'кнопку') + .05, 'click'); add(W('s11', 'щелчок') + .28, 'click');
+  add(E('s2', 'случайно') + .2, 'knock');
+  SCENES.forEach(sc => { const tt = TRANS[sc.id]; if (tt && tt[0] !== 'none') add(sc.start - .2, tt[0] === 'dip' ? 'swell' : 'whoosh'); });
+  // kitchen
+  add(W('s3', 'десять') - .05, 'pop'); add(W('s3', 'один') - .05, 'pop'); add(W('s3', 'двигаешься') - .05, 'pop'); add(W('s3', 'только'), 'pop');
+  add(W('s3', 'держишь') + .05, 'grab'); add(PAUSES[1][1] + .55, 'catland');
+  add(W('s1', 'паузу') - .2, 'stamp'); add(W('s1', 'десять') - .05, 'pop');
+  // montage
+  add(W('s4', 'первую'), 'steps'); add(PAUSES[2][0] - .7, 'doors'); add(PAUSES[2][1] + .15, 'busgo');
+  add(PAUSES[3][1] + .1, 'scribble'); add(W('s5', 'подсматриваешь') + .7, 'sparkle');
+  add(ballPath(0, PAUSES[4][0]).launch, 'kick'); add(PAUSES[4][1] - .05, 'catch');
+  add(W('s7', 'одна') - .05, 'error'); add(W('s7', 'потратил'), 'pop');
+  add(W('s8', 'уронил') + .15, 'error'); add(E('s8', 'вниз') - .1, 'splat');
+  // night
+  add(W('s9', 'двенадцать'), 'flip'); add(W('s9', 'сгорает'), 'burn');
+  ['одна', 'вторая', 'седьмая'].forEach(w => { add(W('s9', w) - .3, 'flip'); add(W('s9', w), 'burn'); add(W('s9', w), 'boom'); });
+  // crossing
+  add(W('s10', 'выкатывается'), 'bounce'); add(W('s10', 'фары') - .3, 'carapproach'); add(W('s10', 'фары'), 'horn');
+  add(W('s11', 'три'), 'tickbig'); add(W('s11', 'два'), 'tickbig'); add(W('s11', 'один'), 'tickbig');
+  add(SC.s12.start, 'screech'); add(SC.s12.start + .25, 'carpass');
+  add(W('s13', 'ноль'), 'chime'); add(W('s14', 'жизнь'), 'boom'); add(W('s14', 'а'), 'pop');
+  const sections = SCENES.map(s => ({ id: s.id, t: +s.start.toFixed(3) }));
+  return { duration: DURATION, events: ev.sort((a, b) => a.t - b.t), pauses: PAUSES, slow: SLOW.map(s => s.slice(0, 2)), sections, rain: [SC.s10.start, DURATION] };
+};
+window.DURATION = DURATION;
+document.fonts.ready.then(() => { window.READY = true; });
+if (!location.search.includes('render')) { let t0 = performance.now(); const loop = () => { const t = ((performance.now() - t0) / 1000) % DURATION; renderAt(t); requestAnimationFrame(loop); }; loop(); }
+</script>
+</body>
+</html>
