@@ -143,13 +143,13 @@ function noiseLP(a) { let lp = 0; return () => (lp += a * (rnd() - lp)); }
 const SFX = {
   freeze: t0 => { // reverse suck + impact + glass shimmer + sub
     let lp = 0; addTo(F, t0 - .45, .47, t => { const k = t / .47; lp += (.02 + .5 * k) * (rnd() - lp); return lp * k * k * .9; });
-    let ph = 0; addTo(F, t0, 1.2, t => { ph += TAU * (70 * Math.exp(-t * 2.5) + 28) / SR; return Math.sin(ph) * Math.exp(-t * 3.5) * .55; });
+    let ph = 0; addTo(F, t0, 1.2, t => { ph += TAU * (70 * Math.exp(-t * 2.5) + 28) / SR; return Math.sin(ph) * Math.exp(-t * 3.5) * .3; });
     [2093, 2637, 3136, 4186, 5274].forEach((f, k) => addTo(F, t0 + k * .015, 1.8, t => tone(f * (1 + .002 * Math.sin(t * 30)), t) * Math.exp(-t * (2.2 + k * .4)) * .045, k % 2 ? .5 : -.5));
   },
   unfreeze: t0 => { let lp = 0; addTo(F, t0, .6, t => { const k = t / .6; lp += (.5 - .45 * k) * (rnd() - lp); return lp * (1 - k) ** 2 * .7; }); let ph = 0; addTo(F, t0, .4, t => { ph += TAU * (60 + 400 * t) / SR; return Math.sin(ph) * Math.exp(-t * 6) * .3; }); },
   click: t0 => { addTo(F, t0, .03, t => (rnd() * .6 + tone(3800, t)) * Math.exp(-t * 260) * .35); addTo(F, t0 + .05, .04, t => (rnd() * .4 + tone(2600, t)) * Math.exp(-t * 200) * .25); },
   knock: t0 => { let ph = 0; addTo(F, t0, .2, t => { ph += TAU * (300 - 500 * t) / SR; return Math.sin(ph) * Math.exp(-t * 25) * .3 + rnd() * Math.exp(-t * 90) * .1; }); },
-  whoosh: t0 => { let lp = 0; addTo(F, t0 - .1, .5, t => { const k = t / .5, env = Math.sin(Math.PI * k) ** 2; lp += (.03 + .3 * env) * (rnd() - lp); return lp * env * .9; }, .2); },
+  whoosh: t0 => { let lp = 0; addTo(F, t0 - .1, .5, t => { const k = t / .5, env = Math.sin(Math.PI * k) ** 2; lp += (.03 + .3 * env) * (rnd() - lp); return lp * env * .55; }, .2); },
   swell: t0 => { let lp = 0; addTo(F, t0 - .4, .9, t => { const k = t / .9, env = Math.sin(Math.PI * k); lp += .05 * (rnd() - lp); return (lp * 1.5 + tone(110, t) * .1) * env * .5; }); },
   pop: t0 => { let ph = 0; addTo(F, t0, .1, t => { ph += TAU * (900 - 5000 * t) / SR; return Math.sin(ph) * Math.exp(-t * 40) * .28; }); },
   grab: t0 => { addTo(F, t0, .12, t => rnd() * Math.exp(-t * 50) * .2); SFX.sparkle(t0 + .05, .5); },
@@ -166,10 +166,10 @@ const SFX = {
   splat: t0 => { const n = noiseLP(.3); addTo(F, t0, .35, t => n() * Math.exp(-t * 12) * .8); let ph = 0; addTo(F, t0, .3, t => { ph += TAU * (90 - 100 * t) / SR; return Math.sin(ph) * Math.exp(-t * 14) * .45; }); },
   flip: t0 => { addTo(F, t0, .03, t => rnd() * Math.exp(-t * 300) * .3); addTo(F, t0 + .04, .03, t => rnd() * Math.exp(-t * 300) * .2); },
   burn: t0 => { const n = noiseLP(.7); addTo(F, t0, 1.0, t => n() * (rnd() > .97 ? 1 : .15) * Math.exp(-t * 3) * .5, .2); let lp = 0; addTo(F, t0, .8, t => { lp += .2 * (rnd() - lp); return lp * Math.exp(-t * 4) * .3; }); },
-  boom: t0 => { let ph = 0; addTo(F, t0, 1.6, t => { ph += TAU * (55 * Math.exp(-t * 1.5) + 30) / SR; return Math.sin(ph) * Math.exp(-t * 2.5) * .5; }); const n = noiseLP(.08); addTo(F, t0, 1.2, t => n() * Math.exp(-t * 3) * .5); },
+  boom: t0 => { let ph = 0; addTo(F, t0, 1.6, t => { ph += TAU * (55 * Math.exp(-t * 1.5) + 30) / SR; return Math.sin(ph) * Math.exp(-t * 2.5) * .32; }); const n = noiseLP(.08); addTo(F, t0, 1.2, t => n() * Math.exp(-t * 3) * .12); },
   bounce: t0 => { [0, .45, .8, 1.05].forEach((d, i) => { let ph = 0; addTo(F, t0 + d, .15, t => { ph += TAU * (200 - 300 * t) / SR; return Math.sin(ph) * Math.exp(-t * 25) * (.35 - i * .07); }, -.3); }); },
-  carapproach: t0 => { let ph = 0; const n = noiseLP(.04); addTo(F, t0 - 1.6, 2.0, t => { const k = t / 2.0; ph += TAU * (60 + 50 * k) / SR; return (Math.tanh(2 * Math.sin(ph)) * .2 + n() * .9) * k * k * .6; }, .6); },
-  horn: t0 => addTo(F, t0, .55, t => (Math.tanh(3 * tone(392, t)) * .5 + Math.tanh(3 * tone(494, t)) * .5) * Math.min(1, t * 50) * (t > .5 ? 0 : 1) * .12, .5),
+  carapproach: t0 => { let ph = 0; const n = noiseLP(.04); addTo(F, t0 - 1.6, 2.0, t => { const k = t / 2.0; ph += TAU * (60 + 50 * k) / SR; return (Math.tanh(2 * Math.sin(ph)) * .2 + n() * .9) * k * k * .22; }, .6); },
+  horn: t0 => addTo(F, t0, .55, t => (Math.tanh(3 * tone(392, t)) * .5 + Math.tanh(3 * tone(494, t)) * .5) * Math.min(1, t * 50) * (t > .5 ? 0 : 1) * .05, .5),
   tickbig: t0 => { addTo(F, t0, .06, t => (tone(1800, t) + rnd() * .5) * Math.exp(-t * 90) * .35); let ph = 0; addTo(F, t0, .5, t => { ph += TAU * 55 / SR; return Math.sin(ph) * Math.exp(-t * 7) * .35; }); },
   screech: t0 => { let ph = 0; addTo(F, t0, 1.4, t => { ph += TAU * (1900 + 220 * Math.sin(t * 37) + 160 * Math.sin(t * 91)) / SR; const k = t / 1.4; return (Math.sin(ph) * .5 + rnd() * .25) * Math.min(1, t * 20) * (1 - k) * .22; }, -.2); },
   carpass: t0 => { let ph = 0; const n = noiseLP(.08); addTo(F, t0, 1.3, t => { const k = t / 1.3, env = Math.exp(-((k - .3) ** 2) / .03); ph += TAU * (110 - 50 * k) / SR; return (n() * 1.4 + Math.tanh(2 * Math.sin(ph)) * .3) * env * .6; }); const s = noiseLP(.5); addTo(F, t0 + .1, .9, t => s() * Math.exp(-t * 4) * .35, .3); },
@@ -179,7 +179,7 @@ for (const e of CUE.events) (SFX[e.k] || SFX.pop)(e.t);
 // ticking clock during every pause, heartbeat during the long one
 CUE.pauses.forEach(([a, b], idx) => {
   for (let t = a + .5, k = 0; t < b - .1; t += .5, k++) addTo(F, t, .05, x => (tone(k % 2 ? 2400 : 1900, x) + rnd() * .4) * Math.exp(-x * 120) * .12, k % 2 ? .25 : -.25);
-  if (b - a > 4) for (let t = a + .3; t < b - .2; t += .86) { [0, .16].forEach((d, j) => { let ph = 0; addTo(F, t + d, .25, x => { ph += TAU * (58 - 20 * x) / SR; return Math.sin(ph) * Math.exp(-x * 16) * (j ? .35 : .5); }); }); }
+  if (b - a > 4) for (let t = a + .3; t < b - .2; t += .86) { [0, .16].forEach((d, j) => { let ph = 0; addTo(F, t + d, .25, x => { ph += TAU * (58 - 20 * x) / SR; return Math.sin(ph) * Math.exp(-x * 16) * (j ? .14 : .2); }); }); }
   // high frozen drone
   addTo(F, a, b - a, x => (tone(1760, x) * .5 + tone(2637, x) * .3) * Math.min(1, x * 2) * Math.min(1, (b - a - x) * 4) * .006);
 });
@@ -192,9 +192,9 @@ function pauseAmt(t) { let v = 0; for (const [a, b] of CUE.pauses) if (t >= a &&
   for (let i = 0; i < N; i++) {
     const t = i / SR, fz = 1 - pauseAmt(t);
     let v = 0, w = 0;
-    for (const [a, b] of city) if (t >= a && t < b) v += n1() * .5 * Math.min(1, (t - a) * 3, (b - t) * 6);
-    for (const [a, b] of yard) if (t >= a && t < b) v += n1() * .25 * Math.min(1, (t - a) * 3, (b - t) * 6);
-    if (t >= r0 - .6 && t < r1 + 1) { const e = Math.min(1, (t - r0 + .6) / .8); const a = n2(), c = n3(); v += (a * .55 + (c - a) * .5) * e; w = c * .25 * e * (rnd() > .9993 ? 4 : 1); }
+    for (const [a, b] of city) if (t >= a && t < b) v += n1() * .22 * Math.min(1, (t - a) * 3, (b - t) * 6);
+    for (const [a, b] of yard) if (t >= a && t < b) v += n1() * .12 * Math.min(1, (t - a) * 3, (b - t) * 6);
+    if (t >= r0 - .6 && t < r1 + 1) { const e = Math.min(1, (t - r0 + .6) / .8); const a = n2(), c = n3(); v += (a * .14 + (c - a) * .13) * e; w = c * .25 * e * (rnd() > .9993 ? 4 : 1); }
     v *= fz; w *= fz;
     F[0][i] += v * .9 + w; F[1][i] += v * .9 - w;
   }
