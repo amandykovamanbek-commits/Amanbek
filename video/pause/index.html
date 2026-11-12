@@ -598,7 +598,9 @@ function ringSet(o, val, scale = 1, cx = 540, cy = 400) {
 }
 
 // ================================================================= camera
-function hermite(keys, t) { // keys [[t, v...]]
+function hermite(keys0, t) { // keys [[t, v...]] — sorted, near-duplicates dropped, monotone tangents (no overshoot)
+  const keys = [];
+  keys0.slice().sort((a, b) => a[0] - b[0]).forEach(k => { if (!keys.length || k[0] - keys[keys.length - 1][0] >= .3) keys.push(k); });
   const n = keys.length, dim = keys[0].length - 1;
   if (t <= keys[0][0]) return keys[0].slice(1);
   if (t >= keys[n - 1][0]) return keys[n - 1].slice(1);
@@ -607,8 +609,9 @@ function hermite(keys, t) { // keys [[t, v...]]
   const out = [];
   for (let d = 1; d <= dim; d++) {
     const sl = (p, q) => (q[d] - p[d]) / (q[0] - p[0]);
-    const ma = i > 0 ? (sl(keys[i - 1], a) + sl(a, b)) / 2 : sl(a, b) * .5;
-    const mb = i < n - 2 ? (sl(a, b) + sl(b, keys[i + 2])) / 2 : sl(a, b) * .5;
+    const hm = (p, q) => p * q <= 0 ? 0 : 2 / (1 / p + 1 / q);
+    const ma = i > 0 ? hm(sl(keys[i - 1], a), sl(a, b)) : sl(a, b) * .5;
+    const mb = i < n - 2 ? hm(sl(a, b), sl(b, keys[i + 2])) : sl(a, b) * .5;
     const h00 = 2 * u ** 3 - 3 * u ** 2 + 1, h10 = u ** 3 - 2 * u ** 2 + u, h01 = -2 * u ** 3 + 3 * u ** 2, h11 = u ** 3 - u ** 2;
     out.push(h00 * a[d] + h10 * h * ma + h01 * b[d] + h11 * h * mb);
   }
