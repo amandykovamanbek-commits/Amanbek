@@ -3,7 +3,8 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 W, H, FPS = 1280, 720, 30
 SC = os.path.dirname(os.path.abspath(__file__))
-PJ = "/home/user/Amanbek/aida_pilot"
+ROOT = os.path.abspath(os.path.join(SC, "..", ".."))
+PJ = os.path.join(ROOT, "aida_pilot")
 FB = "/usr/share/fonts/truetype/roboto/unhinted/RobotoCondensed-Bold.ttf"
 FD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 TOTAL = 64.0
@@ -12,8 +13,8 @@ font = lambda s, p=FB: ImageFont.truetype(p, s)
 def load(p):
     return Image.open(p).convert("RGB").resize((W * 2, H * 2), Image.LANCZOS)
 
-COMIC = load(f"{SC}/dl/comic.png")
-CINE = load(f"{SC}/dl/cinematic.png")
+COMIC = load(os.path.join(ROOT, "aida_styles", "comic.png"))
+CINE = load(os.path.join(ROOT, "aida_styles", "cinematic.png"))
 BOOTS = load(f"{PJ}/04_boots.png")
 
 def ease(t): t = max(0.0, min(1.0, t)); return t * t * (3 - 2 * t)
