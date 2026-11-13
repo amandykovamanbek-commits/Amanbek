@@ -1,0 +1,59 @@
+<template>
+  <style>
+    @font-face { font-family: "RC"; src: url("assets/fonts/RobotoCondensed-VF.ttf") format("truetype"); font-weight: 100 900; }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #e6d9bd; font-family: "RC", sans-serif; }
+    .tone { position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(20,14,8,.22) 1.3px, transparent 1.7px); background-size: 8px 8px; mix-blend-mode: multiply; pointer-events: none; z-index: 50; }
+    .panel { position: absolute; border: 12px solid #111; background: #111; overflow: hidden; box-shadow: 14px 14px 0 rgba(0,0,0,.85); }
+    .panel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .kb { position: absolute; inset: 0; }
+    .layer { position: absolute; inset: 0; pointer-events: none; }
+    .cap { position: absolute; background: #f2cf3c; color: #111; border: 6px solid #111; box-shadow: 9px 9px 0 #111; padding: 14px 28px 12px; font-weight: 800; font-size: 58px; line-height: 1.05; text-transform: uppercase; white-space: nowrap; z-index: 20; }
+    .flake { position: absolute; border-radius: 50%; background: rgba(255,255,255,.85); }
+    .whisper { position: absolute; left: 72px; right: 72px; top: 800px; height: 208px; padding-top: 58px; text-align: center; color: #fff; font-weight: 400; font-style: italic; font-size: 86px; line-height: 1; letter-spacing: .02em; background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,.72) 45%); text-shadow: 0 3px 12px #000; z-index: 25; }
+    .whisper span { display: inline-block; margin: 0 .16em; }
+    #s7-dark { position: absolute; inset: 0; background: #000; z-index: 40; }
+    .end { position: absolute; left: 0; right: 0; top: 500px; text-align: center; color: #f2cf3c; font-weight: 900; font-size: 92px; text-transform: uppercase; letter-spacing: .04em; -webkit-text-stroke: 4px #111; paint-order: stroke fill; z-index: 45; }
+  </style>
+  <div id="root" data-composition-id="s7" data-width="1920" data-height="1080">
+    <div id="s7-panel" class="panel" style="left: 60px; top: 60px; width: 1800px; height: 960px">
+      <div id="s7-kb" class="kb" data-layout-allow-overflow><img id="s7-img" src="assets/img/07.png" alt="Гриша уходит с бандой в ночь" /></div>
+      <div id="s7-snow" class="layer" data-layout-ignore></div>
+    </div>
+    <div id="s7-cap1" class="clip layer" data-start="0.09" data-duration="3.9" style="z-index: 20">
+      <div id="s7-cap1-box" class="cap" style="left: 700px; top: 110px">Теперь ты свой.</div>
+    </div>
+    <div id="s7-whisper" class="clip layer" data-start="2.0" data-duration="2.3" style="z-index: 25">
+      <div class="whisper"><span id="s7-w1">…и</span><span id="s7-w2">это</span><span id="s7-w3">вся</span><span id="s7-w4">твоя</span><span id="s7-w5">жизнь.</span></div>
+    </div>
+    <div id="s7-dark"></div>
+    <div id="s7-end" class="clip layer" data-start="4.4" data-duration="1.25" style="z-index: 45">
+      <div id="s7-end-text" class="end">Продолжение следует…</div>
+    </div>
+    <div class="tone" data-layout-ignore></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // blur swap onto the night street; long slow push forward with the gang
+    tl.fromTo("#s7-panel", { opacity: 0, scale: 1.05 }, { opacity: 1, scale: 1, duration: 0.3, ease: "power3.out" }, 0);
+    tl.fromTo("#s7-kb", { scale: 1.0, y: 30 }, { scale: 1.22, y: -20, duration: 5.65, ease: "power1.inOut" }, 0);
+    tl.fromTo("#s7-cap1-box", { scale: 0.55, rotation: -7, opacity: 0 }, { scale: 1, rotation: -1.5, opacity: 1, duration: 0.3, ease: "back.out(2)" }, 0.12);
+    // the whisper arrives word by word on the voice: И 2.01, это 2.25, вся 2.57, твоя 2.97, жизнь 3.45
+    [[1, 2.01], [2, 2.25], [3, 2.57], [4, 2.97], [5, 3.45]].forEach(([i, t]) => {
+      tl.fromTo("#s7-w" + i, { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, t);
+    });
+    // the night closes in; end card
+    tl.fromTo("#s7-dark", { opacity: 0 }, { opacity: 0.88, duration: 0.9, ease: "power2.inOut" }, 4.0);
+    tl.fromTo("#s7-end-text", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out" }, 4.45);
+    tl.fromTo("#s7-dark", { opacity: 0.88 }, { opacity: 1, duration: 0.35, ease: "power2.in", immediateRender: false }, 5.25);
+    let seed = 29; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const snow = document.querySelector("#s7-snow");
+    for (let i = 0; i < 110; i++) {
+      const f = document.createElement("div"); f.className = "flake";
+      const s = 3 + rnd() * 7; f.style.width = f.style.height = s + "px"; f.style.left = rnd() * 1800 + "px"; f.style.top = "0px";
+      snow.appendChild(f);
+      const y0 = -60 - rnd() * 1000, dy = 1000 + rnd() * 600;
+      tl.fromTo(f, { y: y0, x: 0 }, { y: y0 + dy, x: 50 + rnd() * 70, duration: 5.65, ease: "none" }, 0);
+    }
+    window.__timelines["s7"] = tl;
+  </script>
+</template>

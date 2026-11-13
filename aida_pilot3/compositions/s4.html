@@ -1,0 +1,41 @@
+<template>
+  <style>
+    @font-face { font-family: "RC"; src: url("assets/fonts/RobotoCondensed-VF.ttf") format("truetype"); font-weight: 100 900; }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #111; font-family: "RC", sans-serif; }
+    .tone { position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(20,14,8,.22) 1.3px, transparent 1.7px); background-size: 8px 8px; mix-blend-mode: multiply; pointer-events: none; z-index: 50; }
+    .kb { position: absolute; inset: -40px; }
+    .kb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .layer { position: absolute; inset: 0; pointer-events: none; }
+    .slam { position: absolute; font-weight: 900; line-height: .95; text-transform: uppercase; -webkit-text-stroke: 16px #111; paint-order: stroke fill; text-shadow: 12px 12px 0 #111; white-space: nowrap; z-index: 30; }
+    #s4-flash { position: absolute; inset: 0; background: #fff; z-index: 40; }
+  </style>
+  <div id="root" data-composition-id="s4" data-width="1920" data-height="1080" data-layout-allow-overflow>
+    <div id="s4-shake" class="layer">
+      <div id="s4-kb" class="kb" data-layout-allow-overflow><img id="s4-img" src="assets/img/04.png" alt="Кулак Рябы летит в камеру" /></div>
+    </div>
+    <div id="s4-bam" class="clip layer" data-start="0.11" data-duration="1.09" style="z-index: 35">
+      <svg id="s4-star" viewBox="0 0 600 460" style="position: absolute; left: 1120px; top: 60px; width: 720px; height: 552px">
+        <polygon points="555,190 450,237 547,294 425,294 472,380 367,333 352,426 291,345 217,420 217,326 105,362 166,281 45,270 150,223 53,166 175,166 128,80 233,127 248,34 309,115 383,40 383,134 495,98 434,179" fill="#f2cf3c" stroke="#111" stroke-width="14" stroke-linejoin="round" />
+        <text x="300" y="268" text-anchor="middle" font-family="RC" font-weight="900" font-size="150" fill="#e53228" stroke="#111" stroke-width="10" paint-order="stroke">БАМ!</text>
+      </svg>
+    </div>
+    <div id="s4-slam" class="clip layer" data-start="0.29" data-duration="0.91" style="z-index: 30">
+      <div id="s4-slam-text" class="slam" style="left: 640px; top: 900px; font-size: 170px; color: #ffffff">Ты падаешь</div>
+    </div>
+    <div id="s4-flash"></div>
+    <div class="tone" data-layout-ignore></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // the fist rushes the lens, accelerating into the hit
+    tl.fromTo("#s4-kb", { scale: 1.0 }, { scale: 1.3, duration: 0.14, ease: "power3.in" }, 0);
+    tl.fromTo("#s4-kb", { scale: 1.3 }, { scale: 1.18, duration: 1.0, ease: "expo.out", immediateRender: false }, 0.14);
+    // impact: white flash, heavy shake, starburst
+    tl.fromTo("#s4-flash", { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+    tl.fromTo("#s4-flash", { opacity: 0.95 }, { opacity: 0, duration: 0.28, ease: "power2.out", immediateRender: false }, 0.11);
+    tl.fromTo("#s4-shake", { x: 0, y: 0 }, { keyframes: [{ x: -34, y: 18, duration: 0.04 }, { x: 28, y: -22, duration: 0.04 }, { x: -20, y: 14, duration: 0.05 }, { x: 12, y: -8, duration: 0.05 }, { x: -6, y: 4, duration: 0.05 }, { x: 0, y: 0, duration: 0.06 }] }, 0.11);
+    tl.fromTo("#s4-star", { scale: 0.1, rotation: -25, transformOrigin: "50% 50%" }, { scale: 1, rotation: 6, duration: 0.26, ease: "back.out(2.2)" }, 0.11);
+    tl.fromTo("#s4-slam-text", { scale: 1.9, opacity: 0, rotation: 6 }, { scale: 1, opacity: 1, rotation: -2, duration: 0.2, ease: "power4.out" }, 0.29);
+    window.__timelines["s4"] = tl;
+  </script>
+</template>

@@ -1,0 +1,47 @@
+<template>
+  <style>
+    @font-face { font-family: "RC"; src: url("assets/fonts/RobotoCondensed-VF.ttf") format("truetype"); font-weight: 100 900; }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #e6d9bd; font-family: "RC", sans-serif; }
+    .tone { position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(20,14,8,.22) 1.3px, transparent 1.7px); background-size: 8px 8px; mix-blend-mode: multiply; pointer-events: none; z-index: 50; }
+    .panel { position: absolute; border: 12px solid #111; background: #111; overflow: hidden; box-shadow: 14px 14px 0 rgba(0,0,0,.85); }
+    .panel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .kb { position: absolute; inset: 0; }
+    .layer { position: absolute; inset: 0; pointer-events: none; }
+    .cap { position: absolute; background: #f2cf3c; color: #111; border: 6px solid #111; box-shadow: 9px 9px 0 #111; padding: 14px 28px 12px; font-weight: 800; font-size: 54px; line-height: 1.05; text-transform: uppercase; white-space: nowrap; z-index: 20; }
+    .flake { position: absolute; border-radius: 50%; background: rgba(255,255,255,.85); }
+  </style>
+  <div id="root" data-composition-id="s1" data-width="1920" data-height="1080">
+    <div id="s1-panel" class="panel" style="left: 60px; top: 60px; width: 1800px; height: 960px">
+      <div id="s1-kb" class="kb" data-layout-allow-overflow><img id="s1-img" src="assets/img/01.png" alt="Гриша на улице Казани" /></div>
+      <div id="s1-snow" class="layer" data-layout-ignore></div>
+    </div>
+    <div id="s1-cap1" class="clip layer" data-start="0.15" data-duration="4.55" style="z-index: 20">
+      <div id="s1-cap1-box" class="cap" style="left: 120px; top: 110px">Ты — Гриша Хрипунов.</div>
+    </div>
+    <div id="s1-cap2" class="clip layer" data-start="2.16" data-duration="2.54" style="z-index: 21">
+      <div id="s1-cap2-box" class="cap" style="left: 170px; top: 222px">Казань, 1978.</div>
+    </div>
+    <div class="tone" data-layout-ignore></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // panel wipes in left-to-right like ink being laid down
+    tl.fromTo("#s1-panel", { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.55, ease: "expo.out" }, 0);
+    // slow camera drift toward Grisha, eased both ways
+    tl.fromTo("#s1-kb", { scale: 1.14, x: -40, y: 10 }, { scale: 1.0, x: 30, y: 0, duration: 4.7, ease: "power2.inOut" }, 0);
+    // caption boxes pop with a cartoon-ish spring, then hold dead still
+    tl.fromTo("#s1-cap1-box", { scale: 0.55, rotation: -7, opacity: 0 }, { scale: 1, rotation: -2.5, opacity: 1, duration: 0.32, ease: "back.out(2)" }, 0.15);
+    tl.fromTo("#s1-cap2-box", { scale: 0.55, rotation: 6, opacity: 0 }, { scale: 1, rotation: 1.5, opacity: 1, duration: 0.32, ease: "back.out(2)" }, 2.16);
+    // seeded snow: each flake falls once across the scene
+    let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const snow = document.querySelector("#s1-snow");
+    for (let i = 0; i < 80; i++) {
+      const f = document.createElement("div"); f.className = "flake";
+      const s = 3 + rnd() * 6; f.style.width = f.style.height = s + "px"; f.style.left = rnd() * 1800 + "px"; f.style.top = "0px";
+      snow.appendChild(f);
+      const y0 = -60 - rnd() * 900, dy = 900 + rnd() * 500;
+      tl.fromTo(f, { y: y0, x: 0 }, { y: y0 + dy, x: 40 + rnd() * 60, duration: 4.7, ease: "none" }, 0);
+    }
+    window.__timelines["s1"] = tl;
+  </script>
+</template>

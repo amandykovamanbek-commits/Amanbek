@@ -1,0 +1,37 @@
+<template>
+  <style>
+    @font-face { font-family: "RC"; src: url("assets/fonts/RobotoCondensed-VF.ttf") format("truetype"); font-weight: 100 900; }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #e6d9bd; font-family: "RC", sans-serif; }
+    .tone { position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(20,14,8,.22) 1.3px, transparent 1.7px); background-size: 8px 8px; mix-blend-mode: multiply; pointer-events: none; z-index: 50; }
+    .panel { position: absolute; border: 12px solid #111; background: #111; overflow: hidden; box-shadow: 14px 14px 0 rgba(0,0,0,.85); }
+    .panel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .kb { position: absolute; inset: 0; }
+    .layer { position: absolute; inset: 0; pointer-events: none; }
+    .cap { position: absolute; background: #f2cf3c; color: #111; border: 6px solid #111; box-shadow: 9px 9px 0 #111; padding: 14px 28px 12px; font-weight: 800; font-size: 54px; line-height: 1.05; text-transform: uppercase; white-space: nowrap; z-index: 20; }
+    .slam { position: absolute; font-weight: 900; line-height: .95; text-transform: uppercase; -webkit-text-stroke: 16px #111; paint-order: stroke fill; text-shadow: 12px 12px 0 #111; white-space: nowrap; z-index: 30; }
+  </style>
+  <div id="root" data-composition-id="s3" data-width="1920" data-height="1080">
+    <div id="s3-panel" class="panel" style="left: 60px; top: 60px; width: 1800px; height: 960px">
+      <div id="s3-kb" class="kb" data-layout-allow-overflow><img id="s3-img" src="assets/img/03.png" alt="Ряба бинтует кулак" /></div>
+    </div>
+    <div id="s3-cap1" class="clip layer" data-start="0.07" data-duration="3.63" style="z-index: 20">
+      <div id="s3-cap1-box" class="cap" style="left: 120px; top: 110px">…один удар.</div>
+    </div>
+    <div id="s3-slam" class="clip layer" data-start="1.83" data-duration="1.87" style="z-index: 30">
+      <div id="s3-slam-text" class="slam" style="left: 960px; top: 840px; font-size: 190px; color: #e53228; transform-origin: 50% 50%">Удар Рябы</div>
+    </div>
+    <div class="tone" data-layout-ignore></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // whip in from the right: the page is turned hard
+    tl.fromTo("#s3-panel", { x: 1900, rotation: 4 }, { x: 0, rotation: -0.8, duration: 0.42, ease: "power3.out" }, 0);
+    // slow push toward Ryaba's face
+    tl.fromTo("#s3-kb", { scale: 1.0, y: 0 }, { scale: 1.2, y: 70, duration: 3.7, ease: "power2.inOut" }, 0);
+    tl.fromTo("#s3-cap1-box", { scale: 0.55, rotation: -7, opacity: 0 }, { scale: 1, rotation: -2, opacity: 1, duration: 0.3, ease: "back.out(2)" }, 0.12);
+    // name slams, centred on its anchor, with a short page shake
+    tl.fromTo("#s3-slam-text", { xPercent: -50, yPercent: -50, scale: 2.4, rotation: 8, opacity: 0 }, { xPercent: -50, yPercent: -50, scale: 1, rotation: -3, opacity: 1, duration: 0.2, ease: "power4.out" }, 1.83);
+    tl.fromTo("#s3-panel", { x: 0 }, { keyframes: [{ x: -18, duration: 0.04 }, { x: 14, duration: 0.05 }, { x: -9, duration: 0.05 }, { x: 4, duration: 0.05 }, { x: 0, duration: 0.06 }], immediateRender: false }, 1.86);
+    window.__timelines["s3"] = tl;
+  </script>
+</template>

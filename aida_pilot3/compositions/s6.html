@@ -1,0 +1,36 @@
+<template>
+  <style>
+    @font-face { font-family: "RC"; src: url("assets/fonts/RobotoCondensed-VF.ttf") format("truetype"); font-weight: 100 900; }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #e6d9bd; font-family: "RC", sans-serif; }
+    .tone { position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(20,14,8,.22) 1.3px, transparent 1.7px); background-size: 8px 8px; mix-blend-mode: multiply; pointer-events: none; z-index: 50; }
+    .panel { position: absolute; border: 12px solid #111; background: #111; overflow: hidden; box-shadow: 14px 14px 0 rgba(0,0,0,.85); }
+    .panel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .kb { position: absolute; inset: 0; }
+    .layer { position: absolute; inset: 0; pointer-events: none; }
+    .cap { position: absolute; background: #f2cf3c; color: #111; border: 6px solid #111; box-shadow: 9px 9px 0 #111; padding: 14px 28px 12px; font-weight: 800; font-size: 54px; line-height: 1.05; text-transform: uppercase; white-space: nowrap; z-index: 20; }
+    .slam { position: absolute; font-weight: 900; line-height: .95; text-transform: uppercase; -webkit-text-stroke: 16px #111; paint-order: stroke fill; text-shadow: 12px 12px 0 #111; white-space: nowrap; z-index: 30; }
+  </style>
+  <div id="root" data-composition-id="s6" data-width="1920" data-height="1080">
+    <div id="s6-panel" class="panel" style="left: 60px; top: 60px; width: 1800px; height: 960px">
+      <div id="s6-kb" class="kb" data-layout-allow-overflow><img id="s6-img" src="assets/img/06.png" alt="Гриша встаёт, банда хлопает" /></div>
+    </div>
+    <div id="s6-cap1" class="clip layer" data-start="0.12" data-duration="2.63" style="z-index: 20">
+      <div id="s6-cap1-box" class="cap" style="left: 120px; top: 110px">Но ты возвращаешься.</div>
+    </div>
+    <div id="s6-slam" class="clip layer" data-start="1.56" data-duration="1.19" style="z-index: 30">
+      <div id="s6-slam-text" class="slam" style="left: 1180px; top: 860px; font-size: 180px; color: #f2cf3c">И встаёшь.</div>
+    </div>
+    <div class="tone" data-layout-ignore></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // diagonal page wipe: the new panel is drawn over the hospital
+    tl.fromTo("#s6-panel", { clipPath: "polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)" }, { clipPath: "polygon(0% 0%, 130% 0%, 100% 100%, 0% 100%)", duration: 0.5, ease: "power3.out" }, 0);
+    tl.fromTo("#s6-kb", { scale: 1.06, x: 20 }, { scale: 1.0, x: 0, duration: 1.5, ease: "power2.out" }, 0);
+    tl.fromTo("#s6-cap1-box", { scale: 0.55, rotation: -7, opacity: 0 }, { scale: 1, rotation: -2, opacity: 1, duration: 0.3, ease: "back.out(2)" }, 0.14);
+    // on «встаёшь»: punch-in on Grisha as the title lands
+    tl.fromTo("#s6-kb", { scale: 1.0, x: 0, y: 0 }, { scale: 1.16, x: 210, y: 40, duration: 0.45, ease: "expo.out", immediateRender: false }, 1.56);
+    tl.fromTo("#s6-slam-text", { xPercent: -50, scale: 2.1, rotation: -8, opacity: 0 }, { xPercent: -50, scale: 1, rotation: -3, opacity: 1, duration: 0.2, ease: "power4.out" }, 1.56);
+    window.__timelines["s6"] = tl;
+  </script>
+</template>
