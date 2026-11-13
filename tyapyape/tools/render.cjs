@@ -4,7 +4,7 @@ const [out, fpsA = '60', wA = '4', scA = '1', t0A, t1A] = process.argv.slice(2);
 const fps = +fpsA, NW = +wA, sc = +scA;
 (async () => {
   const b0 = await chromium.launch(); const p0 = await b0.newPage();
-  await p0.goto('file://' + path.resolve(__dirname, '../src/index.html') + '?render=1'); const DUR = await p0.evaluate(() => window.__DUR); await b0.close();
+  await p0.goto('file://' + path.resolve(__dirname, '../v2/index.html') + '?render=1'); const DUR = await p0.evaluate(() => window.__DUR); await b0.close();
   const T0 = t0A ? +t0A : 0, T1 = t1A ? +t1A : DUR; const N = Math.round((T1 - T0) * fps);
   const tmp = path.resolve(path.dirname(out), '_parts'); fs.mkdirSync(tmp, { recursive: true });
   const per = Math.ceil(N / NW); const st = Date.now(); let doneAll = 0;
@@ -12,7 +12,7 @@ const fps = +fpsA, NW = +wA, sc = +scA;
     const a = w * per, z = Math.min(N, a + per); if (a >= z) return;
     const br = await chromium.launch({ args: ['--allow-file-access-from-files'] }); const pg = await br.newPage({ viewport: { width: 1080, height: 1920 } });
     pg.on('pageerror', e => console.log('ERR', e.message));
-    await pg.goto('file://' + path.resolve(__dirname, '../src/index.html') + '?render=1'); await pg.evaluate(() => document.fonts.ready);
+    await pg.goto('file://' + path.resolve(__dirname, '../v2/index.html') + '?render=1'); await pg.evaluate(() => document.fonts.ready);
     const ff = spawn('ffmpeg', ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-', '-vf', `scale=${Math.round(1080 * sc)}:${Math.round(1920 * sc)}:flags=lanczos,format=yuv420p`, '-c:v', 'libx264', '-preset', 'medium', '-crf', sc < 1 ? '23' : '15', '-r', String(fps), `${tmp}/p${w}.mp4`], { stdio: ['pipe', 'inherit', 'inherit'] });
     for (let f = a; f < z; f++) {
       const t = T0 + f / fps;

@@ -1,0 +1,2 @@
+const {chromium}=require('playwright');(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1080,height:1920}});p.on('pageerror',e=>console.log('ERR',e.message));
+await p.goto('file://'+__dirname+'/index.html?render=1');for(const t of process.argv.slice(2)){const s=Date.now();await p.evaluate(t=>window.__seek(+t),t);console.log(t,Date.now()-s,'ms')}await b.close()})()
