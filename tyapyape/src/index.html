@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Тяп-Ляп</title>
+<style>
+@font-face{font-family:Inter;font-weight:900;src:url(file:///usr/share/fonts/opentype/inter/Inter-Black.otf)}
+@font-face{font-family:Inter;font-weight:800;src:url(file:///usr/share/fonts/opentype/inter/Inter-ExtraBold.otf)}
+@font-face{font-family:Inter;font-weight:700;src:url(file:///usr/share/fonts/opentype/inter/Inter-Bold.otf)}
+html,body{margin:0;background:#000}canvas{display:block;width:1080px;height:1920px}
+</style></head><body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="lib.js"></script><script src="scenes.js"></script><script src="words.js"></script>
+<script>
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const off = [document.createElement('canvas'), document.createElement('canvas')]; off.forEach(c => { c.width = W; c.height = H; });
+const DUR = 108.0;
+const NOFLASH = new Set([31.85]); // boundaries with their own transition
+const KEY_Y = new Set(['тяп-ляп','теплоконтроль','чушпан','добыча','попрыгай','копеек','рубль','встаёшь','кулаками','старшие','пришиться','докажи','пацан','сборы','своих','антип','джавда','скряба','ссср','асфальт','пробеги','железом','суд','солдат','стоило','казань','семьдесят','четвёртый','восьмидесятый','двадцать','восемь']);
+const KEY_R = new Set(['бьют','снег','войны','убийства','покушений','расстрелу','никто','трое','одного']);
+const norm = s => s.toLowerCase().replace(/[«».,!?:;—]/g, '');
+// caption chunks: up to 3 words, break after punctuation
+const CHUNKS = []; { let cur = []; WORDS.forEach((w, i) => { cur.push(i); const end = /[.,!?:»]$/.test(w.w) || cur.length >= 3; if (end) { CHUNKS.push(cur); cur = []; } }); if (cur.length) CHUNKS.push(cur); }
+function drawCaptions(t) {
+  let ci = -1;
+  for (let i = 0; i < CHUNKS.length; i++) { const a = WORDS[CHUNKS[i][0]].s - .05; const nx = i + 1 < CHUNKS.length ? WORDS[CHUNKS[i + 1][0]].s - .05 : 999; if (t >= a && t < nx) { ci = i; break; } }
+  if (ci < 0 || t > 104.3) return; const ch = CHUNKS[ci]; const lastE = WORDS[ch[ch.length - 1]].e;
+  if (t > lastE + .6) return;
+  ctx.save(); ctx.font = '900 92px Inter'; ctx.textBaseline = 'middle';
+  const words = ch.map(i => WORDS[i].w.replace(/[«»]/g, '').toUpperCase());
+  const ws = words.map(w => ctx.measureText(w).width), gap = 40; let tot = ws.reduce((a, b) => a + b, 0) + gap * (ws.length - 1);
+  const sc = Math.min(1, 940 / tot); ctx.translate(540, 1450); ctx.scale(sc, sc);
+  let x = -tot / 2;
+  ch.forEach((wi, j) => {
+    const w = WORDS[wi], k = seg(t, w.s - .04, w.s + .12); const nw = norm(w.w);
+    if (k > 0) {
+      const col = KEY_R.has(nw) ? '#ff4a4a' : KEY_Y.has(nw) ? '#ffd23a' : '#ffffff';
+      const active = t >= w.s - .04 && t < w.e + .05;
+      ctx.save(); ctx.translate(x + ws[j] / 2, 0); const s = lerp(.55, 1, eback(k)) * (active ? 1.06 : 1); ctx.scale(s, s); ctx.globalAlpha = clamp(k * 2) * (active ? 1 : .82);
+      ctx.textAlign = 'center'; ctx.lineJoin = 'round'; ctx.lineWidth = 18; ctx.strokeStyle = '#0b0d12'; ctx.strokeText(words[j], 0, 0);
+      ctx.fillStyle = '#0b0d12'; ctx.fillText(words[j], 4, 7); ctx.fillStyle = col; ctx.fillText(words[j], 0, 0); ctx.restore();
+    }
+    x += ws[j] + gap;
+  });
+  ctx.restore();
+}
+function sceneAt(t) { for (let i = 0; i < SCENES.length; i++) if (t < SCENES[i].b || i === SCENES.length - 1) return i; }
+function drawScene(c, i, t) { c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, W, H); SCENES[i].draw(c, t); c.restore(); }
+function render(t) {
+  t = clamp(t, 0, DUR);
+  const i = sceneAt(t), TR = .2;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  // whip transition around boundaries
+  let done = false;
+  for (let j = 1; j < SCENES.length; j++) {
+    const b = SCENES[j].a; if (NOFLASH.has(b) || Math.abs(t - b) >= TR) continue;
+    const k = eio((t - (b - TR)) / (2 * TR)), blur = Math.sin(k * Math.PI) * 26;
+    drawScene(off[0].getContext('2d'), j - 1, Math.min(t, SCENES[j - 1].b - .001)); drawScene(off[1].getContext('2d'), j, Math.max(t, b));
+    ctx.filter = `blur(${blur}px)`; ctx.drawImage(off[0], -k * W, 0); ctx.drawImage(off[1], (1 - k) * W, 0); ctx.filter = 'none';
+    done = true; break;
+  }
+  if (!done) { SCENES[i].draw(ctx, t); ctx.setTransform(1, 0, 0, 1, 0, 0); }
+  // snow & white-in after face-in-snow
+  snowfall(ctx, t, 120, 40, .8);
+  if (t >= 31.85 && t < 32.35) { ctx.fillStyle = `rgba(240,245,255,${1 - seg(t, 31.85, 32.35)})`; ctx.fillRect(0, 0, W, H); }
+  drawCaptions(t);
+  grain(ctx, t);
+}
+window.__seek = t => { render(t); return true; };
+window.__DUR = DUR;
+const q = new URLSearchParams(location.search);
+if (q.has('t')) render(parseFloat(q.get('t')));
+else if (!q.has('render')) { const t0 = performance.now(); (function loop() { render(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); })(); }
+document.fonts && document.fonts.load('900 92px Inter').then(() => { if (q.has('t')) render(parseFloat(q.get('t'))); });
+</script></body></html>
