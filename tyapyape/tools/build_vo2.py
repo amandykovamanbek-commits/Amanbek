@@ -1,8 +1,8 @@
 import re, json, subprocess, difflib, os
 TEMPO = 1.12
-GAPS = {'значит.':.8, 'впишется.':.7, 'получаешь.':.9, 'синяк.':.5, 'упал.':1.0, 'снег.':1.0, 'старшие.':.6, 'удар,':.35, 'пацан.':.8, 'же.':.4, 'союзе.':.4, 'дома.':.7, 'расстрелу,':1.1, 'стоило?':2.4}
+GAPS = {'переворачивается.':1.3, 'ленту.':.3, 'значит.':.8, 'впишется.':.7, 'получаешь.':.9, 'синяк.':.5, 'упал.':1.0, 'снег.':1.0, 'старшие.':.6, 'удар,':.35, 'пацан.':.8, 'же.':.4, 'союзе.':.4, 'дома.':.7, 'расстрелу,':1.1, 'стоило?':2.4}
 stt = []
-for l in open('speko_words.txt', encoding='utf8'):
+for l in open(os.environ.get('STT', 'speko_words.txt'), encoding='utf8'):
     if l.strip(): w, a, b = l.rsplit(None, 2); stt.append((w, int(a) / 1000, int(b) / 1000))
 # cut points
 cuts = []; used = set()
@@ -12,7 +12,7 @@ for i, (w, a, b) in enumerate(stt):
         if k == 'же.' and stt[i - 1][0] != 'своих': continue
         used.add(k); cuts.append(((b + stt[i + 1][1]) / 2, GAPS[k]))
 cuts.sort()
-src = 'vo2.mp3'; dur = float(subprocess.check_output(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', src]))
+src = os.environ.get('SRC', 'vo2.mp3'); dur = float(subprocess.check_output(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', src]))
 segs = []; prev = 0.0
 for c, g in cuts: segs.append((prev, c, g)); prev = c
 segs.append((prev, dur, 0))
@@ -24,13 +24,13 @@ for i, (a, b, g) in enumerate(segs):
     if g > 0:
         z = f'_seg/z{i}.wav'; subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'lavfi', '-i', f'anullsrc=r=48000:cl=mono', '-t', str(g), z], check=True); lst.append(f"file 'z{i}.wav'"); outT += g
 open('_seg/list.txt', 'w').write('\n'.join(lst))
-subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', '_seg/list.txt', '-c', 'pcm_s16le', 'vo2_final.wav'], check=True)
+subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', '_seg/list.txt', '-c', 'pcm_s16le', os.environ.get('OUT', 'vo2_final.wav')], check=True)
 def remap(t):
     for a, b, o in mapping:
         if t <= b + 1e-6: return o + (max(t, a) - a) / TEMPO
     return mapping[-1][2] + (t - mapping[-1][0]) / TEMPO
 # script tokens
-s = open('../script_v2.md', encoding='utf8').read().split('## Факты')[0].split('\n', 1)[1].replace('—', ' ').replace('…', '.')
+s = open(os.environ.get('SCRIPT', '../script_v2.md'), encoding='utf8').read().split('## Факты')[0].split('\n', 1)[1].replace('—', ' ').replace('…', '.')
 toks = [w for w in s.split() if re.search(r'\w', w)]
 norm = lambda w: re.sub(r'[^\wё-]', '', w.lower()).replace('ё', 'е')
 A = [norm(w) for w in toks]; B = [norm(w) for w, _, _ in stt]

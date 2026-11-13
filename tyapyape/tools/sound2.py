@@ -81,7 +81,7 @@ amb = np.zeros((N, 2)); w = lp_fast(noise(N), 500); tt = np.arange(N) / SR; wm =
 amb[:, 0] = w * wm * .1; amb[:, 1] = np.roll(w, 2400) * wm * .1
 ki = int(SC[4] * SR); kj = int(SC[5] * SR); amb[:int(SC[1] * SR)] *= .15; amb[ki:kj] *= .2  # indoors
 vo_wav = base + '/build/vo48.wav'
-subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', base + '/audio/vo2_final.wav', '-ar', str(SR), '-ac', '1', '-f', 'f32le', vo_wav], check=True)
+subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', base + '/audio/vo3_final.wav', '-ar', str(SR), '-ac', '1', '-f', 'f32le', vo_wav], check=True)
 vo = np.fromfile(vo_wav, dtype=np.float32).astype(np.float64); vo = np.pad(vo, (0, max(0, N - len(vo))))[:N]
 blk = 480; rms = np.sqrt(np.convolve(vo ** 2, np.ones(blk * 8) / (blk * 8), 'same'))
 duck = 1 - .55 * np.clip(rms / (rms.max() * .25), 0, 1); duck = np.convolve(duck, np.ones(4800) / 4800, 'same')

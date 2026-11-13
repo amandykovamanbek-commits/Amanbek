@@ -466,7 +466,7 @@ function buildScenes() {
     if (t > tNot - .2) { const k = ss(t, tNot - .2) * (1 - ss(t, tHonest - .2, .3)); pill(ctx, 540, 250, 'СТАТУС', 'ПАЦАН', '#3ddc84', k); ctx.save(); ctx.globalAlpha = k; txt(ctx, 'ЧУШПАН', 540, 430, { size: 90, col: '#9aa3b5' }); ctx.strokeStyle = PAL.red; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(360, 450); ctx.lineTo(360 + 360 * seg(t, tNot + .3, tNot + .7), 410); ctx.stroke(); ctx.restore(); }
     if (t > tWorth - .2) { const k = ss(t, tWorth - .2, .4); ctx.save(); ctx.globalAlpha = k; txt(ctx, 'ОНО ТОГО', 540, 420, { size: 120, col: PAL.white, stroke: 14 }); txt(ctx, 'СТОИЛО?', 540, 560, { size: 140, col: PAL.yellow, stroke: 14 }); ctx.restore(); }
     grade(ctx, '#203a70', .25); vignette(ctx, lerp(.5, .85, seg(t, tHonest, A.cta)), 380);
-    const back = tWorth + 1.6;
+    const back = tWorth + 1.0;
     if (t > back - .3) { ctx.fillStyle = `rgba(255,255,255,${seg(t, back - .3, back)})`; ctx.fillRect(0, 0, W, H); }
     if (t > back) { NOSNOW = true; ctx.save(); cam(ctx, t, { z: 1.25, x: 420, y: 1250 }); room2026(ctx, t, { coinOnShelf: false });
       person(ctx, { x: 420, y: 1470, ...POSE.sit(t), s: 1.0, t, coat: '#3a3d48', cap: 'none', eyes: 'cyan', mood: 'shock', sweat: true, seed: 1, vapor: false, shadow: false, ...POSE.idle(t), arF: 1.3, elF: 1.3, lookY: 1 });
