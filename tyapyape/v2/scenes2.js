@@ -1,4 +1,5 @@
 // ===== v2 scenes, anchored to words of the voiceover =====
+let NOSNOW = false;
 const NW = s => s.toLowerCase().replace(/[«».,!?:;—…]/g, '');
 function at(word, n = 1, off = 0) { let c = 0; for (const w of WORDS) if (NW(w.w) === word && ++c === n) return w.s + off; console.warn('no word', word, n); return 0; }
 const END = WORDS[WORDS.length - 1].e;
@@ -29,9 +30,9 @@ function mkHits() {
 function buildScenes() {
   mkHits();
   const A = { // scene starts
-    move: 0, eve: at('первый', 1, -.3), school: at('утром', 1, -.3), home: at('вечером', 1, -.3), road: at('ходишь', 1, -.5),
+    now: 0, move: at('открываешь', 1, -.6), eve: at('первый', 1, -.3), school: at('утром', 1, -.3), home: at('вечером', 1, -.3), road: at('ходишь', 1, -.5),
     rise: at('и', 1, -.3), init: at('хочешь', 1, -.3), rules: at('у', 1, -.3), lead: at('над', 1, -.3), war: at('район', 4, -.3),
-    run: at('потом', 1, -.5), court: at('тысяча', 2, -.3), fin: at('стоишь', 1, -.6), cta: at('про', 2, -.3), end: DUR2,
+    run: at('потом', 1, -.5), court: at('тысяча', 3, -.3), fin: at('стоишь', 1, -.6), cta: at('про', 2, -.3), end: DUR2,
   };
   // fix 'и тут' anchor: the 'и' before 'тут'
   { let i = WORDS.findIndex(w => NW(w.w) === 'тут'); A.rise = WORDS[i - 1].s - .3; }
@@ -41,44 +42,66 @@ function buildScenes() {
   const K = Object.keys(A); const S = [];
   const add = (key, draw) => { const i = K.indexOf(key); S.push({ a: A[key], b: A[K[i + 1]], draw }); };
 
-  // ---------- 1. Moving in ----------
+  // ---------- 0. 2026: phone, coin, flip, time tunnel ----------
+  add('now', (ctx, t) => {
+    const tShelf = at('полке', 1, -.4), tFlip = at('подбрасываешь', 1, -.1), tTurn = at('переворачивается', 1, -.5), end = A.move;
+    const toShelf = eio(seg(t, tShelf, tShelf + 1.0)) * (1 - eio(seg(t, tFlip - .3, tFlip + .3)));
+    if (t < tTurn) {
+      ctx.save(); cam(ctx, t, { z: lerp(1.2, 1.6, toShelf) * push(t, 10, .05), x: lerp(420, 300, toShelf), y: lerp(1250, 860, toShelf) });
+      room2026(ctx, t, { coinOnShelf: t < tFlip - .4 });
+      NOSNOW = true;
+      const sitUp = eio(seg(t, tFlip - 1.2, tFlip - .5)), toss = pulse(t, tFlip - .35, .5);
+      if (sitUp < .5) person(ctx, { x: 640, y: 1405, s: 1.0, t, coat: '#3a3d48', cap: 'none', eyes: 'cyan', mood: 'neutral', seed: 1, vapor: false, shadow: false, fall: -.97, ...POSE.idle(t), arF: 2.5, elF: 1.5, arB: .3, elB: .4, look: t > tShelf ? 1 : -1, lookY: t > tShelf ? -.5 : .5, item: phoneItem(t) });
+      else person(ctx, { x: 420, y: 1470, s: 1.0, t, coat: '#3a3d48', cap: 'none', eyes: 'cyan', mood: t > tFlip ? 'shock' : 'happy', seed: 1, vapor: false, shadow: false, ...POSE.sit(t), arF: .9 + toss * 1.6, elF: 1.2 - toss, look: .5, lookY: -1 });
+      if (t > tFlip - .3) { const k = seg(t, tFlip - .3, tTurn); coin(ctx, lerp(500, 540, k), lerp(1200, 800, eout(k)), lerp(30, 160, ein(k)), t * 18, '20'); }
+      ctx.restore();
+      // phone light on face
+      sodiumGlow(ctx, 380, 1180, 360, .0);
+      if (t < tShelf) { ctx.save(); ctx.globalAlpha = ss(t, .1, .4); pill(ctx, 540, 250, 'СЕЙЧАС', '2026 год', '#c47aff', 1); ctx.restore(); }
+      if (t > tShelf + .6 && t < tFlip) { const k = ss(t, tShelf + .6, .4); ctx.save(); ctx.translate(540, 520); ctx.scale(spring(k), spring(k)); coin(ctx, 0, 0, 150, Math.sin(t * 2) * .3, '20'); ctx.restore(); txt(ctx, 'ДЕДОВА МОНЕТА · 1976', 540, 730, { size: 44, col: PAL.yellow, stroke: 10 }); }
+      grade(ctx, '#7a40ff', .18); vignette(ctx, .6);
+      if (t > tTurn - .25) { ctx.fillStyle = `rgba(255,255,255,${seg(t, tTurn - .25, tTurn)})`; ctx.fillRect(0, 0, W, H); }
+    } else {
+      const k = seg(t, tTurn, end - .2);
+      ctx.save(); ctx.translate(W / 2, H / 2); ctx.rotate(Math.PI * eio(seg(t, tTurn, tTurn + 1.2))); ctx.translate(-W / 2, -H / 2); timeTunnel(ctx, t, k); ctx.restore();
+      if (t < tTurn + .2) { ctx.fillStyle = `rgba(255,255,255,${1 - seg(t, tTurn, tTurn + .2)})`; ctx.fillRect(0, 0, W, H); }
+      if (t > end - .35) { ctx.fillStyle = `rgba(255,255,255,${seg(t, end - .35, end)})`; ctx.fillRect(0, 0, W, H); }
+    }
+  });
+
+  // ---------- 1. Wake up in 1976: snow, family moving in, factory, locals ----------
   add('move', (ctx, t) => {
-    const tArr = at('маме', 1, .2), tFac = at('район', 1, -.2), tKnow = at('пока', 1, -.3);
-    const drive = seg(t, 0, tArr + 1.2);
-    const truckX = lerp(-300, 520, eout(drive));
+    const a = A.move, tSnow = at('снег', 1), tKazan = at('казань', 1), tYear = at('тысяча', 2), t14 = at('четырнадцать', 1), tFam = at('семья', 1, -.2), tFac = at('район', 2, -.2), tKnow = at('пока', 1, -.3);
+    const up = eio(seg(t, tKazan - .2, tKazan + .9));
     const toFac = eio(seg(t, tFac, tFac + 1.8)), back = eio(seg(t, tKnow, tKnow + 1.2));
-    ctx.save(); cam(ctx, t, { z: lerp(lerp(1.15, 1.0, eio(seg(t, 0, 3))), .82, toFac) * lerp(1, 1.35, back), x: lerp(lerp(truckX + 100, 560, seg(t, tArr, tArr + 1)), 540, toFac), y: lerp(1250, 1050, toFac) - back * 0 });
+    const truckX = 560;
+    ctx.save(); cam(ctx, t, { z: lerp(lerp(1.6, 1.0, eio(seg(t, a, tYear + .5))), .82, toFac) * lerp(1, 1.3, back), x: lerp(lerp(300, 520, eio(seg(t, a, tYear + .5))), 540, toFac), y: lerp(lerp(1640, 1250, eio(seg(t, a, tYear + .5))), 1050, toFac), r: lerp(.05, 0, eio(seg(t, a, tKazan))) });
     sky(ctx, '#1d2638', '#3a4a66', '#6a6f82');
-    // far: factory + smoke (blurred depth)
-    blurred(ctx, 2, (ctx) => { ctx.save(); ctx.translate(-80, -260); ctx.scale(1, 1); factory(ctx, 140, 1300, t, 'ТЕПЛОКОНТРОЛЬ', 0, PAL.yellow); ctx.restore(); });
+    blurred(ctx, 2, (ctx) => { ctx.save(); ctx.translate(-80, -260); factory(ctx, 140, 1300, t, 'ТЕПЛОКОНТРОЛЬ', 0, PAL.yellow); ctx.restore(); });
     haze(ctx, 1100, 300, 'rgba(150,165,190,', .35);
     building(ctx, -650, 1460, 600, 900, { floors: 9, cols: 5, col: PAL.panel2, seed: 101 });
     building(ctx, 760, 1460, 760, 980, { floors: 9, cols: 6, col: PAL.panel, seed: 102 });
     ground(ctx, 1460); clothesline(ctx, -200, 300, 1260, t);
-    // locals watching from the garage wall with graffiti
     garages(ctx, 760, 1560, 3);
     graffiti(ctx, 1000, 1420, 1, ss(t, at('тяп-ляп', 1, -.1), .9), '#e8e8e8');
     for (let i = 0; i < 3; i++) person(ctx, THUG2(i, 860 + i * 110, 1620, .8, { t, flip: 1, ...POSE.pockets(t), mood: back > .3 ? 'smug' : 'tough', cig: i === 1, look: -1 }));
-    // truck + people
-    const wheel = (truckX + 300) / 58;
-    truck(ctx, truckX, 1700, t, wheel, {});
-    const out = seg(t, tArr + .2, tArr + .8);
-    if (out > 0) {
-      const mw = walker(t, tArr + .4, tArr + 3.4, truckX + 280, truckX + 420);
-      person(ctx, MOM(mw.x, 1720, 1.05, { t, ...POSE.idle(t), ...mw.gait, mood: 'neutral', look: .5, alpha: out }));
-      const hw = walker(t, tArr + .6, tArr + 3.6, truckX - 120, truckX + 160);
-      person(ctx, HERO2(hw.x, 1740, 1.0, { t, ...POSE.carry(t), ...hw.gait, arF: .95, elF: 1.25, arB: .9, elB: 1.3, mood: back > .2 ? 'neutral' : 'happy', look: back > .2 ? 1 : 0,
-        item: (c, h) => { c.save(); c.translate(h.hx - 10, h.hy - 30); c.fillStyle = '#b08a5a'; c.fillRect(-60, -50, 120, 90); c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(-60, -10, 120, 6); c.restore(); } }));
-    } else {
-      // hero sitting on boxes in the back, looking around
-      person(ctx, HERO2(truckX - 200, 1395, .82, { t, ...POSE.sit(t), look: Math.sin(t * .9) * 1, mood: 'neutral', shadow: false, vapor: true }));
-    }
-    fgLayer(ctx, t, 'fence', truckX * .6, 7);
+    truck(ctx, truckX, 1700, t + Math.sin(t * 30) * .002, 0, {});
+    // mom unloading, waving
+    const wave = t > tFam && t < tFam + 2.2;
+    person(ctx, MOM(truckX + 330, 1720, 1.05, { t, ...POSE.idle(t), ...(wave ? { arF: 2.7 + Math.sin(t * 9) * .25, elF: .3 } : {}), flip: 1, mood: wave ? 'happy' : 'neutral', talk: wave ? Math.abs(Math.sin(t * 14)) * .7 : 0 }));
+    // hero: lying in snow -> gets up -> looks at his 70s clothes -> carries box
+    const blink = t < a + .5 ? seg(t, a + .2, a + .5) : 1;
+    const carry = t > tFam + 1.0;
+    const hw = walker(t, tFam + 1.2, tFam + 3.6, 260, 420);
+    const looksSelf = t > tYear && t < t14 + .6;
+    person(ctx, HERO2(carry ? hw.x : 260, 1760, 1.05, { t, fall: lerp(.97, 0, up), blink, mood: up < .5 ? 'shock' : looksSelf ? 'shock' : carry ? 'neutral' : 'scared', look: looksSelf ? 0 : Math.sin(t * 2), lookY: looksSelf ? 1 : 0, ...POSE.idle(t), ...(looksSelf ? { arF: 1.2, elF: 1.2, arB: 1.1, elB: 1.3 } : {}), ...(carry ? { ...hw.gait, arF: .95, elF: 1.25, arB: .9, elB: 1.3 } : {}),
+      item: carry ? (c, h) => { c.save(); c.translate(h.hx - 10, h.hy - 30); c.fillStyle = '#b08a5a'; c.fillRect(-60, -50, 120, 90); c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(-60, -10, 120, 6); c.restore(); } : null }));
+    if (t < tKazan + .4) snowBurst(ctx, 260, 1740, seg(t, tKazan - .1, tKazan + .8), 20, 380);
+    fgLayer(ctx, t, 'fence', 300, 7);
     ctx.restore();
-    // title cards
-    const y76 = ss(t, at('тысяча', 1, -.1), .4) * (1 - ss(t, tArr - .2, .3));
-    card(ctx, 540, 380, y76, 520, 230, c => { txt(c, 'КАЗАНЬ', 0, -70, { size: 40, col: '#1d2a44', w: 800 }); txt(c, String(Math.round(lerp(2026, 1976, eio(seg(t, at('тысяча', 1), at('год', 1, .2)))))), 0, 30, { size: 130, col: '#c23b3b' }); });
-    if (t > at('четырнадцать', 1, -.1) && t < tArr) { const k = ss(t, at('четырнадцать', 1, -.1)); ctx.save(); ctx.translate(820, 590); ctx.rotate(.12); ctx.scale(spring(k), spring(k)); rrect(ctx, -120, -50, 240, 100, 50); ctx.fillStyle = PAL.yellow; ctx.fill(); txt(ctx, 'ТЕБЕ 14', 0, 2, { size: 44, col: '#111' }); ctx.restore(); }
+    if (t < a + .4) { ctx.fillStyle = `rgba(255,255,255,${1 - seg(t, a, a + .4)})`; ctx.fillRect(0, 0, W, H); }
+    card(ctx, 540, 380, ss(t, tKazan - .1, .4) * (1 - ss(t, tFam, .3)), 520, 230, c => { txt(c, 'КАЗАНЬ', 0, -70, { size: 40, col: '#1d2a44', w: 800 }); txt(c, t < tYear ? '????' : '1976', 0, 30, { size: 130, col: '#c23b3b' }); });
+    if (t > t14 - .1 && t < tFac) { const k = ss(t, t14 - .1); ctx.save(); ctx.translate(820, 620); ctx.rotate(.12); ctx.scale(spring(k), spring(k)); rrect(ctx, -120, -50, 240, 100, 50); ctx.fillStyle = PAL.yellow; ctx.fill(); txt(ctx, 'ТЕБЕ 14', 0, 2, { size: 44, col: '#111' }); ctx.restore(); }
     if (t > at('теплоконтроль', 1, -.2) && t < tKnow) { ctx.save(); ctx.globalAlpha = ss(t, at('теплоконтроль', 1, -.2), .4); txt(ctx, 'завод «Теплоконтроль»', 540, 300, { size: 46, w: 800, col: '#fff', stroke: 10 }); ctx.restore(); }
     grade(ctx, '#3a5a90', .25);
   });
@@ -126,11 +149,11 @@ function buildScenes() {
 
   // ---------- 3. School: jump ----------
   add('school', (ctx, t) => {
-    const a = A.school, tJ = at('попрыгай', 1), tCoin = at('мелочь', 1), tHas = at('значит', 2), t20 = at('двадцать', 1), tR = at('рубль', 1), tNo = at('не', 1, 0), tGet = at('получаешь', 1);
+    const a = A.school, tJ = at('попрыгай', 1), tCoin = at('мелочь', 1), tHas = at('значит', 2), t20 = at('двадцать', 2), tR = at('рубль', 1), tNo = at('не', 1, 0), tGet = at('получаешь', 1);
     let noI = WORDS.findIndex(w => NW(w.w) === 'принёс'); const tNoBr = WORDS[noI - 1].s;
     const close = eio(seg(t, tJ - .6, tJ + .3)) * (1 - eio(seg(t, t20 - .3, t20 + .6)));
     ctx.save(); cam(ctx, t, { z: lerp(1, 1.18, close) * push(t - a, 12, .04) * (1 + .15 * eio(seg(t, tNoBr - .3, tGet))), x: lerp(560, 600, close), y: lerp(1150, 1250, close) });
-    schoolHall(ctx, t);
+    NOSNOW = true; schoolHall(ctx, t);
     // kids running in background
     for (let i = 0; i < 4; i++) { const ph = ((t * .18 + i * .27) % 1); person(ctx, { x: lerp(-200, 1300, ph), y: 1520, s: .55, t, coat: ['#3a6fb0', '#2d6a4a', '#7a3d48', '#5a5a6a'][i], cap: 'none', eyes: 'white', mood: 'happy', ...gaitRun(ph * 60), shadow: false, vapor: false, seed: i }); }
     const jumping = t > tJ + .2 && t < tHas;
@@ -162,7 +185,7 @@ function buildScenes() {
   add('home', (ctx, t) => {
     const a = A.home, tQ = at('синяк', 1, -.3), tFell = at('упал', 1);
     ctx.save(); cam(ctx, t, { z: lerp(1.0, 1.22, eio(seg(t, a, A.road))), x: lerp(560, 470, eio(seg(t, a, A.road))), y: lerp(1150, 1250, eio(seg(t, a, A.road))) });
-    kitchen(ctx, t);
+    NOSNOW = true; kitchen(ctx, t);
     // mom at stove turns
     const turn = t > tQ - .4;
     const mw = walker(t, tQ - .2, tQ + 1.4, 800, 620);
@@ -429,7 +452,7 @@ function buildScenes() {
 
   // ---------- 13. Finale ----------
   add('fin', (ctx, t) => {
-    const a = A.fin, tPocket = at('кармане', 1, -.3), tNot = at('чушпан', 2, -.4), tHonest = at('только', 1, -.2), tWorth = at('стоило', 1, -.4);
+    const a = A.fin, tPocket = at('кармане', 2, -.3), tNot = at('чушпан', 2, -.4), tHonest = at('только', 1, -.2), tWorth = at('стоило', 1, -.4);
     const close = eio(seg(t, tPocket, tPocket + 1)) * (1 - eio(seg(t, tNot - .2, tNot + .7)));
     const face = eio(seg(t, tHonest, tWorth + .5));
     ctx.save(); cam(ctx, t, { z: lerp(1.0, 2.1, close) * lerp(1, 1.9, face), y: lerp(lerp(1150, 1330, close), 1060, face), x: lerp(lerp(560, 700, close), 560, face) });
@@ -443,6 +466,13 @@ function buildScenes() {
     if (t > tNot - .2) { const k = ss(t, tNot - .2) * (1 - ss(t, tHonest - .2, .3)); pill(ctx, 540, 250, 'СТАТУС', 'ПАЦАН', '#3ddc84', k); ctx.save(); ctx.globalAlpha = k; txt(ctx, 'ЧУШПАН', 540, 430, { size: 90, col: '#9aa3b5' }); ctx.strokeStyle = PAL.red; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(360, 450); ctx.lineTo(360 + 360 * seg(t, tNot + .3, tNot + .7), 410); ctx.stroke(); ctx.restore(); }
     if (t > tWorth - .2) { const k = ss(t, tWorth - .2, .4); ctx.save(); ctx.globalAlpha = k; txt(ctx, 'ОНО ТОГО', 540, 420, { size: 120, col: PAL.white, stroke: 14 }); txt(ctx, 'СТОИЛО?', 540, 560, { size: 140, col: PAL.yellow, stroke: 14 }); ctx.restore(); }
     grade(ctx, '#203a70', .25); vignette(ctx, lerp(.5, .85, seg(t, tHonest, A.cta)), 380);
+    const back = tWorth + 1.6;
+    if (t > back - .3) { ctx.fillStyle = `rgba(255,255,255,${seg(t, back - .3, back)})`; ctx.fillRect(0, 0, W, H); }
+    if (t > back) { NOSNOW = true; ctx.save(); cam(ctx, t, { z: 1.25, x: 420, y: 1250 }); room2026(ctx, t, { coinOnShelf: false });
+      person(ctx, { x: 420, y: 1470, ...POSE.sit(t), s: 1.0, t, coat: '#3a3d48', cap: 'none', eyes: 'cyan', mood: 'shock', sweat: true, seed: 1, vapor: false, shadow: false, ...POSE.idle(t), arF: 1.3, elF: 1.3, lookY: 1 });
+      coin(ctx, 560, 1260, 30, Math.sin(t * 3) * .4, '20'); ctx.restore(); grade(ctx, '#7a40ff', .18);
+      ctx.fillStyle = `rgba(255,255,255,${1 - seg(t, back, back + .4)})`; ctx.fillRect(0, 0, W, H);
+      pill(ctx, 540, 250, 'СНОВА', '2026 год', '#c47aff', ss(t, back + .3)); }
   });
 
   // ---------- 14. CTA ----------

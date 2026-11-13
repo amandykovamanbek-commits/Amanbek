@@ -118,3 +118,34 @@ function fgLayer(ctx, t, kind, offs = 0, blur = 8) {
     if (kind === 'heads') { for (let i = 0; i < 4; i++) { const x = ((i * 380 - offs) % 1800 + 1800) % 1800 - 300; ctx.beginPath(); ctx.arc(x, 1900, 170, 0, 7); ctx.fill(); ctx.fillRect(x - 200, 1950, 400, 300); } }
   });
 }
+
+// ---- 2026 bedroom ----
+function phoneItem(t) { return (c, h) => { c.save(); c.translate(h.hx, h.hy - 20); c.rotate(-.3); c.fillStyle = '#111'; rrect(c, -26, -46, 52, 92, 9); c.fill(); c.fillStyle = '#cfe6ff'; c.shadowColor = '#9fd0ff'; c.shadowBlur = 30; rrect(c, -22, -40, 44, 80, 6); c.fill(); c.shadowBlur = 0;
+  c.save(); c.beginPath(); c.rect(-22, -40, 44, 80); c.clip(); for (let i = 0; i < 6; i++) { const y = ((i * 30 - t * 70) % 180 + 180) % 180 - 60; c.fillStyle = ['#ff5a7a', '#5ab0ff', '#ffd23a', '#7aff9a'][i % 4]; rrect(c, -18, y, 36, 24, 4); c.fill(); } c.restore(); c.restore(); }; }
+function room2026(ctx, t, o = {}) {
+  ctx.fillStyle = '#1b1f2e'; ctx.fillRect(-800, -400, 2700, 2600);
+  // window with modern city
+  ctx.fillStyle = '#2a3046'; ctx.fillRect(560, 300, 460, 620); ctx.fillStyle = '#0c1630'; ctx.fillRect(580, 320, 420, 580);
+  for (let i = 0; i < 9; i++) { const bx = 590 + i * 46, bh = 150 + hash(i + 70) * 380; ctx.fillStyle = '#141d3a'; ctx.fillRect(bx, 900 - bh, 40, bh); for (let k = 0; k < bh / 30; k++) if (hash(i * 13 + k) < .45) { ctx.fillStyle = hash(i + k) < .5 ? '#9fd0ff' : '#ffd88a'; ctx.fillRect(bx + 8 + (k % 2) * 16, 900 - bh + 10 + k * 28, 8, 10); } }
+  ctx.fillStyle = '#2a3046'; ctx.fillRect(785, 320, 10, 580);
+  // LED strip glow
+  const g = ctx.createLinearGradient(0, 200, 0, 700); g.addColorStop(0, 'rgba(160,80,255,.35)'); g.addColorStop(1, 'rgba(160,80,255,0)'); ctx.fillStyle = g; ctx.fillRect(-800, 200, 2700, 500); ctx.fillStyle = '#c47aff'; ctx.shadowColor = '#c47aff'; ctx.shadowBlur = 30; ctx.fillRect(-800, 196, 2700, 8); ctx.shadowBlur = 0;
+  // posters
+  ctx.fillStyle = '#ff3b6b'; ctx.fillRect(40, 380, 200, 280); txt(ctx, 'RAP', 140, 470, { size: 60, col: '#111' }); ctx.fillStyle = '#3bd0ff'; ctx.fillRect(280, 420, 160, 220);
+  // shelf with coin
+  ctx.fillStyle = '#5a4030'; ctx.fillRect(40, 860, 420, 22); ctx.fillStyle = '#2e6bd6'; ctx.fillRect(60, 760, 60, 100); ctx.fillStyle = '#d64a3a'; ctx.fillRect(130, 780, 50, 80); ctx.fillStyle = '#ddd'; ctx.fillRect(190, 800, 40, 60);
+  if (o.coinOnShelf !== false) { const gl = .5 + .5 * Math.sin(t * 4); ctx.save(); ctx.shadowColor = '#ffd36a'; ctx.shadowBlur = 20 + 30 * gl; coin(ctx, 330, 836, 26, Math.PI / 2 * .15, '20'); ctx.restore(); }
+  // bed
+  ctx.fillStyle = '#3a3f58'; rrect(ctx, -300, 1400, 1100, 220, 30); ctx.fill(); ctx.fillStyle = '#e8e8f0'; rrect(ctx, 80, 1330, 260, 100, 40); ctx.fill(); ctx.fillStyle = '#4b5a8a'; rrect(ctx, -60, 1360, 840, 120, 40); ctx.fill();
+  ctx.fillStyle = '#2a2a33'; ctx.fillRect(-300, 1620, 1100, 60); ctx.fillStyle = '#4a3a30'; ctx.fillRect(-800, 1680, 2700, 800);
+}
+function timeTunnel(ctx, t, k) { // k 0..1
+  ctx.save(); ctx.fillStyle = '#05060c'; ctx.fillRect(0, 0, W, H);
+  ctx.translate(W / 2, H / 2);
+  for (let i = 0; i < 26; i++) { const z = ((i / 26 + t * .9) % 1); const r = 30 + z * z * 1500; ctx.strokeStyle = `hsla(${200 + i * 7},90%,${50 + z * 20}%,${(1 - z) * .9})`; ctx.lineWidth = 4 + z * 18; ctx.beginPath(); ctx.ellipse(0, 0, r, r * 1.2, t * 2 + i * .2, 0, 7); ctx.stroke(); }
+  for (let i = 0; i < 14; i++) { const z = ((i / 14 + t * .6) % 1); const a = i * 2.4 + t; const yr = Math.round(lerp(2026, 1976, clamp(k + i * .01))); ctx.save(); ctx.translate(Math.cos(a) * z * 900, Math.sin(a) * z * 1100); ctx.scale(.3 + z * 1.6, .3 + z * 1.6); ctx.globalAlpha = 1 - z; txt(ctx, String(Math.round(yr - (i % 3) * 10 * (1 - k))), 0, 0, { size: 70, col: '#fff' }); ctx.restore(); }
+  ctx.restore();
+  // VHS glitch bars
+  for (let i = 0; i < 6; i++) { const y = hash(Math.floor(t * 20) + i) * H; ctx.fillStyle = `rgba(255,255,255,${.08 + hash(i + Math.floor(t * 20)) * .15})`; ctx.fillRect(0, y, W, 4 + hash(i * 3) * 20); }
+  const big = Math.round(lerp(2026, 1976, eio(k))); txt(ctx, String(big), W / 2, H / 2, { size: 230, col: k > .98 ? PAL.yellow : '#fff', stroke: 16, glow: '#5fe3ff', glowB: 40 });
+}

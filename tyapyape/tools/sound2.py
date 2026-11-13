@@ -17,11 +17,15 @@ for h in E['hits']:
     elif k == 'clash': place(sfx, punch(), t, .9, -.3); place(sfx, punch(), t + .08, .8, .3); place(sfx, thud(.8, 50), t, .8)
     elif k == 'gavel': place(sfx, gavel(), t, 1.0)
 for b in SC[1:]: place(sfx, whoosh(), b - .22, .6)
-# truck engine at start
-n = int(SC[1] * SR); tt = np.arange(n) / SR
-eng = (np.sign(np.sin(2 * np.pi * 38 * tt)) * .3 + np.sin(2 * np.pi * 76 * tt) * .3) * (1 - np.clip((tt - C['truckStop']) / 1.5, 0, 1))
-eng = lp_fast(eng + noise(n) * .15, 400) * .35; sfx[:n, 0] += eng; sfx[:n, 1] += eng
-place(sfx, thud(.4, 60), C['truckStop'] + .9, .5)
+# 2026 room: phone taps, coin flip, time tunnel, idle truck in 1976
+for k in range(6): place(sfx, tick(), 1.5 + k * .9, .35)
+place(sfx, coin_sfx(), C['flip'], 1.0)
+nT = int((C['wake'] - C['turn'] + .3) * SR); tt = np.arange(nT) / SR
+sw = np.sin(2 * np.pi * np.cumsum(200 + 900 * (tt / tt[-1]) ** 2) / SR) * .25 + hp_fast(noise(nT), 800) * (tt / tt[-1]) * .5
+sw *= np.minimum(1, tt / .3); place(sfx, sw, C['turn'] - .2, .8); place(sfx, thud(.8, 45), C['wake'], .9)
+n0 = int(C['wake'] * SR); n1 = int(SC[2] * SR); tt = np.arange(n1 - n0) / SR
+eng = lp_fast((np.sign(np.sin(2 * np.pi * 32 * tt)) * .3 + noise(n1 - n0) * .15), 300) * .22; sfx[n0:n1, 0] += eng; sfx[n0:n1, 1] += eng
+
 tt0 = C['tick'] + .1
 while tt0 < C['tick'] + 2.1: place(sfx, tick(), tt0, .6); tt0 += .05 + .1 * ((tt0 - C['tick']) / 2) ** 2
 for i in range(10): place(sfx, hp_fast(noise(int(.06 * SR)), 3000) * env(int(.06 * SR), .002, .02) * .4, C['graffiti'] + i * .08, .6)  # spray
@@ -52,8 +56,8 @@ mus = np.zeros((N, 2)); BPM = 88; beat = 60 / BPM
 prog = [45, 41, 48, 43]
 def inten(t):
     i = max(k for k in range(len(SC)) if SC[k] <= t)
-    return [1, 1.6, 2, .3, 2, 2.4, 3, 2, 1.6, 3, 3, 1.5, 0, 0][i]
-place(mus, pad([45, 52], SC[1] + 1) * .7, 0.0, .8)
+    return [.6, 1, 1.6, 2, .3, 2, 2.4, 3, 2, 1.6, 3, 3, 1.5, 0, 0][i]
+place(mus, pad([57, 64, 69], SC[1]) * .7, 0.0, .6)
 t = 0.0; i = 0
 while t < SC[-2] - .1:
     it = inten(t); bar = int(t / (beat * 4)); m = prog[bar % 4]; pos = i % 4
@@ -68,14 +72,14 @@ while t < SC[-2] - .1:
         if it >= 1: place(mus, bass_note(m, beat * .95, 1.5 if it >= 3 else .6), t, .5)
     if pos == 0 and bar % 2 == 0 and it != .3: place(mus, pad([m + 24, m + 27, m + 31], beat * 8) * .9, t, .32 if it < 3 else .42)
     t += beat; i += 1
-place(mus, pad([57, 58], SC[11 + 1] - SC[11]), SC[11], .45)
+place(mus, pad([57, 58], SC[13] - SC[12]), SC[12], .45)
 place(mus, pad([45, 48, 52], SC[-1] - SC[-2] + 1), SC[-2], .65)
 for k, m in enumerate([76, 72, 69, 71, 72, 69, 64, 69, 71, 72]): place(mus, bell(m), SC[-2] + .4 + k * .8, .85)
 place(mus, pad([45, 48, 52, 57], E['DUR'] - SC[-1]), SC[-1], .55)
 mus *= .5 * .85
 amb = np.zeros((N, 2)); w = lp_fast(noise(N), 500); tt = np.arange(N) / SR; wm = .5 + .5 * np.sin(tt * .3) * np.sin(tt * .11 + 1)
 amb[:, 0] = w * wm * .1; amb[:, 1] = np.roll(w, 2400) * wm * .1
-ki = int(SC[3] * SR); kj = int(SC[4] * SR); amb[ki:kj] *= .2  # indoors
+ki = int(SC[4] * SR); kj = int(SC[5] * SR); amb[:int(SC[1] * SR)] *= .15; amb[ki:kj] *= .2  # indoors
 vo_wav = base + '/build/vo48.wav'
 subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', base + '/audio/vo2_final.wav', '-ar', str(SR), '-ac', '1', '-f', 'f32le', vo_wav], check=True)
 vo = np.fromfile(vo_wav, dtype=np.float32).astype(np.float64); vo = np.pad(vo, (0, max(0, N - len(vo))))[:N]
