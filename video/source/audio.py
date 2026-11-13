@@ -56,7 +56,7 @@ def click():
 for i in range(4): add(click(),0.55+i*0.28,1,(i-1.5)*0.3); add(note(mid(69+[0,3,7,12][i]),0.6,0.08,(1,.2)),0.55+i*0.28)
 def pop():
     n=int(.12*SR);t=np.arange(n)/SR;f=500+900*t/0.12;return np.sin(2*np.pi*np.cumsum(f)/SR)*np.exp(-t*30)*0.35
-for b in [3.3,5.75,8.0,10.7,12.8,15.5,17.6,19.1]: add(pop(),b)
+pass
 def thud():
     n=int(.5*SR);t=np.arange(n)/SR;x=np.sin(2*np.pi*(60+40*np.exp(-t*20))*t)*np.exp(-t*9);nz=lp(rng.standard_normal(n),0.05)*np.exp(-t*12)
     return x*0.9+nz*1.5

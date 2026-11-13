@@ -172,41 +172,24 @@ function drawFace(ctx,o,s,R,col){
 // ---------- SCENE PIECES ----------
 function bgTrack(ctx,col,scroll,t,opt={}){
  const tint=opt.tint??1;
- // sky / dark
- const g=ctx.createLinearGradient(0,0,0,H);
- g.addColorStop(0,mix('#07080d',col,0.10*tint));g.addColorStop(0.5,mix('#0d0f18',col,0.22*tint));g.addColorStop(1,mix('#0a0a10',col,0.12*tint));
- ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ const g=ctx.createLinearGradient(0,0,0,1300);
+ g.addColorStop(0,mix('#07080d',col,0.06*tint));g.addColorStop(1,mix('#11131c',col,0.20*tint));
+ ctx.fillStyle=g;ctx.fillRect(0,0,W,1300);
  if(opt.sky)opt.sky(ctx);
- // floodlights (fixed, far)
- for(const fx of [170,910]){ctx.save();ctx.globalCompositeOperation='lighter';
-  const rg=ctx.createRadialGradient(fx,430,0,fx,430,260);rg.addColorStop(0,hexA(col,0.35*tint));rg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=rg;ctx.fillRect(fx-260,170,520,520);ctx.restore();
-  ctx.fillStyle='#1b1d27';ctx.fillRect(fx-4,470,8,330);
-  ctx.fillStyle='#2a2d3a';ctx.fillRect(fx-58,400,116,62);
-  for(let i=0;i<4;i++)for(let j=0;j<2;j++){ctx.fillStyle='#fffbe9';ctx.shadowColor=col;ctx.shadowBlur=20;ctx.beginPath();ctx.arc(fx-40+i*27,418+j*26,8,0,7);ctx.fill()}ctx.shadowBlur=0}
- // stands with crowd (parallax .25)
- const st=scroll*0.25;
- ctx.fillStyle=mix('#11131c',col,0.08);ctx.fillRect(0,780,W,330);
- for(let r=0;r<6;r++){const y=800+r*50;ctx.fillStyle=mix('#191b26',col,0.10+r*0.01);ctx.fillRect(0,y+32,W,10);
-  const sp=46;const o=((st*(1+r*0.05))%sp+sp)%sp;
-  for(let x=-sp;x<W+sp;x+=sp){const idx=Math.floor((x+st*(1+r*0.05))/sp)+r*1000;if(rnd(idx)<0.25)continue;
-   ctx.fillStyle=mix('#05060a',col,0.06);const xx=x-o+ (rnd(idx+3)*10);ctx.beginPath();ctx.arc(xx,y+12,12,0,7);ctx.fill();ctx.fillRect(xx-14,y+22,28,14);
-   if(opt.flash&&rnd(idx*7+Math.floor(t*12))<opt.flash){ctx.save();ctx.globalCompositeOperation='lighter';const fg=ctx.createRadialGradient(xx,y+10,0,xx,y+10,60);fg.addColorStop(0,'rgba(255,255,255,0.95)');fg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=fg;ctx.fillRect(xx-60,y-50,120,120);ctx.restore()}}}
- // barrier with boards (parallax 1)
- ctx.fillStyle=mix('#161824',col,0.18);ctx.fillRect(0,1110,W,150);
- const bw=360,bo=((scroll%bw)+bw)%bw;
- for(let x=-bw;x<W+bw;x+=bw){const bx=x-bo,i=Math.floor((x+scroll)/bw);
-  ctx.fillStyle=mix('#1f2231',col,0.25);ctx.fillRect(bx+12,1130,bw-24,110);
-  ctx.strokeStyle=hexA(col,0.55);ctx.lineWidth=3;ctx.strokeRect(bx+12,1130,bw-24,110);
-  if(opt.boards){ctx.fillStyle=hexA(col,0.85);ctx.font=`900 54px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(opt.boards(i),bx+bw/2,1187)}
-  else{ctx.fillStyle=hexA(col,0.25);ctx.fillRect(bx+40,1165,bw*0.35,14);ctx.fillRect(bx+40,1192,bw*0.5,14)}}
- // track
- const tg=ctx.createLinearGradient(0,1260,0,H);tg.addColorStop(0,mix('#2a1a1f',col,0.25));tg.addColorStop(1,mix('#120c10',col,0.12));
- ctx.fillStyle=tg;ctx.fillRect(0,1260,W,H-1260);
- ctx.fillStyle='rgba(255,255,255,0.75)';ctx.fillRect(0,1290,W,6);ctx.fillRect(0,1720,W,6);
- ctx.fillStyle='rgba(255,255,255,0.18)';
- const dw=220,dO=((scroll*1.15)%dw+dw)%dw;for(let x=-dw;x<W+dw;x+=dw){ctx.fillRect(x-dO,1600,110,5)}
- // grain specks
- const go=((scroll*1.1)%80+80)%80;ctx.fillStyle='rgba(255,255,255,0.05)';for(let i=0;i<60;i++){const x=(rnd(i)*W*1.1-go*((i%3)+1)/2+W)%W;ctx.fillRect(x,1300+rnd(i+9)*600,4,2)}
+ // faint wall panels (parallax) for sense of motion
+ const pw=300,po=((scroll*0.6)%pw+pw)%pw;
+ ctx.strokeStyle=hexA(col,0.10*tint);ctx.lineWidth=2;
+ for(let x=-pw;x<W+pw;x+=pw){ctx.beginPath();ctx.moveTo(x-po,980);ctx.lineTo(x-po,1300);ctx.stroke()}
+ ctx.fillStyle=hexA(col,0.10*tint);ctx.fillRect(0,976,W,3);
+ // camera flashes (ego)
+ if(opt.flash){for(let i=0;i<10;i++){if(rnd(i*7+Math.floor(t*12))>opt.flash*8)continue;const x=rnd(i+Math.floor(t*12))*W,y=700+rnd(i*3+Math.floor(t*12))*250;
+  ctx.save();ctx.globalCompositeOperation='lighter';const fg=ctx.createRadialGradient(x,y,0,x,y,70);fg.addColorStop(0,'rgba(255,255,255,0.8)');fg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=fg;ctx.fillRect(x-70,y-70,140,140);ctx.restore()}}
+ // floor
+ const tg=ctx.createLinearGradient(0,1300,0,H);tg.addColorStop(0,mix('#16131a',col,0.18*tint));tg.addColorStop(1,mix('#09090d',col,0.06*tint));
+ ctx.fillStyle=tg;ctx.fillRect(0,1300,W,H-1300);
+ ctx.fillStyle=hexA(col,0.35*tint);ctx.fillRect(0,1298,W,3);
+ ctx.fillStyle='rgba(255,255,255,0.10)';
+ const dw=240,dO=((scroll)%dw+dw)%dw;for(let x=-dw;x<W+dw;x+=dw){ctx.fillRect(x-dO,1640,100,4)}
 }
 function spot(ctx,x,col,a,top=0,bot=1560,w0=60,w1=330){
  ctx.save();ctx.globalCompositeOperation='lighter';
@@ -231,7 +214,7 @@ function header(ctx,t,n,title,sub,col){
  if('letterSpacing' in ctx)ctx.letterSpacing='4px';ctx.fillText(sub,64,360);if('letterSpacing' in ctx)ctx.letterSpacing='0px';
  ctx.restore();
 }
-function bubble(ctx,x,y,text,t,dur,side=1){
+function bubble(ctx,x,y,text,t,dur,side=1){return;
  const a=seg(t,0,0.22),b=1-seg(t,dur-0.2,dur);if(t<0||t>dur)return;
  const k=back(a)*b;if(k<=0)return;
  ctx.save();ctx.font=`700 44px ${FONT}`;const tw=ctx.measureText(text).width;const bw=tw+64,bh=92;
@@ -244,11 +227,9 @@ function bubble(ctx,x,y,text,t,dur,side=1){
  ctx.restore();
 }
 function counter(ctx,label,col,a=1){
- ctx.save();ctx.globalAlpha=a;ctx.font=`900 64px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';
- const tw=Math.max(240,ctx.measureText(label).width+90);
- ctx.fillStyle='rgba(8,8,14,0.75)';ctx.strokeStyle=hexA(col,0.9);ctx.lineWidth=4;ctx.shadowColor=col;ctx.shadowBlur=24;
- ctx.beginPath();ctx.roundRect(W/2-tw/2,1770,tw,104,52);ctx.fill();ctx.stroke();ctx.shadowBlur=0;
- ctx.fillStyle='#fff';ctx.fillText(label,W/2,1824);ctx.restore();
+ ctx.save();ctx.globalAlpha=a;ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.font=`800 46px ${FONT}`;ctx.fillStyle='rgba(255,255,255,0.85)';ctx.fillText(label,W/2,1790);
+ ctx.fillStyle=col;ctx.fillRect(W/2-28,1830,56,5);ctx.restore();
 }
 function dust(ctx,x,y,t,col){if(t<0||t>0.8)return;const k=eout(t/0.8);for(let i=0;i<14;i++){const a=Math.PI+rnd(i)*Math.PI;const r=40+k*(120+rnd(i+5)*120);
  ctx.fillStyle=`rgba(200,190,210,${0.35*(1-k)})`;ctx.beginPath();ctx.arc(x+Math.cos(a)*r*1.4,y+Math.sin(a)*r*0.35,18+k*30*rnd(i+2),0,7);ctx.fill()}}
@@ -435,8 +416,8 @@ function sceneDis(ctx,t){
  const sky=c=>{const ang=Math.PI*(1-((cyc*2)%1));const isSun=cyc*2%2<1;
   const sx=W/2+Math.cos(ang)*470,sy=700-Math.sin(ang)*420;
   c.save();c.shadowColor=isSun?'#ffcf6a':'#cfe0ff';c.shadowBlur=60;c.fillStyle=isSun?'#ffd987':'#e9f0ff';c.beginPath();c.arc(sx,sy,isSun?60:44,0,7);c.fill();c.restore();
-  if(!isSun){c.fillStyle='rgba(255,255,255,0.6)';for(let i=0;i<50;i++)c.fillRect(rnd(i)*W,rnd(i+1)*720,3,3)}};
- bgTrack(ctx,col,d,t,{sky,boards:i=>`${Math.min(42,Math.max(1,i*4))} КМ`});
+  };
+ bgTrack(ctx,col,d,t,{sky});
  // rain segment
  if(t>1.4&&t<2.6){const a=Math.min(seg(t,1.4,1.6),1-seg(t,2.4,2.6));ctx.strokeStyle=`rgba(180,210,255,${0.45*a})`;ctx.lineWidth=3;for(let i=0;i<90;i++){const x=(rnd(i)*W*1.3+t*-300)%(W*1.3);const y=(rnd(i+4)*H+t*2200)%H;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-18,y+60);ctx.stroke()}}
  spot(ctx,RX,col,1,0,GY);
