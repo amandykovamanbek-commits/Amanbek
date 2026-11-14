@@ -420,13 +420,14 @@ function updateSmoke(dt) {
 // =====================================================================
 //  Звук (WebAudio: мотор + визг шин)
 // =====================================================================
+const VOLUME = 0.28; // общая громкость (было 0.5)
 const sound = {
   ctx: null, muted: false,
   init() {
     if (this.ctx) return;
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const master = ctx.createGain(); master.gain.value = 0.5; master.connect(ctx.destination);
+      const master = ctx.createGain(); master.gain.value = VOLUME; master.connect(ctx.destination);
       const filt = ctx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 900;
       const eg = ctx.createGain(); eg.gain.value = 0.08; filt.connect(eg); eg.connect(master);
       const o1 = ctx.createOscillator(); o1.type = 'sawtooth';
@@ -455,7 +456,7 @@ const sound = {
   },
   toggle() {
     this.muted = !this.muted;
-    if (this.ctx) this.master.gain.value = this.muted ? 0 : 0.5;
+    if (this.ctx) this.master.gain.value = this.muted ? 0 : VOLUME;
     toast(this.muted ? 'Звук выкл' : 'Звук вкл', '#fff');
   },
 };
@@ -876,6 +877,12 @@ function beforeStart() {
   $('menuError').textContent = '';
   sound.init();
   if (sound.ctx && sound.ctx.state === 'suspended') sound.ctx.resume();
+  // на телефоне: полный экран и горизонтальная ориентация (где браузер позволяет)
+  if (isTouch && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+    document.documentElement.requestFullscreen({ navigationUI: 'hide' })
+      .then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape'))
+      .catch(() => {});
+  }
 }
 $('createBtn').onclick = () => {
   beforeStart();
@@ -910,6 +917,7 @@ function startGame(mode, seed, code, online) {
   scene.add(car.mesh);
   spawn();
   game.running = true;
+  document.body.classList.add('playing');
   $('menu').classList.add('hidden');
   $('hud').classList.remove('hidden');
   $('touch').classList.toggle('hidden', !isTouch);
@@ -925,6 +933,7 @@ function startGame(mode, seed, code, online) {
 function toMenu() {
   if (game.online) send({ t: 'leave' });
   game.running = false; game.online = false;
+  document.body.classList.remove('playing');
   clearRemotes();
   $('menu').classList.remove('hidden');
   $('hud').classList.add('hidden');
@@ -1020,6 +1029,7 @@ function frame(now) {
 }
 
 document.body.classList.toggle('touch', isTouch);
+$('rotate').onclick = () => document.body.classList.add('rotate-ok');
 buildTraffic(1, MODES.free.perLane);
 connect();
 requestAnimationFrame(frame);

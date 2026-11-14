@@ -87,6 +87,44 @@
   body.touch #speedo { bottom: 120px; }
   body.touch #menuBtn { top: 84px; bottom: auto; right: auto; left: 12px; }
   body.touch .keys { display: none; }
+  /* Подсказка повернуть телефон */
+  #rotate { display: none; position: fixed; inset: 0; z-index: 20; background: rgba(5,6,10,.88); color: #fff;
+    flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 24px; }
+  #rotate .ico { font-size: 56px; animation: rot 1.6s ease-in-out infinite; }
+  #rotate b { font-size: 20px; } #rotate small { color: var(--muted); }
+  @keyframes rot { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
+  @media (orientation: portrait) { body.touch.playing:not(.rotate-ok) #rotate { display: flex; } }
+
+  /* Горизонтальный телефон: компактный интерфейс */
+  @media (orientation: landscape) and (max-height: 500px) {
+    #topLeft { top: 8px; left: 10px; }
+    #modeName { font-size: 11px; } #total { font-size: 22px; }
+    #topRight { top: 8px; right: 8px; gap: 6px; }
+    #roomBox { padding: 4px 10px; display: flex; align-items: center; gap: 8px; }
+    #roomBox .small { display: none; }
+    #roomCode { font-size: 15px; letter-spacing: 2px; }
+    #roomBox button { margin-top: 0; padding: 4px 8px; font-size: 11px; }
+    #minimap { width: 150px; height: 56px; border-radius: 10px; }
+    #players { font-size: 11px; padding: 4px 10px; min-width: 110px; border-radius: 10px; }
+    #players div { line-height: 1.5; }
+    #chain { top: 8%; } #chainLabel { font-size: 12px; } #chainValue { font-size: 30px; } #chainMult { font-size: 16px; }
+    #toast { top: 26%; font-size: 20px; }
+    #speedo { bottom: 10px; } #speed { font-size: 34px; } #speedo small { font-size: 10px; }
+    body.touch #speedo { bottom: 10px; }
+    body.touch #menuBtn { top: 62px; left: 10px; padding: 5px 10px; font-size: 12px; }
+    #touch button { width: 64px; height: 64px; font-size: 22px; }
+    #tLeft { left: 14px; bottom: 14px; } #tRight { left: 90px; bottom: 14px; }
+    #tGas { right: 14px; bottom: 88px; } #tBrake { right: 90px; bottom: 14px; } #tHand { right: 14px; bottom: 14px; }
+    #menu { padding: 10px; }
+    .card { max-width: 560px; padding: 14px 18px; }
+    h1 { font-size: 22px; } .sub { display: none; }
+    label { margin: 8px 0 4px; }
+    input[type=text] { padding: 8px 12px; }
+    .colors button { width: 28px; height: 28px; }
+    .modes button { padding: 6px 4px; } .modes button small { display: none; }
+    .btn { padding: 10px; margin-top: 10px; }
+    .divider { margin: 10px 0 4px; }
+  }
   @media (max-width: 640px) {
     #total { font-size: 22px; } #chainValue { font-size: 32px; } #speed { font-size: 40px; }
     #players { font-size: 11px; min-width: 120px; } #minimap { width: 160px; height: 60px; }
@@ -159,6 +197,7 @@
   <button id="menuBtn">Меню</button>
 </div>
 
+<div id="rotate"><div class="ico">📱</div><b>Поверни телефон горизонтально</b><small>Так удобнее рулить. Нажми, чтобы играть вертикально.</small></div>
 <div id="touch" class="hidden">
   <button id="tLeft">◀</button><button id="tRight">▶</button>
   <button id="tGas">▲</button><button id="tBrake">▼</button><button id="tHand">РУЧН.</button>
