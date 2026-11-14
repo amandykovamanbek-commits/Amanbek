@@ -262,7 +262,7 @@ export const stage = (id: number, t: number, cam: CamInfo): Stage => {
       const front = waveFront(1.2 + 0.55 * t);
       for (let k = 0; k < 3; k++) {
         const u = q(((t * 1.3 + k * 0.33) % 1), 30);
-        out.fx.push({ key: `foam${u}`, cw: 800, ch: 800, draw: (p) => fxSplash(p, u, "#f1e3c3", "#b06a2c"), x: -front + 0.8, y: 2.3, z: [11.0, 13.4, 15.8][k], w: 5.6, h: 5.6 });
+        out.fx.push({ key: `foam${u}`, cw: 800, ch: 800, draw: (p) => fxSplash(p, u, "#f1e3c3", "#b06a2c"), x: -front - 0.7, y: 2.2, z: [11.0, 13.4, 15.8][k], w: 5.6, h: 5.6 });
       }
       for (let i = 0; i < 3; i++) {
         const x = -15 - 5.0 * t - i * 1.6, z = [11.4, 15.6, 13.0][i], ph = q((t * 2.2 + i * 0.3) % 1, 120);
@@ -296,7 +296,7 @@ export const stage = (id: number, t: number, cam: CamInfo): Stage => {
       if (f < F_WALL + 20) add(out, cam, t, 40, TOWNS1814[1], "t1", -10.5, 15.4, { mode: "stand", expr: f >= F_WALL - 2 ? "shock" : "neutral" });
       const ws = T(f - F_WALL) - 0.15;
       if (ws > 0.4 && ws < 7) for (const sd of [-1, 1]) {
-        const u = q(((t * 1.3 + (sd > 0 ? 0.5 : 0)) % 1), 30), x = sd * (waveFront(ws) - 0.8);
+        const u = q(((t * 1.3 + (sd > 0 ? 0.5 : 0)) % 1), 30), x = sd * (waveFront(ws) + 0.7);
         out.fx.push({ key: `foam${u}`, cw: 800, ch: 800, draw: (p) => fxSplash(p, u, "#f1e3c3", "#b06a2c"), x, y: 1.4, z: 13.4, w: 4.2, h: 4.2 });
       }
       once(out, t, T(F_WALL), 1.0, (u) => ({ key: `wallsplash${u}`, cw: 800, ch: 800, draw: (p) => fxSplash(p, u, "#c9874a", "#8a4f1c"), x: 0, y: 3.2, z: 10.5, w: 11, h: 11 }));
