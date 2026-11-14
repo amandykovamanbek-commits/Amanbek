@@ -3,7 +3,7 @@
 // `id` at frame f (a pure function of id + f).
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { staticFile } from "remotion";
+import { staticFile, getInputProps } from "remotion";
 import { V, Kit, Ray, kitClone } from "./build";
 import { ctex, waterNear, waterFar, cloudHD } from "./paint";
 import { Pen } from "./toon";
@@ -225,6 +225,8 @@ export class World {
     untone(wc.crest, Wu.wCrest.value); untone(wc.trough, Wu.wTrough.value); untone(wc.glint, Wu.wGlint.value);
     Wu.wShade.value.set(...wc.shade); Wu.wTime.value = t;
     for (const g of this.fgs) g.o.visible = f >= g.a && f < g.b && g.a < s.b && g.b > s.a;
+    // debug only: inputProps { debugHide: ["props" | "tower" | "cast" | "fx" | "set"] }
+    const hide = ((getInputProps() as { debugHide?: string[] }).debugHide ?? []);
     // ---- the tower and the props of this shot ----
     this.tower.pose(towerAt(id, f));
     this.props.pose(s.props, f, s.a, { gate: W(89), drop: [s.a + 4, W(96)], room: id === 16 ? W(150) : 0, cut: W(166) });
@@ -250,6 +252,7 @@ export class World {
       used.push(a);
     }
     for (let i = ai; i < this.actors.length; i++) this.actors[i].mesh.visible = false;
+    if (hide.includes("cast")) for (const a of used) a.mesh.visible = false;
     let fi = 0;
     const fused: Fx[] = [];
     for (const p of st.fx) {
@@ -265,6 +268,9 @@ export class World {
       fused.push(e2);
     }
     for (let i = fi; i < this.fxs.length; i++) this.fxs[i].mesh.visible = false;
+    if (hide.includes("fx")) for (const e2 of fused) e2.mesh.visible = false;
+    if (hide.includes("props")) this.props.pose([], f, s.a, { gate: 0, drop: [0, 1], room: 0, cut: 0 });
+    this.tower.root.visible = !hide.includes("tower");
     this.pool.flush();
     for (const a of used) a.bind();
     for (const e2 of fused) e2.bind();

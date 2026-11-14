@@ -145,7 +145,7 @@ export const PUSHERS: V3[] = [[-2.6, 0, 8.3], [0.2, 0, 8.6], [3.0, 0, 8.3]];
 
 const CAMS: Record<number, Key[]> = {
   1: [
-    { f: 0, s: D([-40, 1.6, -30], [-1, 19, -2], 0, 0.0022, { fov: 52, roll: -0.03 }) },
+    { f: 0, s: D([-38.5, 1.6, -33.5], [-1, 19, -2], 0, 0.0022, { fov: 52, roll: -0.03 }) }, // outside the cathedral apse (inside it, its one-sided wall hid every ink line)
     { f: W(6) - 6, cut: true, s: D([-12.5, 0.75, -3.2], [-7.4, 0.8, -7.8], W(6) - 6, 0.003, { fov: 40, roll: 0.04 }, 0.007, 30) },
   ],
   2: [

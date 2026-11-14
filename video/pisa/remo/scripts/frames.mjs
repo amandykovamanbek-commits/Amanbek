@@ -12,7 +12,7 @@ const browser = await openBrowser("chrome", { browserExecutable, chromiumOptions
 const composition = await selectComposition({ serveUrl, id: "PisaShort", inputProps, puppeteerInstance: browser });
 for (const f of list.split(",").map(Number)) {
   const t0 = Date.now(), tmp = path.join(outDir, "_tmp");
-  await renderFrames({ composition, serveUrl, inputProps, puppeteerInstance: browser, concurrency: 1, frameRange: [f, f], imageFormat: "jpeg", jpegQuality: 88,
+  await renderFrames({ composition, serveUrl, inputProps, puppeteerInstance: browser, concurrency: 1, frameRange: [f, f], imageFormat: "jpeg", jpegQuality: 95,
     outputDir: tmp, scale: Number(scale), timeoutInMilliseconds: 600000,
     onBrowserLog: (l) => { if (l.type === "error" && !/404|Failed to load/.test(l.text)) console.log("[browser]", l.text.slice(0, 300)); } });
   const got = fs.readdirSync(tmp).find((n) => n.endsWith(".jpeg"));
