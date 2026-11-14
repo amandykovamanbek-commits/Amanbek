@@ -18,3 +18,8 @@ video/pisa/remo/out/
 video/pisa/audio/stem_*.wav
 video/pisa/audio/__pycache__/
 !video/pisa/out/*.mp4
+video/beer/remo/node_modules/
+video/beer/remo/out/
+video/beer/audio/stem_*.wav
+video/beer/audio/__pycache__/
+!video/beer/out/*.mp4
