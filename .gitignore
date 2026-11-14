@@ -13,3 +13,8 @@ video/out/
 !video/s2e5/out/*.mp4
 !video/howto/out/*.mp4
 !video/limits/out/*.mp4
+video/pisa/remo/node_modules/
+video/pisa/remo/out/
+video/pisa/audio/stem_*.wav
+video/pisa/audio/__pycache__/
+!video/pisa/out/*.mp4
