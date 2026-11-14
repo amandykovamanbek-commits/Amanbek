@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "Мультиплеерная браузерная игра: дрифт, шашки в потоке, свободная езда",
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
-  "dependencies": { "ws": "^8.18.0" }
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "three": "0.160.0",
+    "ws": "^8.18.0"
+  }
 }
