@@ -17,14 +17,19 @@ export const AI_SHOTS: [number, number, Cam, Cam][] = [
 ];
 export const AI_CUTS = [9.9, 10.9];
 
-const camAt = (t: number): Cam => {
-	for (const [a, b, f, to] of AI_SHOTS) {
+const camAt = (t: number, heroX = 400): Cam => {
+	const dx = heroX - 400;
+	for (const [a, b, f0, to0] of AI_SHOTS) {
+		const last = a >= 10.9;
+		const f: Cam = last ? [f0[0] + dx, f0[1], f0[2]] : f0;
+		const to: Cam = last ? [to0[0] + dx, to0[1], to0[2]] : to0;
 		if (t >= a && t < b) {
 			const k = easeIO(prog(t, a, b));
 			return [lerp(f[0], to[0], k), lerp(f[1], to[1], k), lerp(f[2], to[2], k)];
 		}
 	}
-	return AI_SHOTS[AI_SHOTS.length - 1][3];
+	const e = AI_SHOTS[AI_SHOTS.length - 1][3];
+	return [e[0] + dx, e[1], e[2]];
 };
 
 const shakeAt = (t: number): [number, number] => {
@@ -33,8 +38,8 @@ const shakeAt = (t: number): [number, number] => {
 	return [Math.sin(t * 97) * a, Math.cos(t * 83) * a * 0.7];
 };
 
-const layer = (t: number, depth: number): React.CSSProperties => {
-	const [cx, cy, zoom] = camAt(t);
+const layer = (t: number, depth: number, heroX = 400): React.CSSProperties => {
+	const [cx, cy, zoom] = camAt(t, heroX);
 	const [sx, sy] = shakeAt(t);
 	const z = 1 + (zoom - 1) * depth;
 	const lx = W / 2 + (cx - W / 2) * depth;
@@ -124,19 +129,19 @@ const SpeedLines: React.FC<{ k: number }> = ({ k }) =>
 		</svg>
 	);
 
-export const AiScene: React.FC<{ catOverlay?: React.ReactNode }> = ({ catOverlay }) => {
+export const AiScene: React.FC<{ catOverlay?: React.ReactNode; dir?: string; heroX?: number; catBottom?: number }> = ({ catOverlay, dir = 'ai', heroX = 400, catBottom = 818 }) => {
 	const frame = useCurrentFrame();
 	const { fps } = useVideoConfig();
 	const t = frame / fps;
 
 	const [heroSrc, heroAt] = pick(t, [
-		[0, 'ai/hero_phone.png'],
-		[6.6, 'ai/hero_shock.png'],
-		[10.9, 'ai/hero_nervous.png'],
+		[0, `${dir}/hero_phone.png`],
+		[6.6, `${dir}/hero_shock.png`],
+		[10.9, `${dir}/hero_nervous.png`],
 	]);
 	const [catSrc, catAt] = pick(t, [
-		[0, 'ai/cat_sly.png'],
-		[9.9, 'ai/cat_shock.png'],
+		[0, `${dir}/cat_sly.png`],
+		[9.9, `${dir}/cat_shock.png`],
 	]);
 	const flash = AI_CUTS.reduce((acc, c) => (t >= c && t < c + 0.12 ? 0.55 * (1 - (t - c) / 0.12) : acc), 0);
 	const lines = Math.max(
@@ -148,17 +153,17 @@ export const AiScene: React.FC<{ catOverlay?: React.ReactNode }> = ({ catOverlay
 	return (
 		<AbsoluteFill style={{ backgroundColor: '#1a1030', overflow: 'hidden' }}>
 			{/* дальний слой: комната + кот на подоконнике + его мысли */}
-			<div style={layer(t, 0.8)}>
-				<Img src={staticFile('ai/bg_room.png')} style={{ position: 'absolute', left: -40, top: -70, width: W + 80, height: H + 140 }} />
-				<Sprite src={catSrc} x={770} bottom={818} height={350} t={t} changedAt={catAt} breathe={0.015} />
+			<div style={layer(t, 0.8, heroX)}>
+				<Img src={staticFile(`${dir}/bg_room.png`)} style={{ position: 'absolute', left: -40, top: -70, width: W + 80, height: H + 140 }} />
+				<Sprite src={catSrc} x={770} bottom={catBottom} height={350} t={t} changedAt={catAt} breathe={0.015} />
 				{catOverlay}
 			</div>
 			{/* ближний слой: герой */}
-			<div style={layer(t, 1)}>
-				<Sprite src={heroSrc} x={400} bottom={1800} height={880} t={t} changedAt={heroAt} breathe={0.01} tilt={nervousShake} />
+			<div style={{ ...layer(t, 1, heroX), opacity: t >= 9.9 && t < 10.9 ? 0 : 1 }}>
+				<Sprite src={heroSrc} x={heroX} bottom={1800} height={880} t={t} changedAt={heroAt} breathe={0.01} tilt={nervousShake} />
 			</div>
 			{/* передний план: пылинки и свет */}
-			<div style={layer(t, 1.3)}>
+			<div style={layer(t, 1.3, heroX)}>
 				<Particles t={t} />
 			</div>
 			<AbsoluteFill

@@ -4,11 +4,16 @@ import { AiScene } from './AiScene';
 import { Bubble, Caption, EndCard, TitleCard } from './Overlays';
 
 // «Что, если бы ты слышал мысли кота?!» — версия на ИИ-иллюстрациях (стиль аниме-стикмен), 12.5 с, 9:16.
-export const AiKot = () => {
+type Props = { readonly dir: string; readonly heroX: number; readonly catBottom: number; readonly badge: string };
+
+export const AiKot: React.FC<Props> = ({ dir, heroX, catBottom, badge }) => {
 	const { fps } = useVideoConfig();
 	return (
 		<AbsoluteFill>
 			<AiScene
+				dir={dir}
+				heroX={heroX}
+				catBottom={catBottom}
 				catOverlay={
 					<Track name="Мысли кота">
 						<Bubble
@@ -51,6 +56,7 @@ export const AiKot = () => {
 					durationInFrames={2.6 * fps}
 					line1="ЧТО, ЕСЛИ БЫ ТЫ"
 					line2={'СЛЫШАЛ\nМЫСЛИ КОТА?!'}
+					badge={badge}
 					style={{ left: 80, top: 130, whiteSpace: 'pre-line' }}
 				/>
 			</Track>

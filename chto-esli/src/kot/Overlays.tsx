@@ -22,7 +22,7 @@ const pop = (frame: number, start: number, len: number) =>
 	});
 
 // ---------- Заголовок-хук ----------
-const TitleInner: React.FC<{ line1: string; line2: string; style?: React.CSSProperties }> = ({ line1, line2, style }) => {
+const TitleInner: React.FC<{ line1: string; line2: string; badge?: string; style?: React.CSSProperties }> = ({ line1, line2, badge = '', style }) => {
 	const frame = useCurrentFrame();
 	const { fps, durationInFrames } = useVideoConfig();
 	const out = interpolate(frame, [durationInFrames - 0.3 * fps, durationInFrames], [1, 0], {
@@ -37,6 +37,25 @@ const TitleInner: React.FC<{ line1: string; line2: string; style?: React.CSSProp
 			<div style={{ ...outlined(112, '#ffd23f', 22), scale: pop(frame, 0.25 * fps, 0.4 * fps) * out, transformOrigin: 'left center' }}>
 				{line2}
 			</div>
+			{badge ? (
+				<div
+					style={{
+						display: 'inline-block',
+						marginTop: 18,
+						padding: '8px 22px',
+						background: '#e3262b',
+						border: '5px solid #fff',
+						borderRadius: 14,
+						boxShadow: '0 6px 0 #000',
+						...outlined(48, '#ffffff', 0),
+						WebkitTextStroke: '0px',
+						scale: pop(frame, 0.55 * fps, 0.35 * fps) * out,
+						rotate: '2deg',
+					}}
+				>
+					{badge}
+				</div>
+			) : null}
 		</div>
 	);
 };
@@ -47,6 +66,7 @@ export const TitleCard = Interactive.create({
 	schema: {
 		line1: { type: 'string', default: 'ЧТО, ЕСЛИ БЫ ТЫ', description: 'Первая строка' },
 		line2: { type: 'string', default: 'СЛЫШАЛ КОТА?!', description: 'Вторая строка' },
+		badge: { type: 'string', default: '', description: 'Красная плашка' },
 	},
 });
 
