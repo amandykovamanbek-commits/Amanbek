@@ -16,7 +16,7 @@ export const LINES = [
   { id: 'i', text: 'Все промпты — в моём телеграм-канале. Ссылка в шапке профиля!' },
 ];
 // extra silence inserted after a word (scene:word) so the visuals have time to read
-export const HOLDS: Record<string, number> = { 'a:недели': .2, 'b:промпт': .45, 'c:режим': .3, 'd:музыку': 1.3, 'e:отправляешь': .5, 'f:анимации': .3, 'g:готов': .45 };
+export const HOLDS: Record<string, number> = { 'a:недели': .2, 'b:промпт': .45, 'c:режим': .6, 'd:музыку': 1.3, 'e:отправляешь': .5, 'f:анимации': .3, 'g:готов': .45 };
 
 export const norm = (w: string) => w.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/g, '');
 
@@ -51,11 +51,11 @@ export function buildV3(words: { s: number; e: number }[], lead = 0) {
     return h[Math.min(nth, h.length - 1)][edge];
   };
   const S = (id: string) => sc.find((x) => x.id === id);
-  const cClick = W('c', 'claude') - .15;
+  const cClick = Math.max(W('c', 'claude') - .15, S('c').start + .9);
   const C = {
     aHi: W('a', 'недели'),
     bNow: W('b', 'теперь'), bOne: W('b', 'один'), bPrompt: W('b', 'промпт'),
-    cClick, cOpen: cClick + .12, cHome: cClick + .75, cMode: Math.max(W('c', 'режим') + .05, cClick + 1.5),
+    cClick, cOpen: cClick + .12, cHome: cClick + .75, cMode: Math.min(Math.max(W('c', 'режим') - .1, cClick + 1.2), S('d').start - .45),
     dPlus: S('d').start + .35, dFiles: [W('d', 'сценарий'), W('d', 'референсы'), W('d', 'музыку')],
     eType: W('d', 'музыку') + .4, eSend: W('e', 'отправляешь') + .1,
     fCode: S('f').start, fHi: W('f', 'код'),
