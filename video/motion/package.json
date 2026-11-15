@@ -8,6 +8,7 @@
   "dependencies": {
     "@fontsource/onest": "^5.3.1",
     "@fontsource/source-serif-4": "^5.2.9",
+    "@fontsource/unbounded": "^5.2.8",
     "@remotion/cli": "4.0.538",
     "@remotion/google-fonts": "4.0.538",
     "@remotion/motion-blur": "^4.0.538",
