@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>ИИ-мультик в Claude</title>
+<style>
+  html,body{margin:0;background:#000;overflow:hidden}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Inter,'Noto Color Emoji',sans-serif;background:#f3ece2;transform-origin:0 0;color:#2a2622}
+  .layer{position:absolute;left:0;top:0;width:1080px;height:1920px;pointer-events:none}
+  #bg div{position:absolute;border-radius:50%}
+  #cam{position:absolute;inset:0;transform-origin:540px 860px}
+  #head{position:absolute;left:0;right:0;top:220px;display:flex;justify-content:center;align-items:center;gap:22px}
+  #headT{font-size:34px;font-weight:900;letter-spacing:3px;color:#2a2622}
+  #headT b{color:#d97757}
+  #step{background:#2a2622;color:#ffc94a;font-size:30px;font-weight:900;padding:10px 22px;border-radius:40px;letter-spacing:1px;display:none;white-space:nowrap}
+  #dots{position:absolute;left:0;right:0;top:296px;display:flex;justify-content:center;gap:12px;opacity:0}
+  #dots i{display:block;width:70px;height:12px;border-radius:6px;background:#e0d6c8}
+  #dots i.on{background:#d97757}
+  .sc{position:absolute;inset:0;opacity:0}
+  .card{position:absolute;background:#fffaf3;border-radius:36px;box-shadow:0 22px 50px rgba(60,40,20,.16),0 0 0 4px #2a2622 inset}
+  .big{position:absolute;left:0;right:0;text-align:center;font-weight:900;letter-spacing:-2px;line-height:1}
+  .chip{position:absolute;padding:12px 24px;border-radius:40px;font-size:34px;font-weight:900;background:#2a2622;color:#fff;white-space:nowrap;opacity:0;font-family:'JetBrains Mono',monospace}
+  .code{font-family:'JetBrains Mono',monospace;font-size:31px;line-height:1.55;font-weight:700;white-space:pre}
+  .k{color:#d97757}.s{color:#3aa6a0}.c{color:#a39a8f}
+  /* chat */
+  #win{left:80px;top:390px;width:920px;height:620px;overflow:hidden}
+  #wtop{height:92px;display:flex;align-items:center;padding:0 32px;gap:14px;border-bottom:4px solid #2a2622}
+  .dot{width:20px;height:20px;border-radius:10px;border:3px solid #2a2622;box-sizing:border-box}
+  #logo{width:50px;height:50px;border-radius:14px;background:#d97757;display:flex;align-items:center;justify-content:center;margin-left:12px}
+  .um{background:#f6d9c9;font-size:34px;font-weight:800;padding:18px 28px;border-radius:28px 28px 8px 28px;margin:26px 34px 0 auto;width:fit-content;max-width:640px}
+  .am{display:flex;gap:16px;margin:22px 34px}
+  .am .ic{width:46px;height:46px;border-radius:12px;background:#d97757;flex:none}
+  .am .tx{background:#efe7dc;border-radius:28px 28px 28px 8px;padding:20px 26px;font-size:32px;font-weight:800}
+  #winput{position:absolute;left:30px;right:30px;bottom:26px;height:76px;border-radius:38px;border:4px solid #2a2622;display:flex;align-items:center;padding:0 30px;font-size:32px;font-weight:700;color:#a39a8f;box-sizing:border-box}
+  .sb{position:absolute;top:1060px;width:205px;height:290px;border-radius:24px;background:#fffaf3;box-shadow:0 0 0 4px #2a2622 inset,0 14px 30px rgba(0,0,0,.15);overflow:hidden;opacity:0}
+  .sb .n{position:absolute;left:14px;top:12px;width:44px;height:44px;border-radius:22px;background:#2a2622;color:#ffc94a;font-weight:900;font-size:26px;display:flex;align-items:center;justify-content:center;z-index:2}
+  .sb .cap{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-size:24px;font-weight:900}
+  /* audio */
+  .bar{position:absolute;bottom:0;width:22px;border-radius:11px;background:#d97757}
+  .wd{display:inline-block;margin:0 8px;padding:2px 6px;border-radius:10px}
+  .wd.on{background:#ffc94a}
+  /* subtitles */
+  #subs{position:absolute;left:50px;right:50px;top:1440px;text-align:center;font-weight:900;font-size:78px;line-height:1.1;letter-spacing:-1px;color:#fff;-webkit-text-stroke:16px #2a2622;paint-order:stroke fill}
+  #subs span{display:inline-block;margin:0 9px;transform-origin:50% 60%}
+  #subs span.on{color:#ffc94a}
+  #flash{position:absolute;inset:0;background:#fff;opacity:0}
+  #wipe{position:absolute;left:-200px;top:0;width:1480px;height:1920px;background:#d97757;transform:translateY(2000px) skewY(-8deg)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="layer"></div>
+  <div id="cam">
+    <div id="head"><div id="headT">ИИ-МУЛЬТИК В <b>CLAUDE</b></div><div id="step">ШАГ 1/4</div></div>
+    <div id="dots"><i></i><i></i><i></i><i></i></div>
+
+    <!-- a1: hook -->
+    <div class="sc" id="s1">
+      <div class="big" id="h1a" style="top:400px;font-size:104px">ЭТОТ МУЛЬТИК</div>
+      <div class="big" id="h1b" style="top:520px;font-size:92px;color:#a39a8f">НЕ ХУДОЖНИК
+        <svg id="strike" width="760" height="60" viewBox="0 0 760 60" style="position:absolute;left:160px;top:16px;overflow:visible"><path id="strikeP" d="M10 40 C200 10 500 50 750 18" stroke="#d64545" stroke-width="16" fill="none" stroke-linecap="round" stroke-dasharray="800" stroke-dashoffset="800"/></svg></div>
+      <div class="big" id="h1c" style="top:520px;font-size:92px;opacity:0">А <span style="color:#d97757">CLAUDE</span> — КОДОМ</div>
+      <div class="card" id="code1" style="left:56px;top:700px;width:560px;height:560px;padding:34px 30px;box-sizing:border-box;opacity:0"><div class="code" id="code1t"></div></div>
+      <div id="hero1" style="position:absolute;left:340px;top:690px;width:400px;height:520px"></div>
+    </div>
+
+    <!-- a2: script -->
+    <div class="sc" id="s2">
+      <div class="card" id="win">
+        <div id="wtop"><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <div id="logo"><svg width="32" height="32" viewBox="-22 -22 44 44"><g stroke="#fff" stroke-width="6" stroke-linecap="round"><line x1="0" y1="-18" x2="0" y2="18"/><line x1="-18" y1="0" x2="18" y2="0"/><line x1="-13" y1="-13" x2="13" y2="13"/><line x1="-13" y1="13" x2="13" y2="-13"/></g></svg></div>
+          <div style="font-size:34px;font-weight:900">Claude</div></div>
+        <div class="um" id="m2">мультик про робота, который учится танцевать</div>
+        <div class="am" id="a2"><div class="ic"></div><div class="tx"><div id="r2a" style="opacity:0">✅ Сценарий — 6 сцен</div><div id="r2b" style="opacity:0">✅ Раскадровка — 4 кадра</div></div></div>
+        <div id="winput"><span id="typed">Напиши Claude…</span></div>
+      </div>
+      <div id="sbs"></div>
+    </div>
+
+    <!-- a3: character -->
+    <div class="sc" id="s3">
+      <div id="hero3" style="position:absolute;left:290px;top:470px;width:500px;height:650px"></div>
+      <div class="chip" id="c3a" style="left:90px;top:520px">&lt;circle&gt;</div>
+      <div class="chip" id="c3b" style="right:80px;top:700px;background:#3aa6a0">&lt;ellipse&gt;</div>
+      <div class="chip" id="c3c" style="left:70px;top:1000px;background:#d97757">&lt;line&gt;</div>
+      <div class="big" id="h3" style="top:1230px;font-size:80px;opacity:0">ОН <span style="color:#d97757">ОЖИВАЕТ!</span></div>
+    </div>
+
+    <!-- a4: audio -->
+    <div class="sc" id="s4">
+      <div class="card" id="vc" style="left:80px;top:400px;width:920px;height:300px">
+        <div style="position:absolute;left:36px;top:30px;font-size:32px;font-weight:900">🎙 голос</div>
+        <div id="bars" style="position:absolute;left:36px;right:36px;bottom:40px;height:170px"></div>
+      </div>
+      <div class="chip" id="c4a" style="left:100px;top:745px">♪ whoosh</div>
+      <div class="chip" id="c4b" style="left:410px;top:745px;background:#3aa6a0">♪ pop</div>
+      <div class="chip" id="c4c" style="left:655px;top:745px;background:#d97757">♪ ding</div>
+      <div class="card" id="sd" style="left:80px;top:860px;width:920px;height:220px;opacity:0">
+        <div style="position:absolute;left:36px;top:26px;font-size:28px;font-weight:900;color:#a39a8f;letter-spacing:2px">СУБТИТРЫ ПО СЛОВАМ</div>
+        <div id="sdw" style="position:absolute;left:0;right:0;top:92px;text-align:center;font-size:58px;font-weight:900"><span class="wd">каждое</span><span class="wd">слово</span><span class="wd">в</span><span class="wd">такт</span></div>
+      </div>
+      <div class="big" id="h4" style="top:1150px;font-size:78px;opacity:0">ТОЖЕ <span style="color:#d97757">CLAUDE</span> ✨</div>
+    </div>
+
+    <!-- a5: render -->
+    <div class="sc" id="s5">
+      <div class="card" id="term" style="left:80px;top:400px;width:920px;height:330px;background:#2a2622">
+        <div class="code" style="position:absolute;left:40px;top:36px;color:#f3ece2;font-size:34px"><span class="s">$</span> <span id="cmd"></span></div>
+        <div style="position:absolute;left:40px;right:40px;top:150px;height:46px;border-radius:23px;background:#4a433d;overflow:hidden"><div id="pbar" style="height:100%;width:0;background:#ffc94a;border-radius:23px"></div></div>
+        <div class="code" style="position:absolute;left:40px;top:220px;color:#ffc94a;font-size:34px"><span id="pct">0</span> %  <span id="pfr" class="c"></span></div>
+      </div>
+      <div class="card" id="mp4" style="left:200px;top:780px;width:680px;height:330px;opacity:0;display:flex;align-items:center;gap:30px;padding:0 34px;box-sizing:border-box">
+        <div style="width:190px;height:270px;border-radius:22px;background:#f3ece2;box-shadow:0 0 0 4px #2a2622 inset;position:relative;overflow:hidden;flex:none"><div id="heroMini" style="position:absolute;left:5px;top:20px;width:180px;height:234px"></div>
+          <div style="position:absolute;left:62px;top:105px;width:66px;height:66px;border-radius:33px;background:rgba(42,38,34,.75);color:#fff;font-size:32px;display:flex;align-items:center;justify-content:center">▶</div></div>
+        <div><div style="font-size:46px;font-weight:900">мультик.mp4</div><div style="font-size:30px;font-weight:800;color:#3aa6a0;margin-top:8px">✓ готово · 1080×1920</div></div>
+      </div>
+      <div class="chip" id="c5a" style="left:110px;top:1180px;font-family:Inter;background:#fff;color:#2a2622;box-shadow:0 0 0 4px #2a2622 inset">After Effects
+        <svg width="320" height="40" style="position:absolute;left:-10px;top:20px;overflow:visible"><path id="aeS" d="M5 25 L300 5" stroke="#d64545" stroke-width="10" stroke-linecap="round" stroke-dasharray="320" stroke-dashoffset="320"/></svg></div>
+      <div id="zero" style="position:absolute;left:640px;top:1140px;font-size:120px;font-weight:900;color:#d97757;border:10px solid #d97757;border-radius:30px;padding:0 30px;opacity:0;line-height:1.15">0 ₽</div>
+    </div>
+
+    <!-- a6: CTA -->
+    <div class="sc" id="s6">
+      <div class="big" id="h6" style="top:380px;font-size:110px">ВСЕ <span style="color:#d97757">ПРОМПТЫ</span></div>
+      <div class="big" id="h6b" style="top:500px;font-size:54px;color:#8a8178;letter-spacing:0">в моём телеграм-канале</div>
+      <div class="card" id="prof" style="left:80px;top:620px;width:920px;height:520px">
+        <div style="position:absolute;left:44px;top:44px;display:flex;align-items:center;gap:30px">
+          <img src="../limits/avatar.jpg" style="width:170px;height:170px;border-radius:85px;object-fit:cover;box-shadow:0 0 0 6px #d97757">
+          <div><div style="font-size:56px;font-weight:900;letter-spacing:-1px">@claudecode09</div>
+            <div style="display:flex;gap:40px;margin-top:10px;font-size:28px;font-weight:800;color:#8a8178"><span><b style="color:#2a2622">видео</b> в Claude</span><span><b style="color:#2a2622">промпты</b> · разборы</span></div></div>
+        </div>
+        <div style="position:absolute;left:44px;top:250px;width:620px"><div style="height:18px;border-radius:9px;background:#e8dfd3;width:90%"></div><div style="height:18px;border-radius:9px;background:#e8dfd3;width:70%;margin-top:14px"></div></div>
+        <div id="link" style="position:absolute;left:44px;top:330px;display:flex;align-items:center;gap:18px;font-size:42px;font-weight:900;color:#2a7fbf;padding:16px 26px;border-radius:22px">🔗 ✈️ Telegram · @claudecode09</div>
+        <div style="position:absolute;left:44px;right:44px;bottom:36px;height:70px;border-radius:20px;background:#d97757;color:#fff;font-size:32px;font-weight:900;display:flex;align-items:center;justify-content:center">Подписаться</div>
+      </div>
+      <div id="arrow" style="position:absolute;left:760px;top:1060px;opacity:0;font-size:40px;font-weight:900;color:#d97757;text-align:center;line-height:1.1">
+        <svg width="160" height="130" viewBox="0 0 160 130" style="display:block;margin:0 auto"><path id="arP" d="M120 125 C130 70 90 40 30 30" stroke="#d97757" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="200" stroke-dashoffset="200"/><path d="M52 6 L26 30 L56 50" stroke="#d97757" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        ссылка<br>в шапке</div>
+    </div>
+  </div>
+  <div id="subs"></div>
+  <div id="wipe"></div>
+  <div id="flash"></div>
+</div>
+
+<script src="data/words.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const easeOut = k => 1 - Math.pow(1 - k, 3);
+const easeIn = k => k * k * k;
+const easeInOut = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+const easeOutBack = k => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+const decay = (t, t0, rate = 6) => t < t0 ? 0 : Math.exp(-(t - t0) * rate);
+const noise = (t, f, ph = 0) => Math.sin(t * f + ph) * .6 + Math.sin(t * f * 2.31 + ph * 1.7) * .4;
+const BPM = 110, BEAT = 60 / BPM;
+const LEAD = +(window.VO_OFFSET || 0); // voice start offset inside the mix
+
+const SCENES = [
+  { id: 'a1', text: 'Этот мультик нарисовал не художник. Его написал Claude — кодом.' },
+  { id: 'a2', text: 'Шаг первый: пишешь идею — Claude выдаёт сценарий и раскадровку.' },
+  { id: 'a3', text: 'Шаг второй: персонаж из простых фигур. Круг, овалы, линии — и он оживает.' },
+  { id: 'a4', text: 'Шаг третий: голос, звуки и субтитры по словам — тоже Claude.' },
+  { id: 'a5', text: 'Шаг четвёртый: одна команда — и готовое видео. Без After Effects и без денег.' },
+  { id: 'a6', text: 'Все промпты — в моём телеграм-канале. Ссылка в шапке профиля!' },
+];
+const norm = w => w.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/g, '');
+const TOK = [];
+SCENES.forEach((sc, si) => { sc.tokens = []; sc.text.split(/\s+/).forEach(w => { if (!norm(w)) return; const tk = { w, n: norm(w), si }; sc.tokens.push(tk); TOK.push(tk); }); });
+(function () {
+  const W = window.WORDS;
+  if (W && W.length === TOK.length) TOK.forEach((tk, i) => { tk.s = W[i].s + LEAD; tk.e = W[i].e + LEAD; });
+  else { let t = .3; TOK.forEach((tk, i) => { const d = .065 * tk.n.length + .1; tk.s = t; tk.e = t + d; t += d + .03; if (/[.!?…»]$/.test(tk.w)) t += .4; else if (/[,:—]$/.test(tk.w)) t += .15; }); }
+})();
+const VO_END = TOK[TOK.length - 1].e;
+const DURATION = Math.ceil((VO_END + 2.6) / BEAT) * BEAT;
+// scene cuts snap to the music beat grid inside the pause between scenes
+SCENES.forEach((sc, i) => {
+  if (!i) { sc.start = 0; return; }
+  const a = SCENES[i - 1].tokens.at(-1).e + .05, b = sc.tokens[0].s - .05;
+  let best = null; for (let k = Math.ceil(a / BEAT); k * BEAT <= b; k++) { const x = k * BEAT; if (best === null || Math.abs(x - (b - .12)) < Math.abs(best - (b - .12))) best = x; }
+  sc.start = best ?? b - .05;
+});
+SCENES.forEach((sc, i) => { sc.end = i < SCENES.length - 1 ? SCENES[i + 1].start : DURATION; });
+function W(sid, pre, nth = 0, edge = 's') {
+  const sc = SCENES.find(s => s.id === sid), p = norm(pre);
+  let h = sc.tokens.filter(t => t.n === p); if (!h.length) h = sc.tokens.filter(t => t.n.startsWith(p));
+  if (!h.length) throw new Error('cue ' + sid + ' ' + pre);
+  return h[Math.min(nth, h.length - 1)][edge];
+}
+const S = id => SCENES.find(s => s.id === id);
+const CHUNKS = [];
+(function () {
+  let cur = []; const flush = () => { if (cur.length) CHUNKS.push(cur); cur = []; };
+  TOK.forEach((tk, i) => { const pv = TOK[i - 1]; if (cur.length && pv.si !== tk.si) flush(); cur.push(tk);
+    const len = cur.reduce((a, t) => a + t.w.length + 1, 0);
+    if (/[.!?…:»]$/.test(tk.w) || /[,—]$/.test(tk.w) && cur.length >= 2 || cur.length >= 3 || len > 17) flush(); });
+  flush();
+  CHUNKS.forEach((c, i) => { c.s = c[0].s - .05; c.e = i < CHUNKS.length - 1 ? CHUNKS[i + 1][0].s - .05 : c[c.length - 1].e + .6; });
+})();
+
+// ---------- cues
+const T = {
+  a1hero: .15, a1no: W('a1', 'художник'), a1claude: W('a1', 'написал'), a1code: W('a1', 'кодом'),
+  a2type: S('a2').start + .25, a2send: W('a2', 'идею', 0, 'e'), a2r1: W('a2', 'сценарий'), a2r2: W('a2', 'раскадровку'),
+  a3body: W('a3', 'персонаж'), a3head: W('a3', 'круг'), a3eyes: W('a3', 'овалы'), a3lines: W('a3', 'линии'), a3live: W('a3', 'оживает'),
+  a4wave: W('a4', 'голос'), a4sfx: W('a4', 'звуки'), a4subs: W('a4', 'субтитры'), a4cl: W('a4', 'тоже'),
+  a5cmd: S('a5').start + .2, a5go: W('a5', 'команда'), a5done: W('a5', 'видео'), a5ae: W('a5', 'after'), a5zero: W('a5', 'денег'),
+  a6: S('a6').start, a6tg: W('a6', 'телеграм'), a6link: W('a6', 'ссылка'), a6head: W('a6', 'шапке'),
+};
+const PUNCH = [T.a1no, T.a1code, T.a2r2, T.a3live, T.a4cl, T.a5done, T.a5zero, T.a6link];
+const STEPS = { a2: 1, a3: 2, a4: 3, a5: 4 };
+
+window.getSfx = function () {
+  const ev = [];
+  ev.push({ t: T.a1hero, k: 'pop' }); ev.push({ t: T.a1no, k: 'stamp' }); ev.push({ t: T.a1claude, k: 'whoosh' });
+  for (let x = T.a1claude + .1; x < T.a1code + .2; x += .11) ev.push({ t: x, k: 'tick' });
+  ev.push({ t: T.a1code, k: 'success' });
+  SCENES.forEach((s, i) => { if (i) ev.push({ t: s.start - .12, k: 'whoosh' }); });
+  for (let x = T.a2type; x < T.a2send - .05; x += .09) ev.push({ t: x, k: 'click' });
+  ev.push({ t: T.a2send, k: 'send' }); ev.push({ t: T.a2r1, k: 'pop' });
+  for (let i = 0; i < 4; i++) ev.push({ t: T.a2r2 + i * .1, k: 'pop' });
+  [T.a3body, T.a3head, T.a3eyes, T.a3lines].forEach(x => ev.push({ t: x, k: 'pop' }));
+  ev.push({ t: T.a3live, k: 'sparkle' }); ev.push({ t: T.a3live + .1, k: 'boing' });
+  ev.push({ t: T.a4sfx, k: 'pop' }); ev.push({ t: T.a4sfx + .18, k: 'pop' }); ev.push({ t: T.a4sfx + .36, k: 'ding' });
+  for (let i = 0; i < 4; i++) ev.push({ t: T.a4subs + .1 + i * .18, k: 'tick' });
+  ev.push({ t: T.a4cl, k: 'sparkle' });
+  for (let x = T.a5cmd; x < T.a5go - .1; x += .08) ev.push({ t: x, k: 'click' });
+  for (let x = T.a5go; x < T.a5done; x += .12) ev.push({ t: x, k: 'tick' });
+  ev.push({ t: T.a5done, k: 'success' }); ev.push({ t: T.a5ae, k: 'whoosh' }); ev.push({ t: T.a5zero, k: 'stamp' });
+  ev.push({ t: T.a6, k: 'ding' }); ev.push({ t: T.a6link, k: 'pop' }); ev.push({ t: T.a6head, k: 'sparkle' });
+  return ev.filter(e => e.t >= 0 && e.t < DURATION);
+};
+window.DURATION = DURATION; window.BPM = BPM; window.SCENES_T = SCENES.map(s => s.start);
+
+// ---------- hero (character built from simple shapes)
+const INK = '#2a2622';
+const HERO = `<svg viewBox="-200 -260 400 520" width="100%" height="100%" style="overflow:visible">
+ <g class="pLegs"><line x1="-50" y1="175" x2="-60" y2="245" stroke="${INK}" stroke-width="24" stroke-linecap="round"/><line x1="50" y1="175" x2="60" y2="245" stroke="${INK}" stroke-width="24" stroke-linecap="round"/></g>
+ <g class="pArmL"><line x1="-100" y1="70" x2="-170" y2="155" stroke="${INK}" stroke-width="24" stroke-linecap="round"/></g>
+ <g class="pArmR"><line x1="100" y1="70" x2="178" y2="-5" stroke="${INK}" stroke-width="24" stroke-linecap="round"/><circle cx="182" cy="-12" r="22" fill="#ffe9d2" stroke="${INK}" stroke-width="7"/></g>
+ <g class="pBody"><rect x="-112" y="20" width="224" height="170" rx="70" fill="#d97757" stroke="${INK}" stroke-width="8"/><text x="0" y="128" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="52" fill="#fff">&lt;/&gt;</text></g>
+ <g class="pHead"><line x1="0" y1="-205" x2="0" y2="-250" stroke="${INK}" stroke-width="8"/><circle cx="0" cy="-252" r="16" fill="#ffc94a" stroke="${INK}" stroke-width="7"/>
+   <circle cx="0" cy="-90" r="120" fill="#ffe9d2" stroke="${INK}" stroke-width="8"/>
+   <ellipse cx="-70" cy="-48" rx="20" ry="12" fill="#f4a99a"/><ellipse cx="70" cy="-48" rx="20" ry="12" fill="#f4a99a"/></g>
+ <g class="pEyes"><ellipse cx="-42" cy="-100" rx="20" ry="30" fill="${INK}"/><ellipse cx="42" cy="-100" rx="20" ry="30" fill="${INK}"/><circle cx="-36" cy="-112" r="7" fill="#fff"/><circle cx="48" cy="-112" r="7" fill="#fff"/></g>
+ <g class="pMouth"><path d="M-38 -42 Q0 -4 38 -42" stroke="${INK}" stroke-width="10" fill="none" stroke-linecap="round"/></g>
+</svg>`;
+['hero1', 'hero3', 'heroMini'].forEach(id => $(id).innerHTML = HERO);
+const PARTS = r => Object.fromEntries(['pLegs', 'pArmL', 'pArmR', 'pBody', 'pHead', 'pEyes', 'pMouth'].map(c => [c, r.querySelector('.' + c)]));
+const H1 = PARTS($('hero1')), H3 = PARTS($('hero3')), HM = PARTS($('heroMini'));
+// assemble offsets [dx, dy, rot]
+const FROM = { pBody: [0, 900, 0], pHead: [-700, -500, -120], pEyes: [0, -900, 0], pMouth: [800, 0, 90], pArmL: [-800, 200, -60], pArmR: [800, 300, 60], pLegs: [0, 900, 0] };
+function heroPose(P, t, o = {}) {
+  const bob = Math.sin(t * 4.2) * 6 - (o.jump ? 70 * Math.max(0, Math.sin(Math.PI * clamp((t - o.jump) / .45))) : 0);
+  const bl = (t % 2.9) < .13 || (o.blinkAt && Math.abs(t - o.blinkAt) < .08) ? .1 : 1;
+  const wave = o.wave ? -25 + 30 * Math.sin(t * 11) : 8 * Math.sin(t * 2);
+  for (const [k, el] of Object.entries(P)) {
+    let dx = 0, dy = bob, r = 0, op = 1;
+    const at = o.asm && o.asm[k];
+    if (at !== undefined) { const kk = clamp((t - at) / .4); op = t < at ? 0 : 1; const e = easeOutBack(kk); dx += FROM[k][0] * (1 - e); dy += FROM[k][1] * (1 - e); r += FROM[k][2] * (1 - e); }
+    let tf = `translate(${dx} ${dy}) rotate(${r})`;
+    if (k === 'pArmR') tf += ` rotate(${wave} 100 70)`;
+    if (k === 'pArmL') tf += ` rotate(${4 * Math.sin(t * 3)} -100 70)`;
+    if (k === 'pEyes') tf += ` translate(0 -100) scale(1 ${bl}) translate(0 100)`;
+    if (k === 'pHead' || k === 'pEyes' || k === 'pMouth') tf += ` rotate(${3 * Math.sin(t * 2.2)} 0 0)`;
+    el.setAttribute('transform', tf); el.style.opacity = op;
+  }
+}
+
+// ---------- static builders
+(function () {
+  let s = ''; [[-120, 160, 420, '#ead9c4'], [820, 60, 360, '#f0d3c3'], [-160, 1180, 460, '#e4ece3'], [780, 1500, 420, '#f6e2b8'], [360, 1760, 300, '#ead9c4']].forEach(([x, y, w, c], i) => s += `<div data-p="${.3 + i * .1}" style="left:${x}px;top:${y}px;width:${w}px;height:${w}px;background:${c}"></div>`);
+  $('bg').innerHTML = s;
+  // storyboard cards with tiny scenes
+  const mini = [
+    '<circle cx="102" cy="150" r="40" fill="#ffc94a" stroke="#2a2622" stroke-width="5"/><path d="M0 230 Q100 180 205 230 L205 290 L0 290Z" fill="#9cc9a4"/>',
+    '<rect x="62" y="110" width="80" height="90" rx="30" fill="#d97757" stroke="#2a2622" stroke-width="5"/><circle cx="102" cy="90" r="34" fill="#ffe9d2" stroke="#2a2622" stroke-width="5"/>',
+    '<path d="M30 120 L90 90 L90 150 Z" fill="#3aa6a0"/><circle cx="135" cy="125" r="34" fill="#ffe9d2" stroke="#2a2622" stroke-width="5"/><path d="M40 200 Q100 240 170 200" stroke="#2a2622" stroke-width="6" fill="none"/>',
+    '<path d="M102 70 L118 112 L162 112 L127 138 L140 182 L102 156 L64 182 L77 138 L42 112 L86 112Z" fill="#ffc94a" stroke="#2a2622" stroke-width="5"/>'];
+  const caps = ['утро', 'робот', 'музыка', 'финал'];
+  $('sbs').innerHTML = mini.map((m, i) => `<div class="sb" style="left:${70 + i * 240}px"><div class="n">${i + 1}</div><svg width="205" height="290">${m}</svg><div class="cap">${caps[i]}</div></div>`).join('');
+  let b = ''; for (let i = 0; i < 30; i++) b += `<div class="bar" style="left:${i * 28.4}px"></div>`; $('bars').innerHTML = b;
+})();
+const BGS = [...document.querySelectorAll('#bg div')], SBS = [...document.querySelectorAll('.sb')], BARS = [...document.querySelectorAll('.bar')], WDS = [...document.querySelectorAll('#sdw .wd')];
+const CODE1 = [
+  ['<span class="c">// персонаж «Кодик»</span>', '// персонаж «Кодик»'],
+  ['<span class="k">&lt;circle</span> r=<span class="s">"120"</span><span class="k">/&gt;</span>', '<circle r="120"/>'],
+  ['<span class="k">&lt;ellipse</span> rx=<span class="s">"20"</span><span class="k">/&gt;</span>', '<ellipse rx="20"/>'],
+  ['<span class="k">&lt;rect</span> rx=<span class="s">"70"</span><span class="k">/&gt;</span>', '<rect rx="70"/>'],
+  ['<span class="k">&lt;line</span> <span class="c">…руки</span><span class="k">/&gt;</span>', '<line …руки/>'],
+  ['wave(<span class="s">rightArm</span>)', 'wave(rightArm)'],
+  ['blink(<span class="s">eyes</span>) <span class="c">✨</span>', 'blink(eyes) ✨'],
+];
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+function pop(el, t, a, b = 1e9, base = '') {
+  const pi = clamp((t - a) / .35), po = clamp((t - b) / .25);
+  if (t < a || po >= 1) { el.style.opacity = 0; return false; }
+  el.style.opacity = clamp((t - a) / .08) * (1 - po);
+  el.style.transform = `${base} scale(${Math.max(.001, easeOutBack(pi) * (1 - .15 * po))}) translateY(${-40 * easeIn(po)}px)`;
+  return true;
+}
+const SCS = SCENES.map((s, i) => $('s' + (i + 1)));
+
+window.renderAt = function (t) {
+  const si = Math.max(0, SCENES.findIndex(s => t >= s.start && t < s.end)), sc = SCENES[si], id = sc.id;
+  // camera drift + punches
+  let z = 1 + .015 * noise(t, .4) + .012 * clamp((t - sc.start) / 5);
+  PUNCH.forEach(p => z += .03 * decay(t, p, 6));
+  $('cam').style.transform = `translate(${noise(t, .3) * 10}px, ${noise(t, .25, 2) * 8}px) rotate(${noise(t, .2, 4) * .35}deg) scale(${z})`;
+  BGS.forEach((b, i) => b.style.transform = `translate(${noise(t, .2, i) * 60 * +b.dataset.p}px, ${Math.sin(t * .35 + i) * 40}px) scale(${1 + .05 * Math.sin(t * .5 + i)})`);
+  // beat pulse on bg
+  const bp = decay(t % BEAT, 0, 9);
+  BGS.forEach((b, i) => b.style.opacity = .85 + .15 * bp);
+
+  // scene containers: old exits up (blur), new enters from below, staggered
+  SCS.forEach((el, i) => {
+    const s = SCENES[i];
+    if (t < s.start || t >= s.end + .0) { el.style.opacity = 0; return; }
+    const ki = i ? clamp((t - s.start) / .32) : 1, ko = i < SCENES.length - 1 ? clamp((t - (s.end - .2)) / .2) : 0;
+    const y = (1 - easeOut(ki)) * 260 - easeIn(ko) * 260, bl = (1 - ki) * 14 + ko * 14;
+    el.style.opacity = Math.min(clamp(ki * 1.6), 1 - ko);
+    el.style.transform = `translateY(${y}px) scale(${1 - .04 * (1 - ki) - .04 * ko})`;
+    el.style.filter = bl > .3 ? `blur(${bl}px)` : 'none';
+  });
+  // coral wipe at the very first cut (hook -> steps)
+  { const d = t - S('a2').start; const k = clamp((d + .25) / .5); $('wipe').style.transform = `translateY(${lerp(2100, -2300, easeInOut(k))}px) skewY(-8deg)`; }
+
+  // header
+  const st = STEPS[id];
+  $('step').style.display = st ? 'block' : 'none'; $('dots').style.opacity = st ? 1 : 0;
+  if (st) { $('step').textContent = `ШАГ ${st}/4`; $('step').style.transform = `scale(${1 + .25 * decay(t, sc.start, 6)})`; document.querySelectorAll('#dots i').forEach((e, i) => e.className = i < st ? 'on' : ''); }
+  $('headT').style.opacity = id === 'a6' ? 0 : 1;
+
+  // ---- a1
+  if (id === 'a1') {
+    const k0 = clamp((t - .05) / .35);
+    $('h1a').style.opacity = k0; $('h1a').style.transform = `translateY(${(1 - easeOutBack(k0)) * 60}px)`;
+    const ks = clamp((t - T.a1no) / .25); $('strikeP').style.strokeDashoffset = 800 * (1 - ks);
+    const kc = clamp((t - T.a1claude) / .3);
+    $('h1b').style.opacity = clamp(1 - kc * 2) * clamp((t - .4) / .3); $('h1b').style.transform = `scale(${1 + .12 * decay(t, T.a1no, 8)}) translateY(${-kc * 40}px)`;
+    $('h1c').style.opacity = kc; $('h1c').style.transform = `translateY(${(1 - easeOut(kc)) * 50}px)`;
+    // hero: centered at first, slides right when code appears
+    const hx = lerp(0, 230, easeInOut(kc)), hs = lerp(1, .92, kc);
+    pop($('hero1'), t, T.a1hero, 1e9, `translateX(${hx}px) scale(${hs})`);
+    heroPose(H1, t, { wave: true, jump: T.a1code });
+    const kp = clamp((t - T.a1claude) / .35); $('code1').style.opacity = kp; $('code1').style.transform = `translateX(${(1 - easeOut(kp)) * -300}px) rotate(${-2 * (1 - kp)}deg)`;
+    const total = CODE1.reduce((a, l) => a + l[1].length, 0), dur = Math.max(.6, T.a1code + .3 - T.a1claude - .1);
+    let n = Math.floor(total * clamp((t - T.a1claude - .1) / dur)), out = [];
+    for (const [h, p] of CODE1) { if (n >= p.length) { out.push(h); n -= p.length; } else { out.push(esc(p.slice(0, n)) + (Math.sin(t * 14) > 0 ? '▍' : '')); break; } }
+    $('code1t').innerHTML = out.join('\n');
+  }
+  // ---- a2
+  if (id === 'a2') {
+    const msg = 'мультик про робота, который учится танцевать';
+    const kt = clamp((t - T.a2type) / Math.max(.3, T.a2send - T.a2type - .05));
+    if (t < T.a2send) { $('typed').textContent = msg.slice(0, Math.round(msg.length * kt)).slice(-34) + (Math.sin(t * 14) > 0 ? '|' : ''); $('typed').style.color = INK; }
+    else { $('typed').textContent = 'Напиши Claude…'; $('typed').style.color = '#a39a8f'; }
+    const km = clamp((t - T.a2send) / .3); $('m2').style.opacity = km; $('m2').style.transform = `translateY(${(1 - easeOut(km)) * 50}px)`;
+    $('a2').style.opacity = clamp((t - T.a2send - .25) / .2);
+    [['r2a', T.a2r1], ['r2b', T.a2r2]].forEach(([e, a]) => { const k = clamp((t - a) / .3); $(e).style.opacity = k; $(e).style.transform = `translateX(${(1 - easeOut(k)) * -30}px)`; });
+    SBS.forEach((c, i) => { const a = T.a2r2 + .1 + i * .1, k = clamp((t - a) / .45); c.style.opacity = t >= a ? 1 : 0;
+      c.style.transform = `translate(${(1.5 - i) * 240 * (1 - easeOut(k))}px, ${(1 - easeOutBack(k)) * -420}px) rotate(${(i - 1.5) * 4 * easeOut(k) + Math.sin(t * 2.5 + i) * 1.5}deg) scale(${lerp(.3, 1, easeOutBack(k))})`; });
+  }
+  // ---- a3
+  if (id === 'a3') {
+    heroPose(H3, t, { asm: { pBody: T.a3body, pLegs: T.a3lines, pHead: T.a3head, pEyes: T.a3eyes, pMouth: T.a3lines + .12, pArmL: T.a3lines, pArmR: T.a3lines + .08 }, wave: t > T.a3live, jump: T.a3live, blinkAt: T.a3live + .5 });
+    $('hero3').style.transform = `scale(${1 + .06 * decay(t, T.a3live, 5)})`;
+    pop($('c3a'), t, T.a3head + .05, 1e9, 'rotate(-4deg)'); pop($('c3b'), t, T.a3eyes + .05, 1e9, 'rotate(4deg)'); pop($('c3c'), t, T.a3lines + .05, 1e9, 'rotate(-3deg)');
+    pop($('h3'), t, T.a3live);
+  }
+  // ---- a4
+  if (id === 'a4') {
+    const talk = TOK.some(tk => tk.si === 3 && t >= tk.s && t < tk.e);
+    BARS.forEach((b, i) => { const a = Math.abs(noise(t * 3, 2.3 + i * .7, i * 1.3)); const live = t >= T.a4wave ? (talk ? 1 : .25) : .08; b.style.height = (14 + 150 * a * live) + 'px'; b.style.bottom = (85 - (14 + 150 * a * live) / 2) + 'px'; b.style.background = i % 3 === 0 ? '#3aa6a0' : '#d97757'; });
+    pop($('c4a'), t, T.a4sfx, 1e9, 'rotate(-3deg)'); pop($('c4b'), t, T.a4sfx + .18, 1e9, 'rotate(3deg)'); pop($('c4c'), t, T.a4sfx + .36, 1e9, 'rotate(-2deg)');
+    pop($('sd'), t, T.a4subs - .1);
+    WDS.forEach((w, i) => { const a = T.a4subs + .1 + i * .18; const on = t >= a && (i === 3 || t < a + .18) || t > T.a4subs + .1 + 4 * .18 + .4 && (Math.floor((t - T.a4subs) / .22) % 4 === i); w.className = on ? 'wd on' : 'wd'; });
+    pop($('h4'), t, T.a4cl);
+  }
+  // ---- a5
+  if (id === 'a5') {
+    const cmd = 'node render.cjs video мультик.mp4';
+    const kc = clamp((t - T.a5cmd) / Math.max(.3, T.a5go - .1 - T.a5cmd));
+    $('cmd').textContent = cmd.slice(0, Math.round(cmd.length * kc)) + (t < T.a5go && Math.sin(t * 14) > 0 ? '▍' : '');
+    const kp = clamp((t - T.a5go) / Math.max(.4, T.a5done - T.a5go)); const p = easeInOut(kp);
+    $('pbar').style.width = (p * 100) + '%'; $('pct').textContent = Math.round(p * 100); $('pfr').textContent = t >= T.a5go ? `кадр ${Math.round(p * 900)}/900` : '';
+    $('pbar').style.background = kp >= 1 ? '#7cc27a' : '#ffc94a';
+    pop($('mp4'), t, T.a5done); heroPose(HM, t, { wave: true });
+    pop($('c5a'), t, T.a5ae - .05, 1e9, 'rotate(-3deg)'); $('aeS').style.strokeDashoffset = 320 * (1 - clamp((t - T.a5ae - .25) / .25));
+    { const k = clamp((t - T.a5zero) / .25); $('zero').style.opacity = t >= T.a5zero ? 1 : 0; $('zero').style.transform = `rotate(-8deg) scale(${lerp(2.4, 1, easeOut(k))})`; }
+  }
+  // ---- a6
+  if (id === 'a6') {
+    const k = clamp((t - T.a6) / .35); $('h6').style.opacity = k; $('h6').style.transform = `scale(${lerp(1.4, 1, easeOut(k))})`;
+    pop($('h6b'), t, T.a6tg);
+    pop($('prof'), t, T.a6tg + .1);
+    const kl = clamp((t - T.a6link) / .3), pul = .5 + .5 * Math.sin(t * 7);
+    $('link').style.background = t >= T.a6link ? `rgba(255,201,74,${.35 + .35 * pul})` : 'transparent';
+    $('link').style.boxShadow = t >= T.a6link ? `0 0 0 ${4 + 3 * pul}px #ffc94a` : 'none';
+    $('link').style.transform = `scale(${1 + .08 * decay(t, T.a6link, 5) + .02 * pul * kl})`;
+    $('arrow').style.opacity = clamp((t - T.a6head) / .2); $('arP').style.strokeDashoffset = 200 * (1 - clamp((t - T.a6head) / .35));
+    $('arrow').style.transform = `translate(${Math.sin(t * 6) * 6}px, ${Math.abs(Math.sin(t * 6)) * -10}px)`;
+  }
+
+  // subtitles
+  const ch = CHUNKS.find(c => t >= c.s && t < c.e), subs = $('subs');
+  if (!ch || t > VO_END + .5) { subs.innerHTML = ''; subs._c = null; }
+  else {
+    if (subs._c !== ch) { subs.innerHTML = ch.map(tk => `<span>${tk.w.replace(/[«»]/g, '')}</span>`).join(' '); subs._c = ch; }
+    const sp = subs.children, k = clamp((t - ch.s) / .16);
+    subs.style.transform = `translateY(${(1 - easeOut(k)) * 24}px) scale(${.9 + .1 * easeOutBack(k)})`; subs.style.opacity = clamp((t - ch.s) / .08);
+    ch.forEach((tk, i) => { const on = t >= tk.s - .03 && (i === ch.length - 1 || t < ch[i + 1].s - .03); sp[i].className = on ? 'on' : ''; const kk = on ? clamp((t - tk.s + .03) / .12) : 0; sp[i].style.transform = `scale(${1 + .1 * Math.sin(Math.PI * kk) + (on ? .04 : 0)})`; });
+  }
+  $('subs').style.top = '1440px';
+  $('flash').style.opacity = .45 * Math.max(decay(t, T.a1code, 9), decay(t, T.a3live, 9), decay(t, T.a5done, 9));
+  const fo = clamp((t - (DURATION - .35)) / .35); $('stage').style.filter = fo > 0 ? `brightness(${1 - fo})` : 'none';
+};
+window.READY = true;
+if (!/render/.test(location.search)) {
+  const fit = () => { const s = Math.min(innerWidth / 1080, innerHeight / 1920); $('stage').style.transform = `scale(${s})`; };
+  fit(); addEventListener('resize', fit);
+  const t0 = performance.now(); const loop = () => { renderAt(((performance.now() - t0) / 1000) % DURATION); requestAnimationFrame(loop); }; loop();
+}
+</script>
+</body>
+</html>
