@@ -1,0 +1,66 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:Osw;src:url(oswald-cyrillic-700-normal.woff2);unicode-range:U+0400-045F}
+@font-face{font-family:Osw;src:url(oswald-latin-700-normal.woff2);unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF}
+@font-face{font-family:Ons;src:url(onest-cyrillic-800-normal.woff2);unicode-range:U+0400-045F;font-weight:800}
+@font-face{font-family:Ons;src:url(onest-latin-800-normal.woff2);unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF;font-weight:800}
+@font-face{font-family:Ons;src:url(onest-cyrillic-600-normal.woff2);unicode-range:U+0400-045F;font-weight:600}
+@font-face{font-family:Ons;src:url(onest-latin-600-normal.woff2);unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF;font-weight:600}
+@font-face{font-family:Ser;src:url(source-serif-4-latin-500-normal.woff2)}
+html,body{margin:0;background:#222}
+.t{position:relative;width:1280px;height:720px;overflow:hidden;margin-bottom:20px}
+.cover{position:absolute;object-fit:cover}
+.tile{position:absolute;width:150px;height:150px;border-radius:38px;background:linear-gradient(145deg,#f6a476,#de6b3d 55%,#b8472a);box-shadow:inset 0 7px 12px rgba(255,255,255,.5),inset 0 -12px 20px rgba(0,0,0,.25),0 26px 44px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center}
+.tile svg{filter:drop-shadow(0 4px 4px rgba(0,0,0,.25))}
+.pill{position:absolute;padding:8px 18px;border-radius:14px;font-family:Ons;font-weight:800;font-size:24px}
+</style></head><body>
+
+<!-- ========== A: triptych (как у лидера по теме) ========== -->
+<div class="t" id="A" style="background:#000">
+  <img class="cover" src="frames/k_22.jpg" style="left:0;top:0;width:424px;height:720px;object-position:50% 40%">
+  <img class="cover" src="frames/m_24.jpg" style="left:428px;top:0;width:424px;height:720px;object-position:45% 45%">
+  <img class="cover" src="res_45.jpg" style="left:856px;top:0;width:424px;height:720px;object-position:50% 40%">
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.25) 34%,transparent 52%)"></div>
+  <div style="position:absolute;left:36px;top:22px;display:flex;align-items:center;gap:20px">
+    <svg width="128" height="128" viewBox="-100 -100 200 200" style="filter:drop-shadow(0 0 24px rgba(240,120,70,.8))"><g stroke="#ee7a4c" stroke-width="17" stroke-linecap="round" id="sparkA"></g></svg>
+    <span style="font-family:Ser;font-size:170px;line-height:1;color:#fff;letter-spacing:-4px;text-shadow:0 6px 30px rgba(0,0,0,.6)">Claude</span>
+  </div>
+  <div class="pill" style="left:18px;top:640px;background:rgba(0,0,0,.72);color:#fff">Rick's Clips</div>
+  <div class="pill" style="left:446px;top:640px;background:#ee7a3f;color:#170e09">сделал Claude</div>
+  <div class="pill" style="left:874px;top:640px;background:#ee7a3f;color:#170e09">сделал Claude</div>
+  <div style="position:absolute;left:388px;top:330px;width:84px;height:84px;border-radius:42px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.5)"><svg width="46" height="46" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" stroke="#16110d" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+</div>
+
+<!-- ========== B: светлая, «СКОПИРОВАЛ» + 3D-иконка ========== -->
+<div class="t" id="B" style="background:radial-gradient(ellipse at 30% 40%,#fffaf3,#f1e6d8 70%,#e6d6c3)">
+  <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(60,40,20,.07) 2px,transparent 2.5px);background-size:30px 30px"></div>
+  <div style="position:absolute;left:54px;top:70px">
+    <div style="font-family:Osw;font-size:128px;line-height:.98;color:#16110d;letter-spacing:-1px">СКОПИРОВАЛ</div>
+    <div style="font-family:Osw;font-size:128px;line-height:.98;color:#ee5f24;letter-spacing:-1px;text-shadow:0 5px 0 #a8380f">RICK'S CLIPS</div>
+    <div style="margin-top:28px;display:inline-flex;align-items:center;gap:14px;padding:16px 26px;border-radius:20px;background:#16110d;color:#fff;font-family:Ons;font-weight:800;font-size:40px">одним промптом в Claude</div>
+  </div>
+  <div style="position:absolute;left:765px;top:175px;width:250px;height:330px;border-radius:24px;overflow:hidden;transform:rotate(-8deg);box-shadow:0 24px 50px rgba(60,40,20,.35);border:6px solid #fff"><img src="frames/k_22.jpg" style="width:100%;height:100%;object-fit:cover;object-position:50% 38%"><div class="pill" style="left:10px;top:10px;font-size:18px;background:rgba(0,0,0,.7);color:#fff">оригинал</div></div>
+  <div style="position:absolute;left:950px;top:70px;width:300px;height:540px;border-radius:42px;padding:10px;background:#16110d;transform:rotate(5deg);box-shadow:0 34px 70px rgba(60,40,20,.45)"><div style="width:100%;height:100%;border-radius:34px;overflow:hidden;position:relative"><img src="frames/m_16.jpg" style="width:100%;height:100%;object-fit:cover"><div class="pill" style="left:12px;top:12px;font-size:18px;background:#ee7a3f;color:#170e09">моё</div></div></div>
+  <div class="tile" style="left:885px;top:470px;transform:rotate(-12deg)"><svg width="96" height="96" viewBox="-100 -100 200 200"><g stroke="#fff" stroke-width="18" stroke-linecap="round" id="sparkB"></g></svg></div>
+  <svg width="300" height="160" style="position:absolute;left:600px;top:470px;overflow:visible"><path d="M10 120 C 90 150, 190 120, 250 40" stroke="#2f6bff" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M222 46 L252 34 L262 66" stroke="#2f6bff" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div style="position:absolute;left:58px;top:560px;display:flex;align-items:center;gap:14px;padding:12px 22px 12px 14px;border-radius:40px;background:#fff;box-shadow:0 10px 30px rgba(60,40,20,.2);font-family:Ons;font-weight:800;font-size:30px;color:#16110d"><span style="width:44px;height:44px;border-radius:22px;background:#21b25b;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10" stroke="#fff" stroke-width="3.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>без монтажа · 0 ₽</div>
+</div>
+
+<!-- ========== C: тёмная, реакция + красная плашка + обведённый промпт ========== -->
+<div class="t" id="C" style="background:#0d0b0a">
+  <div style="position:absolute;left:-200px;top:-560px;width:1700px;height:900px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,138,61,.8),rgba(212,86,27,.45) 45%,transparent);filter:blur(40px)"></div>
+  <img class="cover" src="res_45.jpg" style="right:0;top:0;width:620px;height:720px;object-position:50% 34%;-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 26%)">
+  <div style="position:absolute;left:52px;top:60px">
+    <div style="font-family:Osw;font-size:116px;line-height:1;color:#fff;text-shadow:0 6px 24px rgba(0,0,0,.6)">ИИ СДЕЛАЛ</div>
+    <div style="font-family:Osw;font-size:150px;line-height:1;color:#fff;text-shadow:0 6px 24px rgba(0,0,0,.6)">МУЛЬТИК</div>
+    <div style="display:inline-block;margin-top:14px;padding:6px 22px;background:#ff3d2e;transform:rotate(-2deg);font-family:Osw;font-size:66px;line-height:1.1;color:#fff;box-shadow:0 10px 30px rgba(255,61,46,.45)">КАК У RICK'S CLIPS</div>
+  </div>
+  <div style="position:absolute;left:60px;top:500px;padding:18px 26px;border-radius:24px 24px 24px 6px;background:#2b2724;font-family:Ons;font-weight:800;font-size:31px;color:#efe9e2;box-shadow:0 14px 40px rgba(0,0,0,.5);display:flex;align-items:center;gap:16px">
+    <svg width="40" height="40" viewBox="-100 -100 200 200"><g stroke="#ee7a4c" stroke-width="18" stroke-linecap="round" id="sparkC"></g></svg>«сделай как у Rick's Clips»</div>
+  <svg width="620" height="180" style="position:absolute;left:20px;top:466px;overflow:visible"><ellipse cx="282" cy="82" rx="282" ry="78" stroke="#ff3d2e" stroke-width="8" fill="none" transform="rotate(-3 280 80)"/></svg>
+</div>
+
+<script>
+const R=[0,31,58,92,118,151,179,211,238,271,300,331],L=[92,80,96,84,90,78,95,82,92,79,97,85];
+for(const id of ['sparkA','sparkB','sparkC']){const g=document.getElementById(id);g.innerHTML=R.map((a,i)=>{const r=a*Math.PI/180;return `<line x1="0" y1="0" x2="${(Math.cos(r)*L[i]).toFixed(1)}" y2="${(Math.sin(r)*L[i]).toFixed(1)}"/>`}).join('')}
+</script>
+</body></html>
