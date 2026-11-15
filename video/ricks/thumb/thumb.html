@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:U;src:url(unbounded-cyrillic-700-normal.woff2);unicode-range:U+0400-045F}
+@font-face{font-family:U;src:url(unbounded-latin-700-normal.woff2);unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF}
+@font-face{font-family:O;src:url(onest-cyrillic-600-normal.woff2);unicode-range:U+0400-045F}
+@font-face{font-family:O;src:url(onest-latin-600-normal.woff2);unicode-range:U+0000-00FF,U+2000-206F,U+2190-21FF}
+html,body{margin:0}
+#t{position:relative;width:1280px;height:720px;overflow:hidden;background:#0d0b0a;font-family:U}
+.glow{position:absolute;left:-200px;top:-560px;width:1700px;height:900px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,138,61,.95),rgba(212,86,27,.6) 45%,transparent);filter:blur(40px)}
+.glow2{position:absolute;right:-200px;bottom:-400px;width:1000px;height:700px;border-radius:50%;background:radial-gradient(closest-side,rgba(130,60,210,.35),transparent);filter:blur(40px)}
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.06) 1.5px,transparent 2px);background-size:32px 32px}
+.txt{position:absolute;left:56px;top:70px}
+.l1{font-size:64px;color:#f3ede6;letter-spacing:-2px;line-height:1}
+.l2{font-size:96px;color:#ff9d5c;letter-spacing:-4px;line-height:1.02;text-shadow:0 0 40px rgba(238,122,63,.7),0 6px 0 #7a2c0c}
+.l3{margin-top:26px;display:inline-flex;align-items:center;gap:16px;padding:14px 26px 14px 18px;border-radius:22px;background:#f3ede6;color:#16110d;font-size:44px;letter-spacing:-1.5px;box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.card{position:absolute;width:300px;height:330px;border-radius:26px;overflow:hidden;border:5px solid #2b2724;box-shadow:0 30px 60px rgba(0,0,0,.6)}
+.card img{width:100%;height:100%;object-fit:cover}
+.lab{position:absolute;left:12px;top:12px;padding:6px 14px;border-radius:12px;background:rgba(0,0,0,.65);font-family:O;font-size:20px;color:#fff}
+.arrow{position:absolute;left:968px;top:250px;font-size:90px;color:#fff;text-shadow:0 0 30px rgba(255,157,92,.9)}
+.spark{position:absolute;stroke:#e07a50;stroke-width:17;stroke-linecap:round}
+</style></head><body><div id="t">
+<div class="glow"></div><div class="glow2"></div><div class="dots"></div>
+<div class="txt"><div class="l1">МУЛЬТИК КАК У</div><div class="l2">RICK'S<br>CLIPS</div>
+<div class="l3"><svg width="48" height="48" viewBox="-100 -100 200 200" class="spark" style="position:static"><g>
+<line x2="92"/><line x2="69" y2="41"/><line x2="40" y2="72"/><line x2="-3" y2="84"/><line x2="-42" y2="79"/><line x2="-68" y2="38"/><line x2="-95" y2="2"/><line x2="-70" y2="-42"/><line x2="-43" y2="-80"/><line x2="2" y2="-79"/><line x2="45" y2="-84"/><line x2="73" y2="-42"/></g></svg>за 1 промпт</div></div>
+<div class="card" style="left:640px;top:150px;width:310px;height:420px;transform:rotate(-6deg)"><img src="card_rick.jpg"><div class="lab">оригинал</div></div>
+
+<div class="card" style="left:910px;top:105px;width:340px;height:460px;transform:rotate(5deg);border-color:#ee7a3f;box-shadow:0 0 60px rgba(238,122,63,.7),0 30px 60px rgba(0,0,0,.6)"><img src="card_mine.jpg"><div class="lab" style="background:#ee7a3f;color:#170e09">моё · Claude</div></div>
+<div style="position:absolute;left:868px;top:300px;width:84px;height:84px;border-radius:42px;background:#ee7a3f;display:flex;align-items:center;justify-content:center;font-size:52px;color:#170e09;box-shadow:0 0 40px rgba(238,122,63,.9);z-index:5">→</div><div style="position:absolute;left:56px;bottom:46px;font-family:O;font-size:30px;color:#cfc8bf">без монтажа · без After Effects</div>
+</div></body></html>
