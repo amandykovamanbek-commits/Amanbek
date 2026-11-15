@@ -83,7 +83,7 @@ const Deco: React.FC<{ t: number; tint: string; seed: number }> = ({ t, tint, se
 
 // ---------- character «Кодик» built from primitives; supports line-draw, assembly and gestures
 type Part = 'legs' | 'armL' | 'armR' | 'body' | 'head' | 'eyes' | 'mouth';
-const Kodik: React.FC<{ t: number; draw?: number; fill?: number; wave?: boolean; jump?: number; offs?: Partial<Record<Part, [number, number, number, number]>>; line?: string }> = ({ t, draw = 1, fill = 1, wave, jump, offs = {}, line = INK }) => {
+export const Kodik: React.FC<{ t: number; draw?: number; fill?: number; wave?: boolean; jump?: number; offs?: Partial<Record<Part, [number, number, number, number]>>; line?: string }> = ({ t, draw = 1, fill = 1, wave, jump, offs = {}, line = INK }) => {
   const bob = Math.sin(t * 4.4) * 6 - (jump !== undefined ? 80 * Math.max(0, Math.sin(Math.PI * clamp((t - jump) / .5))) : 0);
   const blink = (t % 2.7) < .12 ? .1 : 1;
   const wv = wave ? -30 + 32 * Math.sin(t * 11) : 6 * Math.sin(t * 2.2);
