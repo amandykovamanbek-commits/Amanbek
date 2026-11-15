@@ -4,3 +4,5 @@ out/*
 !out/*.jpg
 !out/*.txt
 public/tools/*.wav
+out/*_raw.mp4
+out/Без_этого_Claude_пустой_10_инструментов.mp4
