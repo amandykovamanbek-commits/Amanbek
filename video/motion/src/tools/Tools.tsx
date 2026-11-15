@@ -23,8 +23,8 @@ export const Tools: React.FC = () => {
   const sweep = lerp(-40, 140, e);
   return <AbsoluteFill style={{ background: BG, overflow: 'hidden' }}>
     <Backdrop t={t} />
-    {Prev && k < 1 && <AbsoluteFill style={{ transform: `scale(${lerp(1, 1.12, e)})`, filter: `blur(${e * 22}px)`, opacity: 1 - ei(clamp(k * 1.25)) }}><Prev t={t} /></AbsoluteFill>}
-    <AbsoluteFill style={k < 1 ? { transform: `scale(${lerp(.9, 1, e)})`, filter: e < .98 ? `blur(${(1 - e) * 18}px)` : undefined, opacity: clamp(k * 2.2) } : undefined}><Cur t={t} /></AbsoluteFill>
+    {Prev && k < .7 && <AbsoluteFill style={{ transform: `scale(${lerp(1, 1.1, e)})`, filter: `blur(${e * 24}px)`, opacity: 1 - eio(clamp(k * 1.6)) }}><Prev t={t} /></AbsoluteFill>}
+    <AbsoluteFill style={k < 1 ? { transform: `scale(${lerp(.92, 1, e)})`, filter: e < .98 ? `blur(${(1 - e) * 18}px)` : undefined, opacity: clamp((k - .2) * 2.4) } : undefined}><Cur t={t} /></AbsoluteFill>
     {i > 0 && k < 1 && <AbsoluteFill style={{ background: `linear-gradient(100deg, transparent ${sweep - 22}%, rgba(255,200,160,.16) ${sweep}%, transparent ${sweep + 22}%)`, mixBlendMode: 'screen', pointerEvents: 'none' }} />}
     <Rail t={t} />
     <Subs t={t} />

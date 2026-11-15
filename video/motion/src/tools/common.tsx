@@ -89,7 +89,7 @@ export const Rail: React.FC<{ t: number }> = ({ t }) => {
 export const ToolHead: React.FC<{ t: number; i: number; until?: number }> = ({ t, i, until }) => {
   const tool = TOOLS[i], id = tool.id, s = S(id), nameAt = C[`${id}n`];
   const morph = until ?? nameAt + 1.55;
-  const m = eio(pr(t, morph, 1));
+  const m = eio(pr(t, morph, .85));
   const num = String(i + 1).padStart(2, '0'), prev = String(i).padStart(2, '0');
   // intro layout (centred) vs header layout (top-left), as one transformed group
   const fit = Math.min(1, 1600 / (480 + 70 + 174 + tool.name.length * 86));
@@ -97,10 +97,10 @@ export const ToolHead: React.FC<{ t: number; i: number; until?: number }> = ({ t
   const tileK = back(pr(t, nameAt - .05, .7));
   const acc = ACC[id] === '#e8e6e3' ? '#bdb8b0' : ACC[id];
   return <>
-    <div style={{ position: 'absolute', left: x, top: y, width: 'max-content', transform: `scale(${sc})`, transformOrigin: '0 0', display: 'flex', alignItems: 'center', gap: 70, whiteSpace: 'nowrap' }}>
-      <BigNum t={t} at={s.start + .1} value={num} from={prev} size={300} sweep={nameAt + .2} chroma={[nameAt]} grad={['#fff3e8', acc]} glow={ACC[id]} />
+    <div style={{ position: 'absolute', zIndex: 5, left: x, top: y, width: 'max-content', transform: `scale(${sc})`, transformOrigin: '0 0', display: 'flex', alignItems: 'center', gap: 70, whiteSpace: 'nowrap' }}>
+      <BigNum t={t} at={s.start + .4} value={num} from={prev} size={300} sweep={nameAt + .2} chroma={[nameAt]} grad={['#fff3e8', acc]} glow={ACC[id]} />
       <div>
-        <Eyebrow t={t} at={s.start + .25} text={`${tool.kind} · ${num} / 10`} color={ACC[id] === '#e8e6e3' ? OR2 : ACC[id]} size={24} />
+        <Eyebrow t={t} at={s.start + .5} text={`${tool.kind} · ${num} / 10`} color={ACC[id] === '#e8e6e3' ? OR2 : ACC[id]} size={24} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 34, marginTop: 20 }}>
           <div style={{ position: 'relative', transform: `perspective(800px) rotateY(${(1 - tileK) * 80}deg) scale(${tileK})`, opacity: clamp(tileK * 2) }}>
             <Tile k={tool.k} s={140} glow={1} />

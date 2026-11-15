@@ -17,7 +17,7 @@ export const T4: React.FC<{ t: number }> = ({ t }) => {
   return <Cam t={t} id="t4">
     <ToolHead t={t} i={3} />
     <Phase t={t} a={m - .05} b={C.t4Mine - .2}>
-      <Win t={t} at={m} x={110} y={190} w={1120} h={780} title="vidIQ — выбросы" bg={VQ.bg} bar="#0f1630">
+      <Win t={t} at={m + .3} x={110} y={190} w={1120} h={780} title="vidIQ — выбросы" bg={VQ.bg} bar="#0f1630">
         <div style={{ position: 'absolute', left: 20, right: 20, top: 18, height: 56, borderRadius: 14, background: VQ.panel, border: `1px solid ${VQ.line}`, display: 'flex', alignItems: 'center', gap: 14, padding: '0 18px', fontFamily: TEXT, fontSize: 20, color: VQ.txt }}>
           {IC.search(20, VQ.sub)}{typed('claude видео', t, m + .1, .6)}<span style={{ marginLeft: 'auto', padding: '6px 12px', borderRadius: 9, background: rgba(VQ.blue, .2), color: '#8db8ff', fontSize: 15, fontWeight: 600 }}>Выбросы за 30 дней</span>
         </div>
@@ -68,7 +68,7 @@ export const T5: React.FC<{ t: number }> = ({ t }) => {
   return <Cam t={t} id="t5">
     <ToolHead t={t} i={4} until={m - .15} />
     <Phase t={t} a={m - .05} b={sa}>
-      <Win t={t} at={m} x={130} y={190} w={1660} h={790} title="Notion" bg="#ffffff" bar="#f7f7f5" light>
+      <Win t={t} at={m + .25} x={130} y={190} w={1660} h={790} title="Notion" bg="#ffffff" bar="#f7f7f5" light>
         <NotionPage t={t} title="Контент-план" at={C.t5Base - .2}>
           {NCOLS.map(([n, c], i) => <div key={n} style={{ position: 'absolute', left: colX(i), top: 0, width: CW, ...rise(t, C.t5Base + i * .08, .5, 12) }}>
             <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 5, background: c, fontSize: 15, fontWeight: 600, color: '#37352f' }}>{n}</span>
@@ -117,7 +117,7 @@ export const T6: React.FC<{ t: number }> = ({ t }) => {
   return <Cam t={t} id="t6">
     <ToolHead t={t} i={5} />
     <Phase t={t} a={m - .2} b={sa}>
-      <Win t={t} at={m - .15} x={110} y={190} w={1080} h={760} title="GitHub" bg={GH.bg} bar={GH.panel}>
+      <Win t={t} at={m + .25} x={110} y={190} w={1080} h={760} title="GitHub" bg={GH.bg} bar={GH.panel}>
         <div style={{ position: 'absolute', left: 24, right: 24, top: 18, display: 'flex', alignItems: 'center', gap: 12, fontFamily: TEXT, fontSize: 22, color: GH.txt }}>
           {IC.branch(22, GH.sub)}<span style={{ color: GH.blue }}>videos</span><span style={{ color: GH.sub }}>/</span><b style={{ color: GH.blue, fontWeight: 600 }}>motion</b>
           <span style={{ marginLeft: 12, padding: '3px 10px', borderRadius: 99, border: `1px solid ${GH.line}`, fontSize: 13, color: GH.sub }}>Private</span>
@@ -136,7 +136,7 @@ export const T6: React.FC<{ t: number }> = ({ t }) => {
         </div>
         {t >= C.t6Broke + .2 && t < C.t6Back + 1 && <Cursor t={t} x={cx - 110} y={cy - 190} hand clicks={[C.t6Back + .1]} />}
       </Win>
-      <div style={{ position: 'absolute', left: 1240, top: 230, width: 560, ...rise(t, C.t6Keep, .7) }}>
+      <div style={{ position: 'absolute', left: 1240, top: 230, width: 560, ...rise(t, Math.max(C.t6Keep, m + .45), .7) }}>
         <div style={{ fontFamily: TEXT, fontWeight: 600, fontSize: 18, color: T2, marginBottom: 12 }}>Превью ролика</div>
         <div style={{ position: 'relative', width: 560, height: 315, borderRadius: 18, overflow: 'hidden', boxShadow: `0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.1)${fixed ? `, 0 0 0 3px ${rgba(GH.green, decay(t, C.t6Back + .5, 1.5))}` : ''}` }}>
           <Img src={staticFile('tools/thA.jpg')} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: glitch ? 'saturate(.4) brightness(.6)' : undefined }} />

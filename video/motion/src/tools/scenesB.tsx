@@ -24,9 +24,9 @@ export const T1: React.FC<{ t: number }> = ({ t }) => {
   return <Cam t={t} id="t1">
     <ToolHead t={t} i={0} />
     <Phase t={t} a={s.start} b={C.t1Hear - .2} din={.01}>
-      <Win t={t} at={m + .05} x={130} y={190} w={1060} h={760} title="Claude" bg={CB.bg} bar="#1f1e1d">
+      <Win t={t} at={m + .3} x={130} y={190} w={1060} h={760} title="Claude" bg={CB.bg} bar="#1f1e1d">
         <ClaudeShell t={t} side={false} title="Озвучка ролика">
-          <UserMsg t={t} at={m + .2} text="Напиши текст для ролика и озвучь его" y={30} />
+          <UserMsg t={t} at={m + .55} text="Напиши текст для ролика и озвучь его" y={30} />
           <AiMsg t={t} at={C.t1Write - .1} y={104} w={940}>
             <div style={{ fontSize: 18, color: CB.sub, marginBottom: 10 }}>Сценарий.txt</div>
             <div style={{ borderRadius: 14, background: '#1f1e1c', border: '1px solid #3a3935', padding: '14px 18px', height: 128, overflow: 'hidden' }}><Stream t={t} at={C.t1Write} text={HOOK_TXT} cps={70} style={{ fontSize: 18, color: '#d9d5cd', lineHeight: 1.55 }} /></div>
@@ -123,7 +123,7 @@ const ThumbB: React.FC<{ t: number; L: number[]; dragX: number }> = ({ t, L, dra
   </div>;
 };
 export const T2: React.FC<{ t: number }> = ({ t }) => {
-  const s = S('t2'), m = C.t2n + 1.55, [sa, sb] = SH.t2;
+  const s = S('t2'), m = Math.max(C.t2n + 1.55, C.t2Des + .5), [sa, sb] = SH.t2;
   const L = [0, 1, 2, 3, 4, 5].map((i) => C.t2Build + .05 + i * .36);
   const BOX = [[0, 0, 1280, 720, 'Фон'], [54, 70, 690, 260, 'Заголовок'], [740, 150, 300, 380, 'Фото · оригинал'], [930, 50, 350, 590, 'Фото · моё'], [54, 350, 600, 290, 'Плашки'], [590, 430, 480, 260, 'Стрелка + иконка']] as const;
   const layers = [['Фон', '▭'], ['Заголовок', 'T'], ['Фото · оригинал', '▣'], ['Фото · моё', '▣'], ['Плашки', '▭'], ['Стрелка', '↗']].map(([n, kk], i) => ({ at: L[i], name: n, kind: kk }));
@@ -134,10 +134,10 @@ export const T2: React.FC<{ t: number }> = ({ t }) => {
   const curK: [number, number, number][] = [[C.t2Fix - .6, 900, 640], [dragA, fx + 300 * sc, fy + 150 * sc], [dragA + .25, fx + 300 * sc, fy + 150 * sc], [dragA + .85, fx + 326 * sc, fy + 150 * sc], [sa, fx + 360 * sc, fy + 230 * sc]];
   const [cx, cy] = curPos(t, curK);
   return <Cam t={t} id="t2">
-    <ToolHead t={t} i={1} />
+    <ToolHead t={t} i={1} until={m} />
     <Phase t={t} a={s.start} b={sa} din={.01}>
-      {t < m + .2 && <><Chip t={t} at={C.t2Cov} x={980} y={720} out={m - .2} accent="#b07bff">обложки</Chip><Chip t={t} at={C.t2Ban} x={1220} y={720} out={m - .15} accent="#ff7262" float={1}>баннеры</Chip><Chip t={t} at={C.t2Des} x={1460} y={720} out={m - .1} accent="#1abcfe" float={2}>дизайн</Chip></>}
-      <Win t={t} at={m + .05} x={110} y={190} w={1700} h={790} title="Figma" bg="#1e1e1e" bar="#2c2c2c">
+      {t < m + .4 && <><Chip t={t} at={C.t2Cov} x={700} y={740} out={m - .1} accent="#b07bff">обложки</Chip><Chip t={t} at={C.t2Ban} x={960} y={740} out={m - .05} accent="#ff7262" float={1}>баннеры</Chip><Chip t={t} at={C.t2Des} x={1220} y={740} out={m} accent="#1abcfe" float={2}>дизайн</Chip></>}
+      <Win t={t} at={m + .3} x={110} y={190} w={1700} h={790} title="Figma" bg="#1e1e1e" bar="#2c2c2c">
         <FigmaUI t={t} layers={layers} sel={fixing ? 1 : cur} props={[['X', fixing ? String(Math.round(54 + dragX)) : '54'], ['Y', '70'], ['W', '690'], ['H', '260'], ['Шрифт', 'Oswald 700'], ['Размер', '128']]}>
           <div style={{ position: 'absolute', left: fx, top: fy - 26, fontFamily: TEXT, fontSize: 13, color: '#9a9a9a' }}>Thumbnail 1280×720</div>
           <div style={{ position: 'absolute', left: fx, top: fy, width: 1280, height: 720, transform: `scale(${sc})`, transformOrigin: '0 0', boxShadow: '0 10px 40px rgba(0,0,0,.5)' }}>
@@ -199,12 +199,12 @@ export const T3: React.FC<{ t: number }> = ({ t }) => {
   return <Cam t={t} id="t3">
     <ToolHead t={t} i={2} until={m - .25} />
     <Phase t={t} a={s.start} b={C.t3Posts - .2} din={.01}>
-      {t >= m - .3 && <>
-        <div style={{ position: 'absolute', left: 520, top: 360, textAlign: 'center', transform: `scale(${lerp(1, .82, easy)})`, opacity: lerp(1, .45, easy), ...rise(t, m - .3, .7) }}>
+      {t >= m + .15 && <>
+        <div style={{ position: 'absolute', left: 520, top: 360, textAlign: 'center', transform: `scale(${lerp(1, .82, easy)})`, opacity: lerp(1, .45, easy), ...rise(t, m + .15, .7) }}>
           <Tile k="figma" s={220} /><div style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 40, color: G2, marginTop: 24 }}>сложнее</div>
         </div>
-        <div style={{ position: 'absolute', left: 880, top: 430, fontFamily: DISPLAY, fontWeight: 800, fontSize: 70, color: G3, ...rise(t, m - .1, .6) }}>vs</div>
-        <div style={{ position: 'absolute', left: 1180, top: 360, textAlign: 'center', transform: `scale(${lerp(1, 1.15, easy)})`, ...rise(t, m - .2, .7) }}>
+        <div style={{ position: 'absolute', left: 880, top: 430, fontFamily: DISPLAY, fontWeight: 800, fontSize: 70, color: G3, ...rise(t, m + .3, .6) }}>vs</div>
+        <div style={{ position: 'absolute', left: 1180, top: 360, textAlign: 'center', transform: `scale(${lerp(1, 1.15, easy)})`, ...rise(t, m + .25, .7) }}>
           <Tile k="canva" s={220} glow={easy} /><div style={{ fontFamily: DISPLAY, fontWeight: 800, fontSize: 40, color: easy > .5 ? '#5ee7ec' : G2, marginTop: 24 }}>проще</div>
           <Ring t={t} at={C.t3Easy} x={110} y={110} r={200} color="#22d3d8" />
         </div>

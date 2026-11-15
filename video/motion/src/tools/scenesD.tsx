@@ -25,7 +25,7 @@ export const T7: React.FC<{ t: number }> = ({ t }) => {
   return <Cam t={t} id="t7">
     <ToolHead t={t} i={6} until={m - .2} />
     <Phase t={t} a={m - .25} b={sa}>
-      <Win t={t} at={m - .2} x={110} y={190} w={1050} h={760} title="Claude Code — ~/мой-проект" bg="#141210" bar="#1c1a17">
+      <Win t={t} at={m + .15} x={110} y={190} w={1050} h={760} title="Claude Code — ~/мой-проект" bg="#141210" bar="#1c1a17">
         <Term t={t} fontSize={22} lines={[
           { at: m - .05, text: 'Claude Code · Opus 5.5', c: '#8a847d' },
           { at: C.t7Give - .25, text: '/brag-slim ./мой-проект', prompt: true, d: .8, c: '#ffffff' },
@@ -84,13 +84,13 @@ const Slide: React.FC<{ w: number }> = ({ w }) => (
   </div>
 );
 export const T8: React.FC<{ t: number }> = ({ t }) => {
-  const s = S('t8'), m = C.t8n + 1.55, [sa, sb] = SH.t8;
+  const s = S('t8'), m = C.t8n + 1.0, [sa, sb] = SH.t8;
   const cf = (t - C.t8Sheet) * .9;
   return <Cam t={t} id="t8">
-    <ToolHead t={t} i={7} />
+    <ToolHead t={t} i={7} until={m} />
     <Phase t={t} a={m - .25} b={C.t8Guides - .15}>
       <div style={{ position: 'absolute', left: 0, right: 0, top: 290, display: 'flex', justifyContent: 'center', gap: 150 }}>
-        {[[C.t8Pdf, '#e5322d', 'PDF', 'PDF'], [C.t8Word, '#2b7cd3', 'DOCX', 'Word'], [C.t8Ppt, '#d24726', 'PPTX', 'PowerPoint']].map(([at, c, e, n], i) => { const k = back(pr(t, (at as number) - .1, .6));
+        {[[C.t8Pdf, '#e5322d', 'PDF', 'PDF'], [C.t8Word, '#2b7cd3', 'DOCX', 'Word'], [C.t8Ppt, '#d24726', 'PPTX', 'PowerPoint']].map(([at, c, e, n], i) => { const k = back(pr(t, Math.max((at as number) - .1, m + .75 + i * .12), .6));
           return <div key={i} style={{ transform: `translateY(${(1 - clamp(k)) * -200}px) rotate(${(1 - clamp(k)) * (i - 1) * 20}deg)`, opacity: clamp(k * 3) }}><FileTile c={c as string} ext={e as string} name={n as string} s={300} /></div>; })}
       </div>
     </Phase>
@@ -124,7 +124,7 @@ export const T9: React.FC<{ t: number }> = ({ t }) => {
   return <Cam t={t} id="t9">
     <ToolHead t={t} i={8} />
     <Phase t={t} a={m - .1} b={sa}>
-      <Win t={t} at={m - .05} x={110} y={190} w={1060} h={760} title="Claude" bg={CB.bg} bar="#1f1e1d">
+      <Win t={t} at={m + .3} x={110} y={190} w={1060} h={760} title="Claude" bg={CB.bg} bar="#1f1e1d">
         <ClaudeShell t={t} side={false} title="Новый навык">
           {t >= send1 && <UserMsg t={t} at={send1} text={ask} y={30} w={900} />}
           <AiMsg t={t} at={C.t9Save} y={130} w={920}>
@@ -185,7 +185,7 @@ export const T10: React.FC<{ t: number }> = ({ t }) => {
           <div style={{ minWidth: 0 }}><div style={{ fontSize: 18, fontWeight: 600, color: TX }}>{d}</div><i style={{ display: 'block', height: 7, width: 180 - (i % 3) * 30, borderRadius: 4, background: 'rgba(255,255,255,.14)', marginTop: 8 }} /></div>
           {t >= C.t10Links && i < 6 && <span style={{ marginLeft: 'auto', padding: '2px 8px', borderRadius: 6, background: rgba('#38bdf8', .3), color: '#bfe8ff', fontWeight: 700, fontSize: 14 }}>{i + 1}</span>}
         </div>; })}
-      <div style={{ position: 'absolute', left: 620, top: 200, width: 680, height: 690, borderRadius: 22, background: '#fbfbfd', overflow: 'hidden', boxShadow: `0 50px 120px rgba(0,0,0,.6), 0 0 80px ${rgba('#38bdf8', .2)}`, ...rise(t, C.t10Deep - .1, .8) }}>
+      <div style={{ position: 'absolute', left: 620, top: 200, width: 680, height: 690, borderRadius: 22, background: '#fbfbfd', overflow: 'hidden', boxShadow: `0 50px 120px rgba(0,0,0,.6), 0 0 80px ${rgba('#38bdf8', .2)}`, ...rise(t, Math.max(C.t10Deep - .1, m + .25), .8) }}>
         {t < C.t10Rep && <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, fontFamily: TEXT, color: '#55555c' }}><Tile k="research" s={90} glow={.5} /><div style={{ fontSize: 26, fontWeight: 600 }}>Читаю источники…</div><div style={{ fontFamily: WIDE, fontWeight: 800, fontSize: 64, color: '#0b6aa8' }}>{n}</div></div>}
         {t >= C.t10Rep && <Report t={t} at={C.t10Rep} linkAt={C.t10Links} />}
       </div>
