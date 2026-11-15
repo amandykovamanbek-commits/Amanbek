@@ -164,7 +164,7 @@ const APPS: { n: string; bg: string; g: React.ReactNode }[] = [
 const iconXY = (i: number): Pt => [110 + (i % 4) * 230, 700 + Math.floor(i / 4) * 290];
 const MODES = [['✦', 'Создать'], ['✎', 'Написать'], ['</>', 'Код'], ['◎', 'Учёба'], ['◇', 'Жизнь']];
 const modeXY = (i: number): Pt => (i < 3 ? [[80, 760], [370, 760], [720, 760]][i] : [[230, 880], [560, 880]][i - 3]) as Pt;
-const PROMPT = 'Сделай вертикальный моушен-ролик про ИИ-анимацию: тёмный фон, оранжевое свечение, плавные переходы и музыка в такт.';
+const PROMPT = 'Сделай моушен-ролик про ИИ-анимацию: тёмный фон, оранжевое свечение, музыка в такт.';
 const FILES = [{ n: 'сценарий.txt', c: '#f4efe8', k: 'doc' }, { n: 'референсы', c: '#2b2724', k: 'img' }, { n: 'музыка.mp3', c: '#2b2724', k: 'aud' }];
 const FileGlyph: React.FC<{ k: string; s?: number }> = ({ k, s = 1 }) => (
   k === 'doc' ? <svg width={34 * s} height={40 * s} viewBox="0 0 34 40"><path d="M4 2h18l8 8v28H4z" fill="#fff" stroke="#c9c2b9" strokeWidth={2} /><path d="M9 16h16M9 22h16M9 28h10" stroke={OR} strokeWidth={2.4} strokeLinecap="round" /></svg>
@@ -212,7 +212,7 @@ const App: React.FC<{ t: number }> = ({ t }) => {
       {/* Claude app */}
       {inApp && <AbsoluteFill style={{ background: BG, opacity: home }}><AbsoluteFill style={{ transform: 'translateY(130px)' }}>
         <TopGlow t={t} o={home} />
-        <div style={{ position: 'absolute', left: 0, right: 0, top: lerp(470, 300, chat), display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 30, transform: `scale(${lerp(1, .78, chat)})`, opacity: clamp(home * 1.5) }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, top: lerp(470, 300, chat), display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 30, transform: `scale(${lerp(1, .78, chat)})`, opacity: clamp(home * 1.5) * (1 - pr(t, C.eSend, .25)) }}>
           <div style={{ transform: `rotate(${lerp(-180, 0, ex(pr(t, C.cHome - .2, .9))) + t * 12}deg) scale(${back(pr(t, C.cHome - .2, .6))})` }}><Spark size={130} t={t} breathe={1} /></div>
           <div style={{ fontFamily: SERIF, fontSize: 136, color: TX, letterSpacing: -2, filter: `blur(${(1 - ex(pr(t, C.cHome, .5))) * 14}px)`, opacity: ex(pr(t, C.cHome, .5)) }}>Claude</div>
         </div>
@@ -386,6 +386,11 @@ const I: React.FC<{ t: number }> = ({ t }) => {
   </Scene>;
 };
 
+// background song: ducked under the voice, fades in/out
+const songVol = (t: number) => {
+  const talk = V.tok.reduce((m, w) => Math.max(m, clamp(1 - Math.max(w.s - .15 - t, t - w.e - .25, 0) / .3)), 0);
+  return (M.voice ? lerp(.62, .3, talk) : .7) * clamp(t / .4) * clamp((DUR - t) / 1.2);
+};
 export const V3: React.FC = () => {
   const f = useCurrentFrame(), t = f / FPS;
   const s = SC.find((x) => t >= x.start && t < x.end) || SC[SC.length - 1];
@@ -394,7 +399,7 @@ export const V3: React.FC = () => {
     <Comp t={t} />
     <Grain f={f} o={s.id === 'h' ? .05 : .08} />
     {M.voice && <Audio src={staticFile('v3/voice.wav')} />}
-    <Audio src={staticFile('v3/music.wav')} volume={M.voice ? .5 : .8} />
-    <Audio src={staticFile('v3/sfx.wav')} volume={.65} />
+    <Audio src={staticFile('v3/song.wav')} volume={(fr) => songVol(fr / FPS)} />
+    <Audio src={staticFile('v3/sfx.wav')} volume={.5} />
   </AbsoluteFill>;
 };

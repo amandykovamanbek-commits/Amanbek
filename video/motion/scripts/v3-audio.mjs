@@ -92,7 +92,7 @@ const S = {
   riser: (t0) => { let lp = 0; add(fx, t0, .95, (t) => { const k = t / .95; lp += (.01 + .25 * k * k) * (rnd() - lp); return (lp * .9 + Math.sin(2 * Math.PI * (hz(57) + hz(57) * 1.5 * k * k) * t) * .05) * k * k; }); },
   flash: (t0) => { let lp = 0; add(fx, t0 - .6, .6, (t) => { const k = t / .6; lp += (.02 + .3 * k) * (rnd() - lp); return lp * k * k * .9; }); let l2 = 0; add(fx, t0, 1.6, (t) => { l2 += .3 * (rnd() - l2); return l2 * Math.exp(-t * 3) * .35; }); S.chime(t0 + .02); },
 };
-for (const e of tl.sfx) (S[e.k] || S.ui)(e.t);
+for (const e of tl.sfx) if (!['chime', 'shimmer', 'riser'].includes(e.k)) (S[e.k] || S.ui)(e.t);
 const fxR = reverb(fx, .4, .86);
 mkdirSync(new URL('../public/v3/', import.meta.url), { recursive: true });
 writeWav(new URL('../public/v3/music.wav', import.meta.url), musR, 1.0);

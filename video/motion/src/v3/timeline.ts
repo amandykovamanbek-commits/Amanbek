@@ -1,6 +1,7 @@
 // v3 timeline: cursor-driven Claude walkthrough. Erasable-only TS (Node imports it for audio).
 export const FPS = 30;
-export const BPM = 100;
+export const BPM = 119;
+export const PHASE = .43; // first downbeat of the background song
 export const BEAT = 60 / BPM;
 
 export const LINES = [
@@ -15,7 +16,7 @@ export const LINES = [
   { id: 'i', text: 'Все промпты — в моём телеграм-канале. Ссылка в шапке профиля!' },
 ];
 // extra silence inserted after a word (scene:word) so the visuals have time to read
-export const HOLDS: Record<string, number> = { 'a:недели': .25, 'b:промпт': .7, 'c:claude': .9, 'd:файлы': .3, 'd:музыку': .5, 'e:нужно': 2.2, 'f:анимации': .4, 'g:готов': .6 };
+export const HOLDS: Record<string, number> = { 'a:недели': .2, 'b:промпт': .45, 'c:режим': .3, 'd:музыку': .9, 'f:анимации': .3, 'g:готов': .45 };
 
 export const norm = (w: string) => w.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/g, '');
 
@@ -35,11 +36,11 @@ export function buildV3(words: { s: number; e: number }[], lead = 0) {
       if (/[.!?…»]$/.test(t.w)) x += .7; else if (/[,:—]$/.test(t.w)) x += .2; x += HOLDS[t.id + ':' + t.n] || 0; });
   }
   const voEnd = tok[tok.length - 1].e;
-  const duration = Math.ceil((voEnd + 1.8) / BEAT) * BEAT;
+  const duration = Math.ceil((voEnd + 1.8 - PHASE) / BEAT) * BEAT + PHASE;
   sc.forEach((s, i) => {
     if (!i) return;
     const a = sc[i - 1].tokens.at(-1).e + .25, b = s.tokens[0].s - .05;
-    let best = null; for (let k = Math.ceil(a / BEAT); k * BEAT <= b; k++) { const x = k * BEAT; if (best === null || Math.abs(x - (b - .15)) < Math.abs(best - (b - .15))) best = x; }
+    let best = null; for (let k = Math.ceil((a - PHASE) / BEAT); k * BEAT + PHASE <= b; k++) { const x = k * BEAT + PHASE; if (best === null || Math.abs(x - (b - .15)) < Math.abs(best - (b - .15))) best = x; }
     s.start = best ?? Math.max(a - .1, b - .15);
   });
   sc.forEach((s, i) => { s.end = i < sc.length - 1 ? sc[i + 1].start : duration; });
@@ -56,7 +57,7 @@ export function buildV3(words: { s: number; e: number }[], lead = 0) {
     bNow: W('b', 'теперь'), bOne: W('b', 'один'), bPrompt: W('b', 'промпт'),
     cClick, cOpen: cClick + .12, cHome: cClick + .75, cMode: Math.max(W('c', 'режим') + .05, cClick + 1.5),
     dPlus: S('d').start + .35, dFiles: [W('d', 'сценарий'), W('d', 'референсы'), W('d', 'музыку')],
-    eType: S('e').start + .15, eSend: W('e', 'отправляешь') + .1,
+    eType: W('d', 'музыку') + .55, eSend: W('e', 'отправляешь') + .1,
     fCode: S('f').start, fHi: W('f', 'код'),
     gGo: W('g', 'команда'), gDone: W('g', 'готов'),
     hAe: W('h', 'after'), hZero: W('h', 'денег'),
@@ -69,7 +70,7 @@ export function buildV3(words: { s: number; e: number }[], lead = 0) {
   P(S('c').start + .1, 'swish'); P(C.cClick - .25, 'hover'); P(C.cClick, 'click'); P(C.cOpen, 'appopen'); P(C.cHome, 'shimmer');
   P(C.cMode - .25, 'hover'); P(C.cMode, 'click'); P(C.cMode + .05, 'pop');
   P(C.dPlus, 'click'); P(C.dPlus + .1, 'pop'); C.dFiles.forEach((x) => { P(x - .2, 'swish'); P(x + .25, 'drop'); });
-  { const msgLen = 92, dur = C.eSend - .45 - C.eType; for (let k = 0; k < msgLen; k += 1) { const x = C.eType + dur * k / msgLen; if (k % 2 === 0) P(x, 'key'); } }
+  { const msgLen = 84, dur = C.eSend - .45 - C.eType; for (let k = 0; k < msgLen; k += 1) { const x = C.eType + dur * k / msgLen; if (k % 2 === 0) P(x, 'key'); } }
   P(C.eSend - .25, 'hover'); P(C.eSend, 'click'); P(C.eSend + .05, 'send');
   for (let x = C.fCode + .1; x < S('f').end - .3; x += .07) P(x, 'data');
   P(C.fHi, 'pop');
