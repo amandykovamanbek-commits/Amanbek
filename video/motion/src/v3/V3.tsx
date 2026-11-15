@@ -25,19 +25,19 @@ if (typeof document !== 'undefined' && !(window as any).__v3Fonts) {
 }
 
 // ---------- palette & helpers
-const BG = '#0d0b0a', OR = '#ee7a3f', OR2 = '#ff9d5c', CL = '#d97757', TX = '#efe9e2', MU = '#8d857c', PANEL = '#1c1a18', BORD = '#3b3632';
-const SANS = 'Onest, sans-serif', SERIF = '"Source Serif 4", serif', MONO = '"JetBrains Mono", monospace';
-const clamp = (x: number, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
-const eo = (k: number) => 1 - Math.pow(1 - k, 3);
-const ex = (k: number) => (k >= 1 ? 1 : 1 - Math.pow(2, -10 * k));
-const ei = (k: number) => k * k * k;
-const eio = (k: number) => (k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
-const back = (k: number) => { const c1 = 1.6, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
-const pr = (t: number, a: number, d = .4) => clamp((t - a) / d);
-const decay = (t: number, a: number, r = 6) => (t < a ? 0 : Math.exp(-(t - a) * r));
-const noise = (t: number, f: number, p = 0) => Math.sin(t * f + p) * .6 + Math.sin(t * f * 2.31 + p * 1.7) * .4;
-const kf = (t: number, keys: [number, number][], ease = eio) => {
+export const BG = '#0d0b0a', OR = '#ee7a3f', OR2 = '#ff9d5c', CL = '#d97757', TX = '#efe9e2', MU = '#8d857c', PANEL = '#1c1a18', BORD = '#3b3632';
+export const SANS = 'Onest, sans-serif', SERIF = '"Source Serif 4", serif', MONO = '"JetBrains Mono", monospace';
+export const clamp = (x: number, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+export const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+export const eo = (k: number) => 1 - Math.pow(1 - k, 3);
+export const ex = (k: number) => (k >= 1 ? 1 : 1 - Math.pow(2, -10 * k));
+export const ei = (k: number) => k * k * k;
+export const eio = (k: number) => (k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+export const back = (k: number) => { const c1 = 1.6, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+export const pr = (t: number, a: number, d = .4) => clamp((t - a) / d);
+export const decay = (t: number, a: number, r = 6) => (t < a ? 0 : Math.exp(-(t - a) * r));
+export const noise = (t: number, f: number, p = 0) => Math.sin(t * f + p) * .6 + Math.sin(t * f * 2.31 + p * 1.7) * .4;
+export const kf = (t: number, keys: [number, number][], ease = eio) => {
   if (t <= keys[0][0]) return keys[0][1];
   for (let i = 1; i < keys.length; i++) if (t <= keys[i][0]) { const [a, va] = keys[i - 1], [b, vb] = keys[i]; return lerp(va, vb, ease(clamp((t - a) / Math.max(1e-3, b - a)))); }
   return keys[keys.length - 1][1];
@@ -46,7 +46,7 @@ type Pt = [number, number];
 
 // ---------- shared pieces
 const Grain: React.FC<{ f: number; o?: number }> = ({ f, o = .07 }) => <Img src={staticFile(`cine/grain/g${f % 6}.png`)} style={{ position: 'absolute', inset: 0, width: 1080, height: 1920, opacity: o * 1.6, mixBlendMode: 'overlay', pointerEvents: 'none' }} />;
-const Vignette: React.FC<{ o?: number }> = ({ o = .7 }) => <AbsoluteFill style={{ background: 'radial-gradient(ellipse 75% 60% at 50% 48%, transparent 55%, rgba(0,0,0,.9) 100%)', opacity: o, pointerEvents: 'none' }} />;
+export const Vignette: React.FC<{ o?: number }> = ({ o = .7 }) => <AbsoluteFill style={{ background: 'radial-gradient(ellipse 75% 60% at 50% 48%, transparent 55%, rgba(0,0,0,.9) 100%)', opacity: o, pointerEvents: 'none' }} />;
 const Horizon: React.FC<{ t: number; y?: number; o?: number }> = ({ t, y = 1380, o = 1 }) => (<>
   <div style={{ position: 'absolute', left: -520, top: y, width: 2120, height: 1300, borderRadius: '50%', background: 'radial-gradient(closest-side, #ffa15e 0%, #f0702c 38%, #b8420f 64%, rgba(90,25,5,.4) 82%, transparent 100%)', filter: 'blur(46px)', opacity: o, transform: `scaleX(${1 + .03 * Math.sin(t * .6)}) translateY(${Math.sin(t * .4) * 10}px)` }} />
   <div style={{ position: 'absolute', left: 140, top: y - 40, width: 800, height: 300, borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(255,170,110,.55), transparent)', filter: 'blur(40px)', opacity: o * (.7 + .3 * Math.sin(t * 1.3)) }} />
@@ -56,11 +56,11 @@ const TopGlow: React.FC<{ t: number; o?: number }> = ({ t, o = 1 }) => (<>
   <div style={{ position: 'absolute', left: -400, top: -900, width: 1880, height: 1300, borderRadius: '50%', background: 'radial-gradient(closest-side, #ff8a3d 0%, #d4561b 40%, rgba(120,35,8,.5) 70%, transparent 100%)', filter: 'blur(50px)', opacity: o * (.85 + .15 * Math.sin(t * .9)) }} />
   <AbsoluteFill style={{ background: 'repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 3px, transparent 3px 60px)', opacity: o * .5, WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 30%)' }} />
 </>);
-const Orb: React.FC<{ t: number; path: (t: number) => Pt; size?: number; trail?: number; o?: number }> = ({ t, path, size = 18, trail = 10, o = 1 }) => (<>
+export const Orb: React.FC<{ t: number; path: (t: number) => Pt; size?: number; trail?: number; o?: number }> = ({ t, path, size = 18, trail = 10, o = 1 }) => (<>
   {Array.from({ length: trail }, (_, j) => { const i = trail - 1 - j, [x, y] = path(t - i * .011), s = size * (1 - i / trail * .4);
     return <div key={i} style={{ position: 'absolute', left: x - s / 2, top: y - s / 2, width: s, height: s, borderRadius: '50%', opacity: o * (i ? .4 * (1 - i / trail) : 1), background: i ? OR2 : '#fff3e6', filter: i ? 'blur(3px)' : 'none', boxShadow: i ? 'none' : `0 0 ${size}px ${size / 2.5}px ${OR}, 0 0 ${size * 4}px ${size * 1.3}px rgba(255,120,50,.4)` }} />; })}
 </>);
-const Words: React.FC<{ t: number; toks: any[]; hi?: string[]; style?: React.CSSProperties; hiColor?: string; under?: boolean; strike?: string[]; strikeAt?: number }> = ({ t, toks, hi = [], style, hiColor = OR, under = true, strike = [], strikeAt = 1e9 }) => (
+export const Words: React.FC<{ t: number; toks: any[]; hi?: string[]; style?: React.CSSProperties; hiColor?: string; under?: boolean; strike?: string[]; strikeAt?: number }> = ({ t, toks, hi = [], style, hiColor = OR, under = true, strike = [], strikeAt = 1e9 }) => (
   <div style={style}>{toks.map((tk, i) => {
     const k = ex(pr(t, tk.s - .06, .45)), isHi = hi.includes(tk.n), isSt = strike.includes(tk.n);
     return <span key={i} style={{ display: 'inline-block', position: 'relative', marginRight: '.24em', opacity: k, filter: k < .99 ? `blur(${(1 - k) * 16}px)` : 'none', transform: `translateY(${(1 - k) * 18}px)`, color: isHi ? hiColor : undefined }}>
@@ -70,10 +70,10 @@ const Words: React.FC<{ t: number; toks: any[]; hi?: string[]; style?: React.CSS
     </span>; })}</div>
 );
 const toksOf = (id: string, from = 0, to = 999) => S(id).tokens.slice(from, to);
-const MB: React.FC<{ id: string; sx: number; children: React.ReactNode; style?: React.CSSProperties }> = ({ id, sx, children, style }) => (
+export const MB: React.FC<{ id: string; sx: number; children: React.ReactNode; style?: React.CSSProperties }> = ({ id, sx, children, style }) => (
   <div style={{ ...style, filter: sx > .4 ? `url(#${id})` : 'none' }}><svg width={0} height={0} style={{ position: 'absolute' }}><filter id={id} x="-50%" y="-20%" width="200%" height="140%"><feGaussianBlur stdDeviation={`${sx} 0`} /></filter></svg>{children}</div>
 );
-const CA: React.FC<{ d: number; children: React.ReactNode; color?: string }> = ({ d, children, color = TX }) => (
+export const CA: React.FC<{ d: number; children: React.ReactNode; color?: string }> = ({ d, children, color = TX }) => (
   <div style={{ position: 'relative', isolation: 'isolate' }}>
     <div style={{ position: 'absolute', inset: 0, color: '#ff4d3d', transform: `translateX(${d}px)`, mixBlendMode: 'screen', opacity: .7 }}>{children}</div>
     <div style={{ position: 'absolute', inset: 0, color: '#38d4ff', transform: `translateX(${-d}px)`, mixBlendMode: 'screen', opacity: .7 }}>{children}</div>
@@ -82,25 +82,25 @@ const CA: React.FC<{ d: number; children: React.ReactNode; color?: string }> = (
 );
 // own spark drawing in Claude colors; rays can "breathe"
 const RAYS = [0, 31, 58, 92, 118, 151, 179, 211, 238, 271, 300, 331].map((a, i) => ({ a, l: [92, 80, 96, 84, 90, 78, 95, 82, 92, 79, 97, 85][i] }));
-const Spark: React.FC<{ size: number; color?: string; stroke?: number; t?: number; breathe?: number }> = ({ size, color = CL, stroke = 17, t = 0, breathe = 0 }) => (
+export const Spark: React.FC<{ size: number; color?: string; stroke?: number; t?: number; breathe?: number }> = ({ size, color = CL, stroke = 17, t = 0, breathe = 0 }) => (
   <svg width={size} height={size} viewBox="-100 -100 200 200" style={{ display: 'block', overflow: 'visible' }}>
     {RAYS.map((r, i) => { const a = r.a * Math.PI / 180, l = r.l * (1 + breathe * .14 * Math.sin(t * 6 + i * 1.3)); return <line key={i} x1={Math.cos(a) * 8} y1={Math.sin(a) * 8} x2={Math.cos(a) * l} y2={Math.sin(a) * l} stroke={color} strokeWidth={stroke} strokeLinecap="round" />; })}
   </svg>
 );
-const Spark3D: React.FC<{ size: number; ry: number; rx: number; rz: number }> = ({ size, ry, rx, rz }) => (
+export const Spark3D: React.FC<{ size: number; ry: number; rx: number; rz: number }> = ({ size, ry, rx, rz }) => (
   <div style={{ width: size, height: size, transformStyle: 'preserve-3d', transform: `rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)` }}>
     {Array.from({ length: 12 }, (_, i) => <div key={i} style={{ position: 'absolute', inset: 0, transform: `translateZ(${-i * 2.2}px)` }}><Spark size={size} color={i === 0 ? CL : i < 3 ? '#c4643f' : '#8f3e1f'} /></div>)}
     <div style={{ position: 'absolute', inset: 0, transform: 'translateZ(1px)', mixBlendMode: 'screen', opacity: .35 }}><Spark size={size} color="#ffd2b5" stroke={6} /></div>
   </div>
 );
-const Cam: React.FC<{ tf: string; origin?: string; children: React.ReactNode }> = ({ tf, origin = '50% 50%', children }) => (
+export const Cam: React.FC<{ tf: string; origin?: string; children: React.ReactNode }> = ({ tf, origin = '50% 50%', children }) => (
   <AbsoluteFill style={{ perspective: 1800, perspectiveOrigin: origin }}><AbsoluteFill style={{ transform: tf, transformOrigin: origin, transformStyle: 'preserve-3d' }}>{children}</AbsoluteFill></AbsoluteFill>
 );
 const Sub: React.FC<{ t: number; id: string; dark?: boolean; top?: number }> = ({ t, id, dark, top = 1610 }) => (
   <Words t={t} toks={toksOf(id)} hi={['claude']} under={false} style={{ position: 'absolute', left: 70, right: 70, top, textAlign: 'center', fontFamily: SANS, fontWeight: 400, fontSize: 48, lineHeight: 1.28, color: dark ? '#3c3631' : '#ded7ce', textShadow: dark ? 'none' : '0 2px 20px rgba(0,0,0,.6)' }} />
 );
 // mouse cursor (arrow / pointing hand) with click press + ripple
-const Cursor: React.FC<{ t: number; x: number; y: number; hand?: boolean; clicks: number[]; o?: number }> = ({ t, x, y, hand, clicks, o = 1 }) => {
+export const Cursor: React.FC<{ t: number; x: number; y: number; hand?: boolean; clicks: number[]; o?: number }> = ({ t, x, y, hand, clicks, o = 1 }) => {
   const press = Math.max(0, ...clicks.map((c) => (t >= c && t < c + .16 ? Math.sin(Math.PI * (t - c) / .16) : 0)));
   const rip = clicks.map((c) => pr(t, c, .45)).find((k, i) => t >= clicks[i] && k < 1);
   return <div style={{ position: 'absolute', left: x, top: y, opacity: o, pointerEvents: 'none' }}>
@@ -111,7 +111,7 @@ const Cursor: React.FC<{ t: number; x: number; y: number; hand?: boolean; clicks
     </div>
   </div>;
 };
-const curPos = (t: number, keys: [number, number, number][]): Pt => [kf(t, keys.map((k) => [k[0], k[1]] as [number, number])), kf(t, keys.map((k) => [k[0], k[2]] as [number, number]))];
+export const curPos = (t: number, keys: [number, number, number][]): Pt => [kf(t, keys.map((k) => [k[0], k[1]] as [number, number])), kf(t, keys.map((k) => [k[0], k[2]] as [number, number]))];
 
 // ---------- scenes A, B (hook)
 const Scene: React.FC<{ t: number; from: string; to?: string; bg: string; inBlur?: boolean; outBlur?: boolean; children: React.ReactNode }> = ({ t, from, to, bg, inBlur = true, outBlur = true, children }) => {
@@ -166,7 +166,7 @@ const MODES = [['✦', 'Создать'], ['✎', 'Написать'], ['</>', '
 const modeXY = (i: number): Pt => (i < 3 ? [[80, 760], [370, 760], [720, 760]][i] : [[230, 880], [560, 880]][i - 3]) as Pt;
 const PROMPT = 'Сделай моушен-ролик про ИИ-анимацию: тёмный фон, оранжевое свечение, музыка в такт.';
 const FILES = [{ n: 'сценарий.txt', c: '#f4efe8', k: 'doc' }, { n: 'референсы', c: '#2b2724', k: 'img' }, { n: 'музыка.mp3', c: '#2b2724', k: 'aud' }];
-const FileGlyph: React.FC<{ k: string; s?: number }> = ({ k, s = 1 }) => (
+export const FileGlyph: React.FC<{ k: string; s?: number }> = ({ k, s = 1 }) => (
   k === 'doc' ? <svg width={34 * s} height={40 * s} viewBox="0 0 34 40"><path d="M4 2h18l8 8v28H4z" fill="#fff" stroke="#c9c2b9" strokeWidth={2} /><path d="M9 16h16M9 22h16M9 28h10" stroke={OR} strokeWidth={2.4} strokeLinecap="round" /></svg>
     : k === 'img' ? <div style={{ position: 'relative', width: 52 * s, height: 40 * s }}>{['#e8692c', '#5a7ad6', '#2bb3a2'].map((c, i) => <div key={i} style={{ position: 'absolute', left: i * 9 * s, top: (2 - i) * 2 * s, width: 32 * s, height: 36 * s, borderRadius: 6 * s, background: `linear-gradient(160deg, ${c}, #1b1816)`, border: '2px solid #f4efe8', transform: `rotate(${(i - 1) * 8}deg)` }} />)}</div>
       : <svg width={40 * s} height={40 * s} viewBox="0 0 40 40">{[10, 22, 14, 30, 18, 26, 12].map((h, i) => <rect key={i} x={3 + i * 5} y={20 - h / 2} width={3} height={h} rx={1.5} fill={OR2} />)}</svg>
