@@ -3,3 +3,4 @@ out/*
 !out/*.mp4
 !out/*.jpg
 !out/*.txt
+public/tools/*.wav
