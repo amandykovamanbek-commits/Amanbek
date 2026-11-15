@@ -15,7 +15,7 @@ export const LINES = [
   { id: 'i', text: 'Все промпты — в моём телеграм-канале. Ссылка в шапке профиля!' },
 ];
 // extra silence inserted after a word (scene:word) so the visuals have time to read
-export const HOLDS: Record<string, number> = { 'c:claude': .9, 'd:файлы': .3, 'd:музыку': .5, 'e:нужно': 2.2, 'f:анимации': .4, 'g:готов': .6 };
+export const HOLDS: Record<string, number> = { 'a:недели': .25, 'b:промпт': .7, 'c:claude': .9, 'd:файлы': .3, 'd:музыку': .5, 'e:нужно': 2.2, 'f:анимации': .4, 'g:готов': .6 };
 
 export const norm = (w: string) => w.toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/g, '');
 
