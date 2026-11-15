@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@fontsource/onest": "^5.3.1",
+    "@fontsource/oswald": "^5.2.8",
     "@fontsource/source-serif-4": "^5.2.9",
     "@fontsource/unbounded": "^5.2.8",
     "@remotion/cli": "4.0.538",
