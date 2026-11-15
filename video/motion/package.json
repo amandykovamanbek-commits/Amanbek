@@ -6,6 +6,7 @@
     "render": "remotion render Main out/video.mp4"
   },
   "dependencies": {
+    "@fontsource/onest": "^5.3.1",
     "@fontsource/source-serif-4": "^5.2.9",
     "@remotion/cli": "4.0.538",
     "@remotion/google-fonts": "4.0.538",
