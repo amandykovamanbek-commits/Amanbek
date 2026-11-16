@@ -1,0 +1,29 @@
+@font-face{font-family:Unb;src:url(unbounded-cyrillic-900-normal.woff2);unicode-range:U+0400-045F;font-weight:900}
+@font-face{font-family:Unb;src:url(unbounded-latin-900-normal.woff2);unicode-range:U+0000-00FF;font-weight:900}
+@font-face{font-family:Unb;src:url(unbounded-cyrillic-700-normal.woff2);unicode-range:U+0400-045F;font-weight:700}
+@font-face{font-family:Unb;src:url(unbounded-latin-700-normal.woff2);unicode-range:U+0000-00FF;font-weight:700}
+html,body{margin:0;background:#222}
+.t{position:relative;width:1280px;height:720px;overflow:hidden;background:#060607;margin-bottom:20px;font-family:"Inter Display",Inter,sans-serif}
+.glow{position:absolute;left:-200px;top:-560px;width:1700px;height:950px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,138,76,.75),rgba(212,86,27,.35) 50%,transparent);filter:blur(40px)}
+.glow.b{left:500px;top:-400px;width:1100px}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:64px 64px;-webkit-mask-image:radial-gradient(ellipse 70% 70% at 40% 40%,#000,transparent)}
+.title{position:absolute;left:52px;top:40px;font-family:Unb;font-weight:900;line-height:.98;letter-spacing:-2px}
+.l1,.l2{font-size:96px;color:#f6efe6;text-shadow:0 6px 30px rgba(0,0,0,.6)}
+.cl{display:inline-flex;align-items:center;gap:16px}
+.l3{font-size:150px;background:linear-gradient(180deg,#fff1e6,#ff8a4c 60%,#e8592a);-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 0 30px rgba(255,138,76,.55));margin-top:4px}
+.tiles{position:absolute;left:52px;bottom:38px;display:flex;gap:14px}
+.tiles .tile{width:96px!important;height:96px!important}
+.lk{width:96px;height:96px;border-radius:22px;background:rgba(255,59,48,.2);border:2.5px solid rgba(255,110,90,.9);box-shadow:0 0 40px rgba(255,59,48,.6);display:flex;align-items:center;justify-content:center;position:relative;box-sizing:border-box}
+.lk b{position:absolute;right:7px;bottom:2px;font-family:Unb;font-size:20px;color:#ffb3a8}
+.badge{position:absolute;right:44px;top:56px;padding:14px 24px;border-radius:18px;background:#fff;color:#16110d;font-family:Unb;font-weight:900;font-size:32px;transform:rotate(4deg);box-shadow:0 14px 40px rgba(0,0,0,.5)}
+.top{position:absolute;left:0;right:0;top:34px;text-align:center;font-family:Unb;font-weight:900;font-size:60px;color:#f6efe6;display:flex;align-items:center;justify-content:center;gap:16px}
+.split{position:absolute;left:40px;right:40px;top:140px;bottom:36px;display:flex;gap:28px}
+.side{flex:1;border-radius:34px;padding:26px 30px;display:flex;flex-direction:column;justify-content:space-between}
+.side small{font-family:Unb;font-weight:700;font-size:20px;letter-spacing:2px}
+.off{background:#141414;border:2px solid #2a2a2a}.off small{color:#6e6e73}
+.on{background:linear-gradient(160deg,rgba(255,138,76,.25),#140d09 65%);border:2px solid #ff8a4c;box-shadow:0 0 60px rgba(255,138,76,.35)}.on small{color:#ffb27a}
+.bubble{font-size:28px;line-height:1.35;color:#77777c;background:#1d1d1f;border-radius:20px;padding:20px 24px}
+.ring{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.ring .tile{width:92px!important;height:92px!important}
+.big{font-family:Unb;font-weight:900;font-size:64px;letter-spacing:-1px}
+.g{color:#4a4a4f;text-decoration:line-through;text-decoration-color:#ff4d4d}
+.o{background:linear-gradient(180deg,#fff1e6,#ff8a4c);-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 0 24px rgba(255,138,76,.6))}
