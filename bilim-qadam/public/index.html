@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0F2C">
+<title>BILIM QADAM</title>
+<meta name="description" content="9-сыныпқа арналған тест: алгебра, геометрия, физика, информатика. AI-көмекші түсіндірмелері және сынып рейтингі.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* One phone-width column; screens swap in place. Brand = the pitch deck: night navy, cyan, sun yellow. */
+:root {
+  --ink: #0A0F2C; --ink2: #121A46; --card: #18225A; --line: #2A3778;
+  --light: #F3F5FB; --soft: #B9C3E6; --mute: #8592C4;
+  --cyan: #38D6F5; --sun: #FFC845; --good: #3DDC97; --bad: #FF6B7A;
+  --display: 'Montserrat', 'Arial Black', Arial, sans-serif;
+  --text: 'Inter', 'Segoe UI', Arial, sans-serif;
+  --ease: cubic-bezier(.16, .84, .24, 1); --spring: cubic-bezier(.34, 1.56, .64, 1);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+[hidden] { display: none !important; }
+body {
+  background: var(--ink);
+  background-image: radial-gradient(900px 500px at 110% -10%, rgba(56,214,245,.16), transparent 60%), radial-gradient(700px 500px at -20% 110%, rgba(255,200,69,.08), transparent 60%);
+  background-attachment: fixed;
+  color: var(--light); font: 16px/1.5 var(--text);
+  padding: env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(16px, env(safe-area-inset-left, 0px));
+  -webkit-tap-highlight-color: transparent;
+}
+.wrap { max-width: 560px; margin: 0 auto; padding-block: 20px 48px; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.brand { font: 900 20px/1 var(--display); letter-spacing: -.5px; }
+.brand span { color: var(--sun); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.chip { display: inline-flex; align-items: center; gap: 6px; background: var(--card); border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--soft); white-space: nowrap; }
+.chip b { color: var(--light); font-variant-numeric: tabular-nums; }
+.chip svg { width: 16px; height: 16px; }
+
+.screen { display: flex; flex-direction: column; gap: 20px; }
+.enter > * { animation: rise .7s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms); }
+@keyframes rise { from { opacity: 0; transform: translateY(28px); filter: blur(8px); } }
+@keyframes pop { from { opacity: 0; transform: scale(.9); } }
+@keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+@keyframes glow { 50% { box-shadow: 0 0 0 6px rgba(61,220,151,.25), 0 0 40px rgba(61,220,151,.35); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+h1 { font: 900 clamp(34px, 9vw, 48px)/1.02 var(--display); letter-spacing: -1px; margin: 0; text-wrap: balance; }
+h1 .y { color: var(--sun); }
+h2 { font: 800 22px/1.2 var(--display); margin: 0; text-wrap: balance; }
+.eyebrow { font: 700 12px/1 var(--display); letter-spacing: 3px; text-transform: uppercase; color: var(--cyan); margin: 0; }
+.muted { color: var(--soft); margin: 0; }
+.small { font-size: 13px; color: var(--mute); margin: 0; }
+.panel { background: var(--ink2); border: 1.5px solid var(--line); border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+.btn { border: 0; border-radius: 16px; padding: 15px 20px; font: 800 16px/1 var(--display); background: var(--sun); color: var(--ink); transition: transform .15s var(--ease), box-shadow .2s; box-shadow: 0 6px 0 #C9951E; }
+.btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #C9951E; }
+.btn.ghost { background: transparent; color: var(--light); border: 1.5px solid var(--line); box-shadow: none; }
+.btn.cyan { background: var(--cyan); box-shadow: 0 6px 0 #1C9DB8; }
+.btn.cyan:active { box-shadow: 0 2px 0 #1C9DB8; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row > .btn { flex: 1 1 140px; }
+
+/* register */
+.hero { position: relative; padding: 28px 0 8px; overflow: hidden; }
+.orbit { position: absolute; right: -70px; top: -40px; width: 240px; height: 240px; opacity: .8; pointer-events: none; }
+.orbit .s1 { transform-origin: 120px 120px; animation: spin 40s linear infinite; }
+.orbit .s2 { transform-origin: 120px 120px; animation: spin 24s linear infinite reverse; }
+label { font-size: 13px; font-weight: 600; color: var(--soft); display: block; margin-bottom: 6px; }
+.field { background: var(--card); border: 1.5px solid var(--line); border-radius: 14px; padding: 14px 16px; width: 100%; font-size: 16px; }
+.field:focus { border-color: var(--cyan); outline: none; }
+.grid2 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+.steps4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.st { background: var(--card); border-radius: 14px; padding: 10px 8px; text-align: center; font-size: 12px; color: var(--soft); }
+.st b { display: block; font: 900 20px/1.1 var(--display); color: var(--sun); }
+
+/* subjects */
+.subjects { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.subj { position: relative; text-align: left; background: var(--card); border: 1.5px solid var(--line); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; transition: transform .2s var(--ease), border-color .2s; min-width: 0; animation: rise .6s var(--ease) both; }
+.subj:hover { transform: translateY(-3px); border-color: var(--c); }
+.subj:active { transform: scale(.97); }
+.subj .ic { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); }
+.subj .ic svg { width: 26px; height: 26px; }
+.subj .nm { font: 800 17px/1.15 var(--display); }
+.subj .tp { font-size: 12px; color: var(--soft); line-height: 1.35; }
+.bar { height: 8px; border-radius: 99px; background: var(--ink); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; border-radius: 99px; background: linear-gradient(90deg, var(--cyan), var(--sun)); transition: width 1s var(--ease); }
+.subj .meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--mute); font-variant-numeric: tabular-nums; }
+.subj .meta b { color: var(--light); }
+.blob { position: absolute; right: -30px; bottom: -30px; width: 90px; height: 90px; border-radius: 50%; background: var(--c); opacity: .08; }
+
+/* leaderboard */
+.lb { display: flex; flex-direction: column; gap: 8px; }
+.lb-row { display: grid; grid-template-columns: 32px 1fr auto; gap: 10px; align-items: center; background: var(--card); border-radius: 14px; padding: 10px 12px; border: 1.5px solid transparent; }
+.lb-row.me { border-color: var(--sun); }
+.lb-pos { font: 900 16px/1 var(--display); color: var(--mute); text-align: center; font-variant-numeric: tabular-nums; }
+.lb-row.p1 .lb-pos { color: var(--sun); }
+.lb-row.p2 .lb-pos { color: #D9E1FF; }
+.lb-row.p3 .lb-pos { color: #E9A26B; }
+.lb-name { min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
+.lb-name small { display: block; color: var(--mute); font-weight: 500; font-size: 12px; }
+.lb-score { font: 800 16px/1 var(--display); color: var(--cyan); font-variant-numeric: tabular-nums; }
+.live { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--good); font-weight: 600; }
+.live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--good); animation: ping 1.6s infinite; }
+.live.off { color: var(--mute); }
+.live.off::before { background: var(--mute); animation: none; }
+@keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(61,220,151,.6); } 70% { box-shadow: 0 0 0 8px rgba(61,220,151,0); } 100% { box-shadow: 0 0 0 0 rgba(61,220,151,0); } }
+.head-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
+/* quiz */
+.qtop { display: flex; align-items: center; gap: 12px; }
+.qtop .x { width: 40px; height: 40px; border-radius: 12px; border: 1.5px solid var(--line); background: transparent; display: grid; place-items: center; flex: none; }
+.qtop .bar { flex: 1; height: 12px; }
+.qtop .count { font: 800 14px/1 var(--display); color: var(--soft); font-variant-numeric: tabular-nums; flex: none; }
+.qcard { background: var(--ink2); border: 1.5px solid var(--line); border-radius: 22px; padding: 22px 20px; display: flex; flex-direction: column; gap: 12px; animation: rise .55s var(--ease) both; }
+.tag { align-self: flex-start; font-size: 12px; font-weight: 700; color: var(--c, var(--cyan)); background: color-mix(in srgb, var(--c, var(--cyan)) 15%, transparent); border-radius: 999px; padding: 5px 12px; }
+.qtext { font: 700 20px/1.35 var(--display); margin: 0; overflow-wrap: anywhere; }
+.opts { display: flex; flex-direction: column; gap: 10px; }
+.opt { display: flex; align-items: center; gap: 14px; text-align: left; background: var(--card); border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px; font-size: 16px; font-weight: 500; transition: border-color .2s, background .2s, transform .15s var(--ease); animation: rise .5s var(--ease) both; animation-delay: calc(120ms + var(--i) * 70ms); min-width: 0; }
+.opt:hover:not(:disabled) { border-color: var(--cyan); }
+.opt:active:not(:disabled) { transform: scale(.98); }
+.opt .k { flex: none; width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; font: 800 14px/1 var(--display); background: var(--ink); color: var(--soft); }
+.opt span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.opt:disabled { cursor: default; }
+.opt.right { border-color: var(--good); background: color-mix(in srgb, var(--good) 14%, var(--card)); animation: glow .9s ease both; }
+.opt.right .k { background: var(--good); color: var(--ink); }
+.opt.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--card)); animation: shake .45s ease both; }
+.opt.wrong .k { background: var(--bad); color: var(--ink); }
+.opt.dim { opacity: .5; }
+.feedback { border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; animation: rise .5s var(--ease) both; }
+.feedback.ok { background: color-mix(in srgb, var(--good) 12%, var(--ink2)); border: 1.5px solid color-mix(in srgb, var(--good) 50%, transparent); }
+.feedback.no { background: color-mix(in srgb, var(--bad) 10%, var(--ink2)); border: 1.5px solid color-mix(in srgb, var(--bad) 45%, transparent); }
+.feedback h3 { margin: 0; font: 800 17px/1.25 var(--display); }
+.feedback.ok h3 { color: var(--good); }
+.feedback.no h3 { color: var(--bad); }
+.feedback > p { margin: 0; }
+
+/* ---------- AI assistant ---------- */
+.ai-launch { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; border-radius: 16px; padding: 2px; background: linear-gradient(120deg, var(--cyan), #8B7CFF, var(--sun)); background-size: 200% 200%; animation: sheen 4s ease infinite; }
+@keyframes sheen { 50% { background-position: 100% 50%; } }
+.ai-launch > span { display: flex; align-items: center; gap: 12px; width: 100%; background: var(--ink2); border-radius: 14px; padding: 12px 14px; }
+.ai-launch b { display: block; font: 800 15px/1.2 var(--display); }
+.ai-launch small { display: block; color: var(--soft); font-size: 12px; margin-top: 2px; }
+.ai-launch .go { margin-left: auto; color: var(--cyan); flex: none; }
+.ai-launch:active { transform: scale(.98); }
+.orb { position: relative; flex: none; width: 40px; height: 40px; border-radius: 50%; background: conic-gradient(from 0deg, var(--cyan), #8B7CFF, var(--sun), var(--cyan)); animation: spin 6s linear infinite; }
+.orb::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #2B3A86, var(--ink) 70%); }
+.orb.think { animation-duration: 1.2s; }
+.orb i { position: absolute; z-index: 1; inset: 0; display: grid; place-items: center; animation: spin 6s linear infinite reverse; }
+.orb.think i { animation-duration: 1.2s; }
+.orb svg { width: 20px; height: 20px; color: var(--light); }
+
+.ai-card { position: relative; border-radius: 20px; padding: 1.5px; background: linear-gradient(150deg, rgba(56,214,245,.9), rgba(139,124,255,.6) 45%, rgba(255,200,69,.8)); animation: rise .5s var(--ease) both; }
+.ai-in { border-radius: 19px; background: radial-gradient(400px 200px at 100% 0%, rgba(56,214,245,.12), transparent 60%), #0E1540; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.ai-head { display: flex; align-items: center; gap: 12px; }
+.ai-head b { display: block; font: 800 15px/1.2 var(--display); }
+.ai-head small { display: flex; align-items: center; gap: 6px; color: var(--soft); font-size: 12px; }
+.ai-head small::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--good); }
+.typing { display: inline-flex; gap: 5px; padding: 10px 14px; background: var(--card); border-radius: 14px 14px 14px 4px; align-self: flex-start; }
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--soft); animation: bounce 1s infinite; }
+.typing i:nth-child(2) { animation-delay: .15s; }
+.typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes bounce { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-5px); opacity: 1; } }
+.ai-sec { display: flex; flex-direction: column; gap: 10px; animation: rise .45s var(--ease) both; }
+.ai-label { display: flex; align-items: center; gap: 8px; font: 800 12px/1 var(--display); letter-spacing: 1.5px; text-transform: uppercase; color: var(--cyan); margin: 0; }
+.ai-label svg { width: 16px; height: 16px; }
+.ai-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
+.ai-steps li { position: relative; display: grid; grid-template-columns: 28px 1fr; gap: 12px; padding-bottom: 12px; animation: rise .4s var(--ease) both; }
+.ai-steps li:last-child { padding-bottom: 0; }
+.ai-steps li::before { content: ""; position: absolute; left: 13px; top: 28px; bottom: 0; width: 2px; background: linear-gradient(var(--line), transparent); }
+.ai-steps li:last-child::before { display: none; }
+.ai-steps .n { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 800 13px/1 var(--display); color: var(--ink); background: linear-gradient(135deg, var(--cyan), var(--sun)); }
+.ai-steps .tx { margin: 3px 0 0; color: var(--light); overflow-wrap: anywhere; }
+.caret::after { content: ""; display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -2px; background: var(--cyan); animation: blink .8s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.ai-warn { display: flex; gap: 12px; align-items: flex-start; background: color-mix(in srgb, var(--bad) 10%, transparent); border: 1.5px solid color-mix(in srgb, var(--bad) 35%, transparent); border-radius: 14px; padding: 12px; animation: rise .45s var(--ease) both; }
+.ai-warn svg { flex: none; width: 22px; height: 22px; color: var(--bad); margin-top: 1px; }
+.ai-warn b { display: block; font: 800 13px/1.2 var(--display); color: var(--bad); margin-bottom: 3px; }
+.ai-warn p { margin: 0; font-size: 15px; color: var(--light); }
+.ai-try { background: color-mix(in srgb, var(--sun) 9%, transparent); border: 1.5px dashed color-mix(in srgb, var(--sun) 60%, transparent); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; animation: rise .45s var(--ease) both; }
+.ai-try b { font: 800 13px/1.2 var(--display); color: var(--sun); }
+.ai-try p { margin: 0; color: var(--light); font-weight: 600; }
+.reveal { align-self: flex-start; border: 0; background: var(--sun); color: var(--ink); border-radius: 999px; padding: 8px 14px; font: 800 13px/1 var(--display); }
+.answer { display: flex; align-items: center; gap: 8px; color: var(--good); font-weight: 700; animation: pop .5s var(--spring) both; }
+.answer svg { width: 18px; height: 18px; }
+.ai-foot { font-size: 11px; color: var(--mute); margin: 0; }
+
+/* result */
+.ring { position: relative; width: 190px; height: 190px; margin: 0 auto; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .val { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+.ring .val b { font: 900 54px/1 var(--display); font-variant-numeric: tabular-nums; }
+.ring .val small { display: block; color: var(--soft); font-size: 14px; margin-top: 4px; }
+.ring circle.fg { transition: stroke-dashoffset 1.4s var(--ease); }
+.center { text-align: center; }
+.badges { display: flex; gap: 10px; flex-wrap: wrap; }
+.badge { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1.5px solid var(--sun); border-radius: 16px; padding: 10px 14px; animation: pop .6s var(--spring) both; animation-delay: calc(600ms + var(--i) * 120ms); flex: 1 1 200px; }
+.badge .bi { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--sun), var(--cyan)); display: grid; place-items: center; color: var(--ink); flex: none; }
+.badge .bi svg { width: 18px; height: 18px; }
+.badge b { display: block; font: 800 14px/1.2 var(--display); }
+.badge small { color: var(--soft); font-size: 12px; }
+.review { display: flex; flex-direction: column; gap: 10px; }
+.rv { background: var(--card); border-radius: 14px; padding: 12px 14px; border-left: 4px solid var(--bad); display: flex; flex-direction: column; gap: 8px; }
+.rv p { margin: 0; }
+.rv .q { font-weight: 600; }
+.rv .a { font-size: 14px; color: var(--soft); }
+.rv .a b { color: var(--good); }
+.rv .tip { font-size: 14px; color: var(--light); background: var(--ink2); border-radius: 10px; padding: 8px 10px; }
+.rv .tip b { color: var(--cyan); font-family: var(--display); font-size: 12px; }
+.xp-pop { font: 900 22px/1 var(--display); color: var(--sun); animation: pop .7s var(--spring) both; animation-delay: .9s; }
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
+.note { font-size: 13px; color: var(--mute); background: var(--card); border-radius: 12px; padding: 10px 12px; margin: 0; }
+.linkbtn { background: none; border: 0; color: var(--mute); text-decoration: underline; font-size: 13px; padding: 0; align-self: flex-start; }
+
+@media (max-width: 380px) { .subjects { grid-template-columns: 1fr; } .steps4 { grid-template-columns: repeat(2, 1fr); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+</style>
+</head>
+<body>
+<canvas id="confetti" hidden></canvas>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">BILIM <span>QADAM</span></div>
+    <div class="chips" id="topChips" hidden>
+      <span class="chip" title="Қатарынан күндер"><svg viewBox="0 0 24 24" fill="#FFC845"><path d="M12 2c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3-1-3 0-6 1-8.5z"/></svg><b id="streakVal">0</b> күн</span>
+      <span class="chip" title="Тәжірибе ұпайы"><svg viewBox="0 0 24 24" fill="#38D6F5"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><b id="xpVal">0</b> XP</span>
+    </div>
+  </header>
+
+  <section class="screen" id="sReg" hidden>
+    <div class="hero" style="--i:0">
+      <svg class="orbit" viewBox="0 0 240 240" aria-hidden="true">
+        <g class="s1"><circle cx="120" cy="120" r="110" fill="none" stroke="#38D6F5" stroke-opacity=".35" stroke-width="2" stroke-dasharray="3 12"/><circle cx="120" cy="10" r="7" fill="#38D6F5"/></g>
+        <g class="s2"><circle cx="120" cy="120" r="78" fill="none" stroke="#FFC845" stroke-opacity=".55" stroke-width="3" stroke-dasharray="90 30 10 30"/><circle cx="198" cy="120" r="6" fill="#FFC845"/></g>
+        <circle cx="120" cy="120" r="30" fill="#38D6F5" fill-opacity=".1"/>
+      </svg>
+      <p class="eyebrow">9-сынып · 1–2 тоқсан</p>
+      <h1 style="margin-top:12px">Күн сайын<br>бір <span class="y">қадам</span></h1>
+    </div>
+    <p class="muted" style="--i:1">Алгебра, геометрия, физика және информатика бойынша 10 сұрақтан тұратын қысқа тесттер. Қателессең, AI-көмекші қадамдап түсіндіреді.</p>
+    <div class="steps4" style="--i:2">
+      <div class="st"><b>1</b>Тіркелу</div><div class="st"><b>2</b>Пән таңдау</div><div class="st"><b>3</b>Тапсырма</div><div class="st"><b>4</b>Нәтиже</div>
+    </div>
+    <form class="panel" id="regForm" style="--i:3" novalidate>
+      <div class="grid2">
+        <div><label for="regName">Аты-жөнің</label><input class="field" id="regName" maxlength="28" autocomplete="name" placeholder="Мысалы: Айлина М."></div>
+        <div><label for="regClass">Сынып</label><input class="field" id="regClass" maxlength="6" placeholder="9 «А»"></div>
+      </div>
+      <p class="small" id="regErr" hidden>Атыңды жаз, сонда нәтижең рейтингте көрінеді.</p>
+      <button class="btn" type="submit" id="regBtn">Бастау</button>
+    </form>
+  </section>
+
+  <section class="screen" id="sHome" hidden>
+    <div style="--i:0">
+      <p class="eyebrow">Сәлем, <span id="helloName"></span>!</p>
+      <h1 style="margin-top:10px; font-size:clamp(30px,8vw,40px)">Бүгінгі <span class="y">қадамыңды</span> таңда</h1>
+    </div>
+    <div class="subjects" id="subjects" style="--i:1"></div>
+    <div class="panel" style="--i:2">
+      <div class="head-row"><h2>Сынып рейтингі</h2><span id="lbStatus" class="live off">Жүктелуде</span></div>
+      <div class="lb" id="lb"></div>
+      <p class="small">Рейтинг төрт пәннің ең жақсы нәтижелерінің қосындысымен есептеледі (ең көбі 40).</p>
+    </div>
+    <button class="linkbtn" id="renameBtn" type="button" style="--i:3">Атымды өзгерту</button>
+  </section>
+
+  <section class="screen" id="sQuiz" hidden>
+    <div class="qtop">
+      <button class="x" id="quitBtn" type="button" aria-label="Тестті тоқтату"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B9C3E6" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      <div class="bar"><i id="qBar"></i></div>
+      <span class="count" id="qCount">1/10</span>
+    </div>
+    <div id="qBody" class="screen"></div>
+  </section>
+
+  <section class="screen" id="sResult" hidden></section>
+</div>
+
+<script>
+/* =========================================================
+   DATA — 9-сынып, 1–2 тоқсан.
+   ai.s = шешім қадамдары, ai.m = жиі кездесетін қате,
+   ai.p / ai.pa = «Өзіңді тексер» жаттығуы және жауабы
+   ========================================================= */
+const SUBJECTS = [
+  { id: 'alg', name: 'Алгебра', c: '#FF6B7A', topics: 'Теңдеулер жүйесі · Комбинаторика · Тізбектер',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7l6 10M10 7 4 17"/><path d="M14 9a2 2 0 1 1 3.5 1.3L14 14h4"/></svg>',
+    qs: [
+      { t: 'Теңдеулер жүйесі', q: 'Жүйені шеш: x + y = 7, x − y = 3', o: ['(5; 2)', '(2; 5)', '(4; 3)', '(3; 4)'], e: 'Теңдеулерді қосамыз: 2x = 10, демек x = 5. Онда y = 2.',
+        ai: { s: ['Екі теңдеуді мүшелеп қосамыз: (x + y) + (x − y) = 7 + 3.', 'y-тер жойылып кетеді: 2x = 10, демек x = 5.', 'x мәнін бірінші теңдеуге қоямыз: 5 + y = 7, y = 2.', 'Тексереміз: 5 − 2 = 3. Бәрі дұрыс, жауабы (5; 2).'], m: 'Жауапты (y; x) ретімен жазу. Жұпта әрқашан алдымен x, сосын y жазылады, сондықтан (2; 5) қате.', p: 'x + y = 10, x − y = 4 жүйесін шеш.', pa: '(7; 3)' } },
+      { t: 'Екі айнымалысы бар теңдеу', q: '(1; 2) жұбы қай теңдеудің шешімі болады?', o: ['y = 2x', 'y = x + 2', 'x + y = 4', 'y = x²'], e: 'x = 1, y = 2 қойсақ: 2 = 2 · 1 — дұрыс.',
+        ai: { s: ['Жұптағы бірінші сан — x, екіншісі — y: x = 1, y = 2.', 'y = 2x теңдеуіне қоямыз: 2 = 2 · 1 = 2. Теңдік орындалады.', 'Қалғандарын тексереміз: 1 + 2 = 3 ≠ 2; 1 + 2 = 3 ≠ 4; 1² = 1 ≠ 2.'], m: 'x пен y-ті шатастыру. (1; 2) жұбында x = 1, ал y = 2.', p: '(2; 5) жұбы y = 2x + 1 теңдеуінің шешімі бола ма?', pa: 'Иә, себебі 2 · 2 + 1 = 5' } },
+      { t: 'Екі айнымалысы бар теңсіздік', q: 'Қай нүкте y > x теңсіздігін қанағаттандырады?', o: ['(1; 3)', '(3; 1)', '(2; 2)', '(5; 0)'], e: '(1; 3) нүктесінде 3 > 1. Басқаларында y ≤ x.',
+        ai: { s: ['y > x дегеніміз: нүктенің екінші координатасы біріншісінен үлкен.', '(1; 3): 3 > 1 — орындалады.', '(3; 1): 1 > 3 емес; (2; 2): 2 > 2 емес; (5; 0): 0 > 5 емес.'], m: 'Қатаң теңсіздікте (>) тең мәндер шешім болмайды, сондықтан (2; 2) жарамайды.', p: 'Қай нүкте y < x + 1 теңсіздігін қанағаттандырады: (0; 3) әлде (4; 2)?', pa: '(4; 2), себебі 2 < 5' } },
+      { t: 'Факториал', q: '5! неге тең?', o: ['120', '25', '60', '24'], e: '5! = 1 · 2 · 3 · 4 · 5 = 120.',
+        ai: { s: ['n! — 1-ден n-ге дейінгі барлық натурал сандардың көбейтіндісі.', '5! = 1 · 2 · 3 · 4 · 5.', 'Кезекпен көбейтеміз: 2, сосын 6, сосын 24, соңында 24 · 5 = 120.'], m: '5!-ті 5 · 5 = 25 деп есептеу немесе 4! = 24-пен шатастыру.', p: '4! неге тең?', pa: '24' } },
+      { t: 'Көбейту ережесі', q: 'Асханада 3 түрлі сорпа және 2 түрлі шырын бар. Бір сорпа мен бір шырынды неше тәсілмен таңдауға болады?', o: ['6', '5', '9', '8'], e: 'Көбейту ережесі: 3 · 2 = 6.',
+        ai: { s: ['Таңдау екі кезеңнен тұрады: алдымен сорпа, сосын шырын.', 'Әр сорпаның қасына 2 шырынның кез келгенін алуға болады.', 'Көбейту ережесі бойынша: 3 · 2 = 6 тәсіл.'], m: 'Сандарды қосу (3 + 2 = 5). Қосу ережесі «немесе» деген таңдауда ғана қолданылады, ал мұнда «және».', p: '4 түрлі көйлек пен 3 түрлі шалбардан неше түрлі киім жиынтығын құрауға болады?', pa: '12' } },
+      { t: 'Алмастырулар', q: '4 түрлі кітапты сөреге неше тәсілмен қатар қоюға болады?', o: ['24', '16', '12', '4'], e: 'P₄ = 4! = 24.',
+        ai: { s: ['Бірінші орынға 4 кітаптың кез келгенін қоя аламыз.', 'Екінші орынға қалған 3 кітаптың бірін, үшіншіге 2-нің бірін, соңғысына қалған 1 кітапты.', 'Барлығы: 4 · 3 · 2 · 1 = 4! = 24.'], m: '4 · 4 = 16 деп есептеу. Бір кітапты екі орынға қатар қоюға болмайды.', p: '3 оқушыны бір қатарға неше тәсілмен тұрғызуға болады?', pa: '6' } },
+      { t: 'Сандар тізбегі', q: '2; 5; 8; 11; … тізбегінің келесі мүшесі қандай?', o: ['14', '13', '15', '16'], e: 'Әр мүше алдыңғысынан 3-ке артық: 11 + 3 = 14.',
+        ai: { s: ['Көршілес мүшелердің айырмасын табамыз: 5 − 2 = 3, 8 − 5 = 3, 11 − 8 = 3.', 'Айырма тұрақты, демек бұл арифметикалық прогрессия, d = 3.', 'Келесі мүше: 11 + 3 = 14.'], m: 'Ережені тексермей, тек 1-ге немесе 2-ге қосып жіберу.', p: '1; 5; 9; 13; … тізбегінің келесі мүшесі?', pa: '17' } },
+      { t: 'Арифметикалық прогрессия', q: 'a₁ = 4, d = 3. Арифметикалық прогрессияның a₆ мүшесін тап.', o: ['19', '22', '18', '15'], e: 'a₆ = 4 + 5 · 3 = 19.',
+        ai: { s: ['Формула: aₙ = a₁ + (n − 1) · d.', 'n = 6 болғандықтан: a₆ = 4 + (6 − 1) · 3.', '4 + 5 · 3 = 4 + 15 = 19.'], m: '(n − 1) орнына n алу: 4 + 6 · 3 = 22 — қате.', p: 'a₁ = 2, d = 5. a₄ = ?', pa: '17' } },
+      { t: 'Геометриялық прогрессия', q: '3; 6; 12; 24; … геометриялық прогрессиясының еселігі q неге тең?', o: ['2', '3', '6', '½'], e: 'q = 6 : 3 = 2.',
+        ai: { s: ['Геометриялық прогрессияда әр мүше алдыңғысын q-ға көбейткенде шығады.', 'Сондықтан q = b₂ : b₁ = 6 : 3 = 2.', 'Тексеру: 12 : 6 = 2, 24 : 12 = 2. Еселік тұрақты.'], m: 'Еселікті айырма ретінде табу (6 − 3 = 3). Айырма арифметикалық прогрессияда ғана болады.', p: '5; 15; 45; … прогрессиясының еселігі қандай?', pa: 'q = 3' } },
+      { t: 'Прогрессия қосындысы', q: '1 + 2 + 3 + … + 10 қосындысы неге тең?', o: ['55', '50', '45', '100'], e: 'S = (1 + 10) · 10 / 2 = 55.',
+        ai: { s: ['Бұл — a₁ = 1, a₁₀ = 10 болатын арифметикалық прогрессия.', 'Қосынды формуласы: Sₙ = (a₁ + aₙ) · n / 2.', 'S₁₀ = (1 + 10) · 10 / 2 = 11 · 5 = 55.'], m: '2-ге бөлуді ұмытып кету: 11 · 10 = 110.', p: '1 + 2 + … + 20 = ?', pa: '210' } },
+    ] },
+  { id: 'geo', name: 'Геометрия', c: '#38D6F5', topics: 'Жазықтықтағы векторлар · Түрлендірулер',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M4 19 12 5l8 14z"/><path d="M8 19 16 11"/><path d="m13 11 3 0 0 3"/></svg>',
+    qs: [
+      { t: 'Вектор ұғымы', q: 'Бағытталған кесінді қалай аталады?', o: ['Вектор', 'Сәуле', 'Түзу', 'Хорда'], e: 'Бағыты бар кесінді вектор деп аталады.',
+        ai: { s: ['Вектордың басы мен соңы бар, сондықтан оның бағыты бар.', 'Сәуленің тек басы бар, ол шексіз созылады; түзудің басы да, соңы да жоқ.', 'Хорда — шеңбердің екі нүктесін қосатын кесінді, оның бағыты жоқ.'], m: 'Векторды сәулемен шатастыру. Сәуле шексіз, ал вектордың нақты ұзындығы бар.', p: 'Басы мен соңы беттесетін вектор қалай аталады?', pa: 'Нөлдік вектор' } },
+      { t: 'Коллинеар векторлар', q: 'Бір түзуде немесе параллель түзулерде жатқан векторлар қалай аталады?', o: ['Коллинеар', 'Перпендикуляр', 'Нөлдік', 'Бірлік'], e: 'Мұндай векторлар коллинеар деп аталады.',
+        ai: { s: ['«Коллинеар» сөзі «бір түзудің бойындағы» деген мағынаны береді.', 'Векторлар бір түзуде немесе параллель түзулерде жатса, олар коллинеар.', 'Коллинеар векторлар бағыттас немесе қарама-қарсы бағытталған болуы мүмкін.'], m: 'Коллинеарды перпендикулярмен шатастыру. Перпендикуляр векторлар 90° бұрыш жасайды.', p: 'a(1; 2) және b(2; 4) векторлары коллинеар ма?', pa: 'Иә, себебі b = 2a' } },
+      { t: 'Векторларды қосу', q: 'a(2; 5) және b(1; −2) векторлары берілген. a + b векторының координаталары қандай?', o: ['(3; 3)', '(1; 7)', '(3; 7)', '(2; −10)'], e: '(2 + 1; 5 + (−2)) = (3; 3).',
+        ai: { s: ['Векторларды қосқанда сәйкес координаталарын қосамыз.', 'x координатасы: 2 + 1 = 3.', 'y координатасы: 5 + (−2) = 3. Жауабы (3; 3).'], m: 'Теріс санды қосқанда таңбаны ұмыту: 5 + (−2) = 3, ал 7 емес.', p: 'a(4; −1) + b(−2; 3) = ?', pa: '(2; 2)' } },
+      { t: 'Векторды санға көбейту', q: 'a(3; −1) векторы берілген. 2a векторының координаталары қандай?', o: ['(6; −2)', '(5; 1)', '(6; −1)', '(3; −2)'], e: '(2 · 3; 2 · (−1)) = (6; −2).',
+        ai: { s: ['Векторды санға көбейткенде оның әр координатасын сол санға көбейтеміз.', '2 · 3 = 6 және 2 · (−1) = −2.', 'Жауабы (6; −2). Вектор 2 есе ұзарды, бағыты сақталды.'], m: 'Тек бір координатаны көбейту: (6; −1) — қате.', p: 'a(−2; 5) болса, 3a = ?', pa: '(−6; 15)' } },
+      { t: 'Вектордың ұзындығы', q: 'a(6; 8) векторының ұзындығын тап.', o: ['10', '14', '100', '7'], e: '|a| = √(36 + 64) = 10.',
+        ai: { s: ['Вектордың ұзындығы: |a| = √(x² + y²). Бұл — Пифагор теоремасы.', '6² = 36, 8² = 64, қосындысы 100.', '√100 = 10.'], m: 'Түбірді алмай қалдыру (100) немесе координаталарды жай қосу (14).', p: 'a(3; 4) векторының ұзындығы қандай?', pa: '5' } },
+      { t: 'Скаляр көбейтінді', q: 'a(1; 2) және b(3; 4) векторларының скаляр көбейтіндісі неге тең?', o: ['11', '10', '7', '24'], e: '1 · 3 + 2 · 4 = 11.',
+        ai: { s: ['Скаляр көбейтінді: a · b = x₁x₂ + y₁y₂.', 'x-терді көбейтеміз: 1 · 3 = 3; y-терді көбейтеміз: 2 · 4 = 8.', '3 + 8 = 11. Скаляр көбейтінді — вектор емес, сан.'], m: 'Координаталарды айқастырып көбейту: 1 · 4 + 2 · 3 = 10 — қате.', p: 'a(2; 1) және b(3; −4). a · b = ?', pa: '2' } },
+      { t: 'Осьтік симметрия', q: 'A(3; 2) нүктесіне Ox осіне қатысты симметриялы нүкте қандай?', o: ['(3; −2)', '(−3; 2)', '(−3; −2)', '(2; 3)'], e: 'x өзгермейді, y таңбасын өзгертеді: (3; −2).',
+        ai: { s: ['Ox осіне қатысты симметрияда нүкте осьтен айнадағыдай шағылысады.', 'x координатасы өзгермейді: 3.', 'y таңбасын өзгертеді: 2 → −2. Жауабы (3; −2).'], m: 'Oy осіне қатысты симметриямен шатастыру. Онда x таңбасын өзгертеді.', p: 'B(−1; 5) нүктесіне Ox осіне қатысты симметриялы нүкте?', pa: '(−1; −5)' } },
+      { t: 'Центрлік симметрия', q: 'A(4; −1) нүктесіне координаталар басына қатысты симметриялы нүкте?', o: ['(−4; 1)', '(4; 1)', '(−4; −1)', '(1; −4)'], e: 'Екі координата да таңбасын өзгертеді: (−4; 1).',
+        ai: { s: ['Координаталар басына қатысты симметрияда нүкте O(0; 0) арқылы арғы жаққа өтеді.', 'Екі координата да таңбасын өзгертеді.', '4 → −4, −1 → 1. Жауабы (−4; 1).'], m: 'Тек бір координатаның таңбасын өзгерту. Бұл осьтік симметрия болып кетеді.', p: 'C(−2; −3) нүктесіне O нүктесіне қатысты симметриялы нүкте?', pa: '(2; 3)' } },
+      { t: 'Параллель көшіру', q: 'A(1; 2) нүктесін a(3; 4) векторына параллель көшірсек, қай нүкте шығады?', o: ['(4; 6)', '(2; 2)', '(3; 8)', '(−2; −2)'], e: '(1 + 3; 2 + 4) = (4; 6).',
+        ai: { s: ['Параллель көшіруде әр нүкте берілген векторға жылжиды.', 'Нүкте координаталарына вектор координаталарын қосамыз.', '(1 + 3; 2 + 4) = (4; 6).'], m: 'Координаталарды азайту: (−2; −2) — бұл қарама-қарсы векторға көшіру.', p: 'M(0; −1) нүктесін a(2; 3) векторына көшір.', pa: '(2; 2)' } },
+      { t: 'Гомотетия', q: 'Гомотетия коэффициенті k = 2 болса, кесіндінің ұзындығы қалай өзгереді?', o: ['2 есе артады', '2 есе кемиді', 'Өзгермейді', '4 есе артады'], e: 'Ұзындықтар |k| = 2 есе артады.',
+        ai: { s: ['Гомотетияда фигура центрден k есе «созылады» немесе «қысылады».', 'Барлық кесінділердің ұзындығы |k| есе өзгереді.', 'k = 2: ұзындық 2 есе артады. Ал аудан k² = 4 есе артады.'], m: 'Ұзындықты ауданмен шатастыру. «4 есе» — ауданның өзгеруі.', p: 'k = 3 болса, үшбұрыштың периметрі қалай өзгереді?', pa: '3 есе артады' } },
+    ] },
+  { id: 'phy', name: 'Физика', c: '#FFC845', topics: 'Кинематика · Астрономия · Динамика',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>',
+    qs: [
+      { t: 'Материялық нүкте', q: 'Берілген жағдайда өлшемдерін ескермеуге болатын дене қалай аталады?', o: ['Материялық нүкте', 'Санақ денесі', 'Траектория', 'Орын ауыстыру'], e: 'Мұндай дене материялық нүкте деп аталады.',
+        ai: { s: ['Материялық нүкте — дененің өлшемдерін ескермейтін физикалық модель.', 'Мысалы, Алматыдан Астанаға бара жатқан пойызды материялық нүкте деп алуға болады.', 'Санақ денесі — қозғалысты салыстыратын дене, траектория — қозғалыс сызығы.'], m: 'Материялық нүкте «өте кішкентай дене» деп ойлау. Үлкен дене де, егер өлшемі маңызсыз болса, материялық нүкте бола алады.', p: 'Жер Күнді айналғанда оны материялық нүкте деп алуға бола ма?', pa: 'Иә, қашықтық Жердің өлшемінен әлдеқайда үлкен' } },
+      { t: 'Жылдамдық', q: 'Велосипедші 10 с ішінде 50 м жол жүрді. Оның жылдамдығы қандай?', o: ['5 м/с', '500 м/с', '0,2 м/с', '60 м/с'], e: 'v = 50 / 10 = 5 м/с.',
+        ai: { s: ['Бірқалыпты қозғалыста жылдамдық v = s / t.', 'Берілгені: s = 50 м, t = 10 с.', 'v = 50 / 10 = 5 м/с.'], m: 'Жолды уақытқа көбейту (500) немесе уақытты жолға бөлу (0,2).', p: 'Жаяу адам 60 с ішінде 90 м жүрді. Жылдамдығы?', pa: '1,5 м/с' } },
+      { t: 'Үдеу', q: 'Дене тыныштық күйден 2 м/с² үдеумен қозғалды. 5 с өткенде оның жылдамдығы қандай?', o: ['10 м/с', '7 м/с', '2,5 м/с', '25 м/с'], e: 'v = 0 + 2 · 5 = 10 м/с.',
+        ai: { s: ['Бірқалыпты үдемелі қозғалыста v = v₀ + a · t.', 'Дене тыныштық күйден қозғалды, демек v₀ = 0.', 'v = 0 + 2 · 5 = 10 м/с.'], m: 'Үдеуді уақытқа бөлу (2,5) немесе қосу (7).', p: 'v₀ = 3 м/с, a = 1 м/с², t = 4 с. v = ?', pa: '7 м/с' } },
+      { t: 'Еркін түсу', q: 'Жер бетіндегі еркін түсу үдеуі g шамамен неге тең?', o: ['9,8 м/с²', '1 м/с²', '98 м/с²', '0,98 м/с²'], e: 'g ≈ 9,8 м/с².',
+        ai: { s: ['Ауа кедергісі болмаса, барлық денелер бірдей үдеумен құлайды.', 'Бұл үдеу g ≈ 9,8 м/с², ол Жердің центріне қарай бағытталған.', 'Есептерде ыңғайлы болу үшін көбіне g = 10 м/с² деп алады.'], m: 'Ауыр дене тезірек құлайды деп ойлау. Ауасыз ортада қауырсын мен тас бірдей құлайды.', p: 'Дене 2 с еркін түсті (v₀ = 0). Жылдамдығы қандай? (g = 10 м/с²)', pa: '20 м/с' } },
+      { t: 'Шеңбер бойымен қозғалыс', q: 'Шеңбер бойымен бірқалыпты қозғалғанда центрге тартқыш үдеу қалай бағытталған?', o: ['Шеңбердің центріне қарай', 'Жанама бойымен', 'Центрден сыртқа қарай', 'Тік жоғары'], e: 'Центрге тартқыш үдеу шеңбердің центріне қарай бағытталады.',
+        ai: { s: ['Шеңбер бойымен қозғалғанда жылдамдықтың модулі тұрақты болса да, бағыты үнемі өзгереді.', 'Бағыттың өзгеруін центрге тартқыш үдеу тудырады.', 'Ол әрқашан шеңбердің центріне қарай бағытталған: a = v² / R.'], m: 'Үдеуді жылдамдықпен шатастыру. Жылдамдық жанама бойымен, ал үдеу центрге бағытталған.', p: 'v = 4 м/с, R = 2 м. Центрге тартқыш үдеу қандай?', pa: '8 м/с²' } },
+      { t: 'Астрономия негіздері', q: 'Күн жүйесінде Күнге ең жақын орналасқан планета?', o: ['Меркурий', 'Шолпан', 'Жер', 'Марс'], e: 'Ең жақын планета — Меркурий.',
+        ai: { s: ['Күн жүйесіндегі планеталардың реті: Меркурий, Шолпан, Жер, Марс, Юпитер, Сатурн, Уран, Нептун.', 'Күнге ең жақыны — Меркурий, ол ең кішкентай планета да.', 'Меркурийде бір жыл небәрі 88 жер тәулігіне созылады.'], m: 'Шолпанды ең жақын деп ойлау. Ол екінші орында, бірақ ең ыстық планета.', p: 'Күннен ең алыс планета қайсы?', pa: 'Нептун' } },
+      { t: 'Ньютонның І заңы', q: 'Денеге басқа денелер әсер етпесе (немесе әсерлер теңгерілсе), дене…', o: ['тыныштықта болады не бірқалыпты түзусызықты қозғалады', 'міндетті түрде тоқтайды', 'үдей бастайды', 'шеңбер бойымен қозғалады'], e: 'Бұл — инерция заңы.',
+        ai: { s: ['Бұл — Ньютонның І заңы, оны инерция заңы деп те атайды.', 'Дене өз жылдамдығын, яғни оның модулін де, бағытын да сақтайды.', 'Мысалы, автобус кенет тоқтағанда жолаушылар алға қарай ұмтылады.'], m: 'Күш болмаса дене міндетті түрде тоқтайды деп ойлау. Дене үйкеліс күшінің әсерінен тоқтайды.', p: 'Неге көлікте қауіпсіздік белдігін тағу керек?', pa: 'Кенет тоқтағанда инерциямен алға ұмтылмас үшін' } },
+      { t: 'Ньютонның ІІ заңы', q: 'Массасы 4 кг денеге 20 Н күш әсер етеді. Дененің үдеуі қандай?', o: ['5 м/с²', '80 м/с²', '0,2 м/с²', '16 м/с²'], e: 'a = 20 / 4 = 5 м/с².',
+        ai: { s: ['Ньютонның ІІ заңы: F = m · a, демек a = F / m.', 'a = 20 Н / 4 кг.', 'a = 5 м/с².'], m: 'Күшті массаға көбейту (80). Бұл үдеу емес.', p: 'm = 2 кг, a = 3 м/с². F = ?', pa: '6 Н' } },
+      { t: 'Ньютонның ІІІ заңы', q: 'Екі дененің бір-біріне әсер ету күштері туралы қай тұжырым дұрыс?', o: ['Модульдері тең, бағыттары қарама-қарсы', 'Бағыттары бірдей', 'Біреуі әрқашан үлкен', 'Бір-біріне перпендикуляр'], e: 'Әсер күші қарсы әсер күшіне тең, бағыты қарама-қарсы.',
+        ai: { s: ['Ньютонның ІІІ заңы: F₁ = −F₂.', 'Күштердің модульдері тең, ал бағыттары қарама-қарсы.', 'Олар әр түрлі денелерге түседі, сондықтан бірін-бірі теңгермейді.'], m: 'Үлкен дене күштірек әсер етеді деп ойлау. Жер мен доп бір-бірін бірдей күшпен тартады.', p: 'Қайықтан жағаға секіргенде қайық неге кейін кетеді?', pa: 'ІІІ заң бойынша: аяқ қайықты кері итереді' } },
+      { t: 'Ауырлық күші', q: 'Массасы 5 кг денеге әсер ететін ауырлық күші қандай? (g = 10 м/с²)', o: ['50 Н', '5 Н', '0,5 Н', '15 Н'], e: 'F = 5 · 10 = 50 Н.',
+        ai: { s: ['Ауырлық күші: F = m · g.', 'F = 5 кг · 10 м/с².', 'F = 50 Н.'], m: 'Массаны күшпен шатастыру. Масса килограммен, ал күш ньютонмен (Н) өлшенеді.', p: 'Массасы 60 кг оқушыға әсер ететін ауырлық күші? (g = 10 м/с²)', pa: '600 Н' } },
+    ] },
+  { id: 'inf', name: 'Информатика', c: '#3DDC97', topics: 'Компьютер таңдаймыз · Ақпарат · Деректер базасы',
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></svg>',
+    qs: [
+      { t: 'Компьютер таңдаймыз', q: 'Компьютерде есептеулерді орындайтын негізгі құрылғы қалай аталады?', o: ['Процессор', 'Монитор', 'Пернетақта', 'Принтер'], e: 'Процессор — компьютердің «миы».',
+        ai: { s: ['Процессор (CPU) барлық командаларды орындап, есептеулер жүргізеді.', 'Монитор — шығару құрылғысы, пернетақта — енгізу құрылғысы, принтер — басып шығару құрылғысы.', 'Компьютер таңдағанда процессордың ядро саны мен жиілігіне қарайды.'], m: 'Мониторды компьютердің өзі деп ойлау. Ол тек кескінді көрсетеді.', p: 'Пернетақта енгізу құрылғысы ма, шығару құрылғысы ма?', pa: 'Енгізу құрылғысы' } },
+      { t: 'Процессор жиілігі', q: 'Процессордың тактілік жиілігі қандай бірлікпен өлшенеді?', o: ['ГГц (гигагерц)', 'ГБ (гигабайт)', 'Вт (ватт)', 'дюйм'], e: 'Жиілік герцпен, көбіне ГГц-пен өлшенеді.',
+        ai: { s: ['Жиілік — процессордың 1 секундтағы такт саны.', 'Ол герцпен өлшенеді: 1 ГГц = секундына 1 миллиард такт.', 'ГБ — жады көлемі, Вт — қуат, дюйм — экран өлшемі.'], m: 'ГГц пен ГБ-ты шатастыру. Біріншісі — жылдамдық, екіншісі — көлем.', p: 'Жедел жадының көлемі қандай бірлікпен көрсетіледі: ГБ әлде ГГц?', pa: 'ГБ' } },
+      { t: 'Жады түрлері', q: 'Компьютер өшкенде деректері өшіп қалатын жады?', o: ['Жедел жады (RAM)', 'Қатты диск (HDD)', 'SSD-диск', 'Флешка'], e: 'RAM деректерді тек ток бар кезде сақтайды.',
+        ai: { s: ['RAM — жедел жады, ол тек ток бар кезде ғана жұмыс істейді.', 'Іске қосылған бағдарламалар мен ашық файлдар уақытша RAM-да тұрады.', 'HDD, SSD және флешка деректерді ұзақ уақыт сақтайды.'], m: 'SSD-ді жедел жады деп ойлау. SSD жылдам, бірақ деректерді өшкенде де сақтайды.', p: 'Сақталмаған құжат компьютер өшкенде неге жоғалады?', pa: 'Ол тек RAM-да болған' } },
+      { t: 'Ақпарат өлшем бірліктері', q: '1 байт неше биттен тұрады?', o: ['8', '10', '1024', '2'], e: '1 байт = 8 бит.',
+        ai: { s: ['Бит — ақпараттың ең кіші бірлігі: 0 немесе 1.', '8 бит = 1 байт.', 'Мысалы, бір әріп көбіне 1 байтпен, яғни 8 битпен кодталады.'], m: '1 байт = 1024 бит деп ойлау. 1024 келесі бірліктерге өткенде қолданылады.', p: '3 байт неше бит?', pa: '24 бит' } },
+      { t: 'Ақпарат өлшем бірліктері', q: '1 Гбайт неше Мбайтқа тең?', o: ['1024', '1000000', '100', '8'], e: '1 Гбайт = 1024 Мбайт.',
+        ai: { s: ['Бірліктер тізбегі: байт → Кбайт → Мбайт → Гбайт.', 'Әр келесі бірлік алдыңғысынан 1024 (2¹⁰) есе үлкен.', 'Сондықтан 1 Гбайт = 1024 Мбайт.'], m: '1000-ға көбейту. Компьютер екілік жүйемен жұмыс істейді, сондықтан 1024 қолданылады.', p: '2 Гбайт неше Мбайт?', pa: '2048 Мбайт' } },
+      { t: 'Ақпаратпен жұмыс', q: 'Ақпараттың шындыққа сәйкес келетін қасиеті қалай аталады?', o: ['Шынайылық', 'Өзектілік', 'Толықтық', 'Түсініктілік'], e: 'Шынайы ақпарат нақты жағдайды бұрмаламай көрсетеді.',
+        ai: { s: ['Шынайы ақпарат нақты жағдайды бұрмаламай көрсетеді.', 'Өзекті ақпарат — дәл қазір маңызды ақпарат.', 'Толық ақпарат — шешім қабылдауға жеткілікті ақпарат.'], m: 'Шынайылықты өзектілікпен шатастыру. Ескі ақпарат шынайы болуы мүмкін, бірақ өзекті емес.', p: 'Өткен аптаның ауа райы болжамы қандай қасиетін жоғалтты?', pa: 'Өзектілігін' } },
+      { t: 'Деректер базасы', q: 'Деректер базасындағы кестенің бір жолы қалай аталады?', o: ['Жазба', 'Өріс', 'Кілт', 'Сүзгі'], e: 'Кестенің жолы — жазба.',
+        ai: { s: ['Деректер базасындағы кесте жолдар мен бағандардан тұрады.', 'Бір жол — бір объект туралы толық мәлімет, ол жазба деп аталады.', 'Мысалы, бір оқушының аты-жөні, сыныбы және бағасы — бір жазба.'], m: 'Жазба мен өрісті шатастыру. Жазба — жол, өріс — баған.', p: 'Сыныптағы 25 оқушының кестесінде неше жазба болады?', pa: '25' } },
+      { t: 'Деректер базасы', q: 'Кестедегі «Аты-жөні», «Сыныбы» сияқты бағандар қалай аталады?', o: ['Өріс', 'Жазба', 'Есеп', 'Формула'], e: 'Кестенің бағаны — өріс.',
+        ai: { s: ['Деректер базасында кестенің бағаны өріс деп аталады.', 'Әр өрістің атауы («Аты-жөні») және деректер типі (мәтін, сан, күн) болады.', 'Кестедегі барлық жазбаларда өрістер бірдей.'], m: 'Бағанды жазба деп атау.', p: '«Туған күні» өрісінің деректер типі қандай?', pa: 'Күн (дата)' } },
+      { t: 'Сұрыптау', q: 'Оқушылар тізімін бағасы бойынша өсу ретімен орналастыру қалай аталады?', o: ['Сұрыптау', 'Сүзгілеу', 'Іздеу', 'Жою'], e: 'Деректерді ретпен орналастыру — сұрыптау.',
+        ai: { s: ['Сұрыптау — жазбаларды бір өріс бойынша ретке келтіру.', 'Өсу реті: кішіден үлкенге (2, 3, 4, 5); кему реті — керісінше.', 'Сұрыптағанда барлық жазба көрінеді, тек олардың реті өзгереді.'], m: 'Сұрыптау мен сүзгілеуді шатастыру. Сүзгі жазбаларды жасырады, ал сұрыптау жасырмайды.', p: 'Аттарды А-дан Я-ға дейін орналастыру — сұрыптау ма, сүзгі ме?', pa: 'Сұрыптау' } },
+      { t: 'Сүзгілеу', q: 'Кестеден тек «5» алған оқушыларды ғана көрсету үшін не қолданылады?', o: ['Сүзгі (фильтр)', 'Сұрыптау', 'Көшіру', 'Ұяшықтарды біріктіру'], e: 'Сүзгі шартқа сәйкес жазбаларды ғана көрсетеді.',
+        ai: { s: ['Сүзгі (фильтр) шартқа сәйкес жазбаларды ғана көрсетеді.', 'Мұнда шарт: «Баға = 5». Қалған жазбалар өшірілмейді, тек уақытша жасырылады.', 'Сүзгіні алып тастағанда бүкіл кесте қайта көрінеді.'], m: 'Сүзгі деректерді өшіреді деп ойлау. Ол тек жасырады.', p: 'Тек 9 «А» сыныбының оқушыларын көрсету үшін не қолданасың?', pa: 'Сүзгі' } },
+    ] },
+];
+
+/* ================= state (per device) ================= */
+const KEY = 'bilimqadam.v1';
+let S = load();
+function load() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+  if (!s || typeof s !== 'object' || !/^p[a-z0-9]{6,40}$/.test(s.id || '')) s = { id: 'p' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36), name: '', cls: '', xp: 0, best: {}, days: [], done: 0 };
+  return s;
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+const dayKey = (d) => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+function streak() {
+  const set = new Set(S.days || []); let n = 0; const d = new Date();
+  if (!set.has(dayKey(d))) d.setDate(d.getDate() - 1);
+  while (set.has(dayKey(d))) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+const total = () => SUBJECTS.reduce((a, s) => a + (S.best[s.id] || 0), 0);
+
+/* ================= helpers ================= */
+const $ = (id) => document.getElementById(id);
+function el(tag, props = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'style') n.setAttribute('style', v);
+    else if (k === 'html') n.innerHTML = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (k === 'class') n.className = v;
+    else n.setAttribute(k, v);
+  }
+  for (const c of kids) if (c != null) n.append(c);
+  return n;
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function show(id) {
+  for (const s of ['sReg', 'sHome', 'sQuiz', 'sResult']) $(s).hidden = s !== id;
+  const sc = $(id); sc.classList.remove('enter'); void sc.offsetWidth; sc.classList.add('enter');
+  $('topChips').hidden = id === 'sReg';
+  $('streakVal').textContent = streak(); $('xpVal').textContent = S.xp;
+  window.scrollTo(0, 0);
+  if (id === 'sHome') startPolling(); else stopPolling();
+}
+const ICON = {
+  bot: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>',
+  arrow: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  steps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1.5" fill="currentColor"/><circle cx="4" cy="12" r="1.5" fill="currentColor"/><circle cx="4" cy="18" r="1.5" fill="currentColor"/></svg>',
+  warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>',
+  star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg>',
+};
+
+/* ================= leaderboard (server) ================= */
+let pollTimer = null, online = false, lastBoard = null;
+async function fetchBoard() {
+  try {
+    const r = await fetch('/api/top?me=' + encodeURIComponent(S.id), { cache: 'no-store' });
+    if (!r.ok) throw new Error(r.status);
+    lastBoard = await r.json(); online = true;
+  } catch (e) { online = false; }
+  renderBoard();
+}
+function startPolling() { stopPolling(); fetchBoard(); pollTimer = setInterval(() => { if (!document.hidden) fetchBoard(); }, 8000); }
+function stopPolling() { if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
+async function pushScore() {
+  if (!S.name) return;
+  try {
+    await fetch('/api/score', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: S.id, name: S.name, cls: S.cls, best: S.best, xp: S.xp }) });
+  } catch (e) { /* желі жоқ: нәтиже осы құрылғыда сақталған */ }
+}
+function renderBoard() {
+  const box = $('lb'); box.textContent = '';
+  const st = $('lbStatus');
+  let rows = lastBoard && Array.isArray(lastBoard.players) ? lastBoard.players.slice() : [];
+  if (online) { st.textContent = 'Тікелей · ' + (lastBoard.count || rows.length) + ' оқушы'; st.className = 'live'; }
+  else { st.textContent = 'Байланыс жоқ'; st.className = 'live off'; }
+  if (!rows.some((r) => r.me) && S.name && (online ? total() > 0 : true)) rows.push({ name: S.name, cls: S.cls, total: total(), me: true, local: !online });
+  if (!rows.length) { box.append(el('p', { class: 'small' }, 'Әзірге ешкім тест тапсырмады. Бірінші бол!')); return; }
+  rows.forEach((r, i) => {
+    const nm = el('div', { class: 'lb-name' }); nm.textContent = r.name || 'Оқушы';
+    if (r.cls) { const sm = el('small'); sm.textContent = r.cls; nm.append(sm); }
+    box.append(el('div', { class: 'lb-row' + (r.me ? ' me' : '') + (i < 3 ? ' p' + (i + 1) : '') },
+      el('div', { class: 'lb-pos' }, String(i + 1)), nm, el('div', { class: 'lb-score' }, String(Number(r.total) || 0))));
+  });
+  if (!online) box.append(el('p', { class: 'note' }, 'Рейтингке қосылу мүмкін болмады. Нәтижең осы құрылғыда сақталды, интернет қосылғанда жіберіледі.'));
+}
+
+/* ================= register ================= */
+$('regForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const n = $('regName').value.trim();
+  if (n.length < 2) { $('regErr').hidden = false; $('regName').focus(); return; }
+  S.name = n; S.cls = $('regClass').value.trim(); save(); pushScore().then(fetchBoard); renderHome(); show('sHome');
+});
+$('renameBtn').addEventListener('click', () => { $('regName').value = S.name; $('regClass').value = S.cls; show('sReg'); });
+
+/* ================= home ================= */
+function renderHome() {
+  $('helloName').textContent = S.name.split(' ')[0];
+  const g = $('subjects'); g.textContent = '';
+  SUBJECTS.forEach((s, i) => {
+    const best = S.best[s.id];
+    const bar = el('div', { class: 'bar' }, el('i'));
+    g.append(el('button', { class: 'subj', type: 'button', style: '--c:' + s.c + '; animation-delay:' + (100 + i * 80) + 'ms', onclick: () => startQuiz(s) },
+      el('span', { class: 'blob' }), el('span', { class: 'ic', html: s.icon }),
+      el('span', { class: 'nm' }, s.name), el('span', { class: 'tp' }, s.topics), bar,
+      el('span', { class: 'meta', html: best == null ? '<span>10 сұрақ</span><span>Жаңа</span>' : '<span>Ең жақсы</span><b>' + best + '/10</b>' })));
+    requestAnimationFrame(() => requestAnimationFrame(() => { bar.firstChild.style.width = ((best || 0) * 10) + '%'; }));
+  });
+  renderBoard();
+}
+
+/* ================= quiz ================= */
+let Q = null;
+function startQuiz(subj) {
+  Q = { subj, i: 0, score: 0, answers: [], items: subj.qs.map((q) => { const order = shuffle([0, 1, 2, 3]); return { ...q, opts: order.map((k) => q.o[k]), right: order.indexOf(0) }; }) };
+  show('sQuiz'); renderQ();
+}
+function renderQ() {
+  const it = Q.items[Q.i]; const s = Q.subj;
+  $('qCount').textContent = (Q.i + 1) + '/10';
+  $('qBar').style.width = (Q.i * 10) + '%';
+  const body = $('qBody'); body.textContent = '';
+  const opts = el('div', { class: 'opts' });
+  it.opts.forEach((o, k) => opts.append(el('button', { class: 'opt', type: 'button', style: '--i:' + k, onclick: () => answer(k) }, el('span', { class: 'k' }, 'ABCD'[k]), el('span', {}, o))));
+  body.append(el('div', { class: 'qcard', style: '--c:' + s.c }, el('span', { class: 'tag' }, s.name + ' · ' + it.t), el('p', { class: 'qtext' }, it.q)), opts);
+}
+function answer(k) {
+  const it = Q.items[Q.i]; const ok = k === it.right;
+  if (ok) Q.score++;
+  Q.answers.push({ it, chosen: it.opts[k], right: it.opts[it.right], ok });
+  document.querySelectorAll('#qBody .opt').forEach((b, j) => {
+    b.disabled = true; b.style.animation = 'none';
+    if (j === it.right) { b.classList.add('right'); b.style.animation = ''; }
+    else if (j === k) { b.classList.add('wrong'); b.style.animation = ''; }
+    else b.classList.add('dim');
+  });
+  $('qBar').style.width = ((Q.i + 1) * 10) + '%';
+  const fb = el('div', { class: 'feedback ' + (ok ? 'ok' : 'no') },
+    el('h3', {}, ok ? 'Дұрыс! +10 XP' : 'Қате. Дұрыс жауап: ' + it.opts[it.right]), el('p', {}, it.e));
+  fb.append(aiLauncher(it, ok, fb));
+  const last = Q.i === 9;
+  const next = el('button', { class: 'btn ' + (ok ? 'cyan' : ''), type: 'button', onclick: () => { if (last) finish(); else { Q.i++; renderQ(); } } }, last ? 'Нәтижені көру' : 'Келесі сұрақ');
+  $('qBody').append(fb, next);
+  fb.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' });
+}
+$('quitBtn').addEventListener('click', () => { Q = null; renderHome(); show('sHome'); });
+
+/* ================= AI assistant (prepared explanations) ================= */
+function orb(thinking) { return el('span', { class: 'orb' + (thinking ? ' think' : '') }, el('i', { html: ICON.bot })); }
+function aiLauncher(it, ok, host) {
+  const b = el('button', { class: 'ai-launch', type: 'button' },
+    el('span', {}, orb(false), el('span', {}, el('b', {}, 'AI-көмекші'), el('small', {}, ok ? 'Неге дұрыс екенін қадамдап түсіндіреді' : 'Қай жерде қателескеніңді көрсетеді')), el('span', { class: 'go', html: ICON.arrow })));
+  b.addEventListener('click', () => { b.replaceWith(aiCard(it, ok)); });
+  return b;
+}
+async function typeInto(node, text) {
+  if (reduced) { node.textContent = text; return; }
+  node.classList.add('caret');
+  const words = text.split(' ');
+  for (let i = 0; i < words.length; i++) {
+    node.textContent = words.slice(0, i + 1).join(' ');
+    await sleep(28 + Math.random() * 30);
+  }
+  node.classList.remove('caret');
+}
+function aiCard(it, ok) {
+  const ai = it.ai;
+  const thinkOrb = orb(true);
+  const head = el('div', { class: 'ai-head' }, thinkOrb, el('div', {}, el('b', {}, 'AI-көмекші'), el('small', {}, 'AI дайындаған түсіндірме')));
+  const inner = el('div', { class: 'ai-in' }, head);
+  const card = el('div', { class: 'ai-card' }, inner);
+  const dots = el('div', { class: 'typing', 'aria-label': 'Жазып жатыр' }, el('i'), el('i'), el('i'));
+  inner.append(dots);
+  (async () => {
+    await sleep(reduced ? 0 : 750);
+    dots.remove();
+    const sec = el('div', { class: 'ai-sec' }, el('p', { class: 'ai-label', html: ICON.steps + 'Шешімі' }));
+    const ol = el('ol', { class: 'ai-steps' }); sec.append(ol); inner.append(sec);
+    for (let i = 0; i < ai.s.length; i++) {
+      const tx = el('p', { class: 'tx' });
+      ol.append(el('li', {}, el('span', { class: 'n' }, String(i + 1)), tx));
+      await typeInto(tx, ai.s[i]);
+      await sleep(reduced ? 0 : 160);
+    }
+    inner.append(el('div', { class: 'ai-warn' }, el('span', { html: ICON.warn }),
+      el('div', {}, el('b', {}, ok ? 'Абай бол, жиі кездесетін қате' : 'Қате қайдан шығуы мүмкін'), el('p', {}, ai.m))));
+    await sleep(reduced ? 0 : 250);
+    const ans = el('div', { class: 'answer', hidden: '' });
+    ans.innerHTML = ICON.check; ans.append(el('span', {}, 'Жауабы: ' + ai.pa));
+    const rv = el('button', { class: 'reveal', type: 'button', onclick: () => { rv.remove(); ans.hidden = false; } }, 'Жауабын көру');
+    inner.append(el('div', { class: 'ai-try' }, el('b', {}, 'Өзіңді тексер'), el('p', {}, ai.p), rv, ans));
+    thinkOrb.classList.remove('think');
+  })();
+  return card;
+}
+
+/* ================= result ================= */
+function finish() {
+  const s = Q.subj, score = Q.score, gained = score * 10;
+  const first = (S.done || 0) === 0, prevBest = S.best[s.id];
+  S.xp += gained; S.done = (S.done || 0) + 1;
+  S.best[s.id] = Math.max(prevBest || 0, score);
+  const tk = dayKey(new Date());
+  if (!(S.days || []).includes(tk)) S.days = [...(S.days || []), tk].slice(-60);
+  const badges = [];
+  if (first) badges.push(['Алғашқы қадам', 'Бірінші тестті тапсырдың']);
+  if (score === 10) badges.push(['Мінсіз нәтиже', s.name + ' — 10/10']);
+  if (prevBest != null && score > prevBest) badges.push(['Өсу бар!', 'Өткен рекорд: ' + prevBest + '/10']);
+  if (SUBJECTS.every((x) => S.best[x.id] != null) && !S.allFour) { S.allFour = true; badges.push(['Төрт пән', 'Барлық пәннен тест тапсырдың']); }
+  const st = streak(); if (st >= 3) badges.push(['Қатарынан ' + st + ' күн', 'Күн сайын бір қадам!']);
+  save(); pushScore();
+
+  const msg = score >= 9 ? 'Керемет! Сен бұл тақырыптарды жақсы білесің.' : score >= 7 ? 'Жақсы нәтиже! Бірнеше тақырыпты қайталап шық.' : score >= 5 ? 'Жаман емес! Қателерді қарап, қайта тапсырып көр.' : 'Бастама жасалды! Түсіндірмелерді оқып, қайта тапсыр.';
+  const R = $('sResult'); R.textContent = '';
+  const C = 2 * Math.PI * 80;
+  R.append(
+    el('div', { class: 'center', style: '--i:0' }, el('p', { class: 'eyebrow' }, s.name + ' · Нәтиже')),
+    el('div', { style: '--i:1' }, el('div', { class: 'ring', html:
+      '<svg viewBox="0 0 190 190" aria-hidden="true"><defs><linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#38D6F5"/><stop offset="1" stop-color="#FFC845"/></linearGradient></defs>'
+      + '<circle cx="95" cy="95" r="80" fill="none" stroke="#18225A" stroke-width="16"/>'
+      + '<circle class="fg" cx="95" cy="95" r="80" fill="none" stroke="url(#rg)" stroke-width="16" stroke-linecap="round" stroke-dasharray="' + C + '" stroke-dashoffset="' + C + '"/></svg>'
+      + '<div class="val"><div><b id="scoreNum">0</b><small>10 сұрақтан</small></div></div>' })),
+    el('div', { class: 'center', style: '--i:2; display:flex; flex-direction:column; gap:8px; align-items:center' }, el('h2', {}, msg), el('div', { class: 'xp-pop' }, '+' + gained + ' XP')));
+  if (badges.length) {
+    const bw = el('div', { class: 'badges', style: '--i:3' });
+    badges.forEach(([t, d], i) => bw.append(el('div', { class: 'badge', style: '--i:' + i }, el('span', { class: 'bi', html: ICON.star }), el('div', {}, el('b', {}, t), el('small', {}, d)))));
+    R.append(bw);
+  }
+  const wrong = Q.answers.filter((a) => !a.ok);
+  if (wrong.length) {
+    const p = el('div', { class: 'panel', style: '--i:4' }, el('h2', {}, 'Қателермен жұмыс'));
+    const rv = el('div', { class: 'review' });
+    wrong.forEach((a) => {
+      const tip = el('p', { class: 'tip' }, el('b', {}, 'AI-КЕҢЕС  '), a.it.ai.m);
+      rv.append(el('div', { class: 'rv' }, el('p', { class: 'q' }, a.it.q), el('p', { class: 'a' }, 'Сенің жауабың: ' + a.chosen + ' · ', el('b', {}, 'Дұрысы: ' + a.right)), tip));
+    });
+    p.append(rv); R.append(p);
+  }
+  R.append(el('div', { class: 'row', style: '--i:5' },
+    el('button', { class: 'btn', type: 'button', onclick: () => startQuiz(s) }, 'Қайта тапсыру'),
+    el('button', { class: 'btn ghost', type: 'button', onclick: () => { renderHome(); show('sHome'); } }, 'Рейтинг')));
+  show('sResult');
+  requestAnimationFrame(() => requestAnimationFrame(() => { R.querySelector('circle.fg').style.strokeDashoffset = C * (1 - score / 10); }));
+  countUp($('scoreNum'), score);
+  if (score >= 8) confetti();
+}
+function countUp(node, to) {
+  const t0 = performance.now(), d = 1200;
+  const step = (t) => { const p = Math.min(1, (t - t0) / d); node.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function confetti() {
+  if (reduced) return;
+  const cv = $('confetti'); cv.hidden = false;
+  const ctx = cv.getContext('2d'); const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const cols = ['#38D6F5', '#FFC845', '#3DDC97', '#FF6B7A', '#F3F5FB'];
+  const P = Array.from({ length: 120 }, () => ({ x: innerWidth / 2 + (Math.random() - .5) * 80, y: innerHeight * .35, vx: (Math.random() - .5) * 11, vy: -Math.random() * 12 - 4, r: Math.random() * 6 + 4, a: Math.random() * 6, va: (Math.random() - .5) * .3, c: cols[(Math.random() * cols.length) | 0] }));
+  const t0 = performance.now();
+  (function frame(t) {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    for (const p of P) { p.vy += .32; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += p.va; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.fillStyle = p.c; ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); ctx.restore(); }
+    if (t - t0 < 2800) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, innerWidth, innerHeight); cv.hidden = true; }
+  })(t0);
+}
+
+/* ================= boot ================= */
+if (S.name) { renderHome(); show('sHome'); pushScore(); } else show('sReg');
+</script>
+</body>
+</html>
