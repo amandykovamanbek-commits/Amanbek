@@ -23,6 +23,7 @@ if (process.env.DATABASE_URL) {
 }
 
 const memory = new Map(); // DATABASE_URL жоқ кезде ғана
+let dbReady = false;
 
 async function initDb() {
   if (!pool) return;
@@ -37,6 +38,7 @@ async function initDb() {
       updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
     )`);
   await pool.query('CREATE INDEX IF NOT EXISTS players_total_idx ON players (total DESC, updated_at ASC)');
+  dbReady = true;
 }
 
 // ---------- validation ----------
@@ -119,7 +121,11 @@ function rateLimited(ip) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   try {
-    if (req.method === 'GET' && url.pathname === '/health') return send(res, 200, { ok: true, db: !!pool });
+    if (req.method === 'GET' && url.pathname === '/health') {
+      // база бапталған, бірақ қосылмаса — сервис дайын емес
+      if (pool && !dbReady) return send(res, 503, { ok: false, db: 'unavailable' });
+      return send(res, 200, { ok: true, db: pool ? 'postgres' : 'memory' });
+    }
 
     if (req.method === 'GET' && url.pathname === '/api/top') {
       const me = url.searchParams.get('me') || '';
