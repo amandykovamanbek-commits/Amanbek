@@ -1,0 +1,11 @@
+{
+  "appId": "kz.bilimqadam.app",
+  "appName": "BILIM QADAM",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#0A0F2C"
+  }
+}

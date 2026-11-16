@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2732 2732" width="2732" height="2732"><defs>
+    <radialGradient id="bg" cx="30%" cy="18%" r="95%">
+      <stop offset="0" stop-color="#22307F"/>
+      <stop offset=".55" stop-color="#121A46"/>
+      <stop offset="1" stop-color="#0A0F2C"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#38D6F5"/>
+      <stop offset=".55" stop-color="#7FC8FF"/>
+      <stop offset="1" stop-color="#FFC845"/>
+    </linearGradient>
+    <linearGradient id="step" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#38D6F5"/>
+      <stop offset="1" stop-color="#9BEBFF"/>
+    </linearGradient>
+    <linearGradient id="step3" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#FFB020"/>
+      <stop offset="1" stop-color="#FFE08A"/>
+    </linearGradient>
+    <linearGradient id="stairs" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#38D6F5"/>
+      <stop offset="1" stop-color="#FFC845"/>
+    </linearGradient>
+    <linearGradient id="tail" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFC845"/>
+      <stop offset="1" stop-color="#FF9F1C"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFC845" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#FFC845" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#38D6F5" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#38D6F5" stop-opacity="0"/>
+    </radialGradient>
+  </defs><rect width="2732" height="2732" fill="#0A0F2C"/><g transform="translate(1366 1180) scale(1.15) translate(-540 -478)">  <g id="mark">
+    <!-- progress ring, open at the top right where the goal star sits -->
+    <path d="M 756.3 423.1 A 260 260 0 1 1 557.1 255.9" fill="none" stroke="url(#ring)" stroke-width="64" stroke-linecap="round"/>
+    <!-- staircase: three steps up (қадам) -->
+    <path d="M384 648 V574 H470 V490 H556 V406 H642 V648 Z" fill="url(#stairs)" stroke="url(#stairs)" stroke-width="26" stroke-linejoin="round"/>
+    <path d="M384 574 H470 M470 490 H556 M556 406 H642" stroke="#FFFFFF" stroke-opacity=".6" stroke-width="10" stroke-linecap="round"/>
+    <!-- goal star in the ring gap -->
+    <circle cx="679" cy="313" r="96" fill="url(#glow)"/>
+    <path d="M679 245 C 686 290 696 300 742 307 C 696 314 686 324 679 369 C 672 324 662 314 616 307 C 662 300 672 290 679 245 Z" fill="#FFF4D1"/>
+  </g></g><text x="1366" y="1880" text-anchor="middle" font-family="Montserrat" font-weight="900" font-size="190" letter-spacing="-4" fill="#F3F5FB">BILIM <tspan fill="#FFC845">QADAM</tspan></text><text x="1366" y="2010" text-anchor="middle" font-family="Inter" font-weight="600" font-size="72" letter-spacing="10" fill="#38D6F5">КҮН САЙЫН БІР ҚАДАМ</text></svg>

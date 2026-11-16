@@ -118,9 +118,37 @@ function rateLimited(ip) {
   return h.n > 30;
 }
 
+// Android қосымшасы (Capacitor) осы origin-дерден сұрау жібереді
+const APP_ORIGINS = new Set(['https://localhost', 'capacitor://localhost', 'http://localhost']);
+// APK GitHub Releases-те жатады; /app — QR-код үшін қысқа сілтеме
+const APK_URL = process.env.APK_URL || 'https://github.com/amandykovamanbek-commits/Amanbek/releases/download/bilim-qadam-apk/BILIM-QADAM.apk';
+const STATIC = {
+  '/manifest.webmanifest': 'application/manifest+json',
+  '/icon-192.png': 'image/png',
+  '/icon-512.png': 'image/png',
+  '/apple-touch-icon.png': 'image/png',
+};
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
+  const origin = req.headers.origin;
+  if (origin && APP_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Vary', 'Origin');
+  }
   try {
+    if (req.method === 'OPTIONS' && url.pathname.startsWith('/api/')) { res.writeHead(204); return res.end(); }
+
+    if (req.method === 'GET' && url.pathname === '/app') {
+      res.writeHead(302, { Location: APK_URL, 'Cache-Control': 'no-store' }); return res.end();
+    }
+
+    if (req.method === 'GET' && STATIC[url.pathname]) {
+      return send(res, 200, fs.readFileSync(path.join(__dirname, 'public', url.pathname.slice(1))), STATIC[url.pathname], { 'Cache-Control': 'public, max-age=86400' });
+    }
+
     if (req.method === 'GET' && url.pathname === '/health') {
       // база бапталған, бірақ қосылмаса — сервис дайын емес
       if (pool && !dbReady) return send(res, 503, { ok: false, db: 'unavailable' });

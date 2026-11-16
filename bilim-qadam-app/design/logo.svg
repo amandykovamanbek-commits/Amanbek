@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- BILIM QADAM: a "Q" ring whose tail is a step up, three rising steps and a guiding star inside -->
+  <defs>
+    <radialGradient id="bg" cx="30%" cy="18%" r="95%">
+      <stop offset="0" stop-color="#22307F"/>
+      <stop offset=".55" stop-color="#121A46"/>
+      <stop offset="1" stop-color="#0A0F2C"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#38D6F5"/>
+      <stop offset=".55" stop-color="#7FC8FF"/>
+      <stop offset="1" stop-color="#FFC845"/>
+    </linearGradient>
+    <linearGradient id="step" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#38D6F5"/>
+      <stop offset="1" stop-color="#9BEBFF"/>
+    </linearGradient>
+    <linearGradient id="step3" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#FFB020"/>
+      <stop offset="1" stop-color="#FFE08A"/>
+    </linearGradient>
+    <linearGradient id="stairs" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#38D6F5"/>
+      <stop offset="1" stop-color="#FFC845"/>
+    </linearGradient>
+    <linearGradient id="tail" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFC845"/>
+      <stop offset="1" stop-color="#FF9F1C"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFC845" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#FFC845" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#38D6F5" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#38D6F5" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <g id="background">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+    <circle cx="512" cy="512" r="420" fill="url(#halo)"/>
+    <circle cx="512" cy="512" r="430" fill="none" stroke="#38D6F5" stroke-opacity=".18" stroke-width="3" stroke-dasharray="4 22"/>
+    <circle cx="160" cy="250" r="5" fill="#F3F5FB" opacity=".5"/>
+    <circle cx="860" cy="170" r="4" fill="#F3F5FB" opacity=".45"/>
+    <circle cx="880" cy="820" r="6" fill="#38D6F5" opacity=".5"/>
+    <circle cx="140" cy="790" r="4" fill="#FFC845" opacity=".5"/>
+  </g>
+
+  <g id="mark">
+    <!-- progress ring, open at the top right where the goal star sits -->
+    <path d="M 756.3 423.1 A 260 260 0 1 1 557.1 255.9" fill="none" stroke="url(#ring)" stroke-width="64" stroke-linecap="round"/>
+    <!-- staircase: three steps up (қадам) -->
+    <path d="M384 648 V574 H470 V490 H556 V406 H642 V648 Z" fill="url(#stairs)" stroke="url(#stairs)" stroke-width="26" stroke-linejoin="round"/>
+    <path d="M384 574 H470 M470 490 H556 M556 406 H642" stroke="#FFFFFF" stroke-opacity=".6" stroke-width="10" stroke-linecap="round"/>
+    <!-- goal star in the ring gap -->
+    <circle cx="679" cy="313" r="96" fill="url(#glow)"/>
+    <path d="M679 245 C 686 290 696 300 742 307 C 696 314 686 324 679 369 C 672 324 662 314 616 307 C 662 300 672 290 679 245 Z" fill="#FFF4D1"/>
+  </g>
+</svg>
