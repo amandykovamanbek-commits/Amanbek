@@ -24,6 +24,9 @@ if (process.env.DATABASE_URL) {
 
 const memory = new Map(); // DATABASE_URL жоқ кезде ғана
 let dbReady = false;
+// «Маусым»: RESET_SCORES айнымалысының жаңа мәні рейтингті бір рет тазалайды.
+// Қосымшалар жаңа маусымды көріп, өздеріндегі ескі ұпайларды нөлдейді.
+let season = process.env.RESET_SCORES || 'initial';
 
 async function initDb() {
   if (!pool) return;
@@ -38,6 +41,18 @@ async function initDb() {
       updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
     )`);
   await pool.query('CREATE INDEX IF NOT EXISTS players_total_idx ON players (total DESC, updated_at ASC)');
+  await pool.query('CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+  const cur = await pool.query("SELECT value FROM meta WHERE key = 'season'");
+  const stored = cur.rows[0] ? cur.rows[0].value : null;
+  const wanted = process.env.RESET_SCORES;
+  if (wanted && wanted !== stored) {
+    const del = await pool.query('DELETE FROM players');
+    await pool.query("INSERT INTO meta (key, value) VALUES ('season', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value", [wanted]);
+    console.log('Leaderboard reset for season ' + wanted + ': removed ' + del.rowCount + ' players');
+    season = wanted;
+  } else {
+    season = stored || 'initial';
+  }
   dbReady = true;
 }
 
@@ -62,7 +77,8 @@ function validScore(body) {
   }
   const xpRaw = Number(body.xp);
   const xp = Number.isFinite(xpRaw) ? Math.max(0, Math.min(1000000, Math.round(xpRaw))) : 0;
-  return { id, name, cls, best, total, xp };
+  const seasonSent = typeof body.season === 'string' ? body.season : '';
+  return { id, name, cls, best, total, xp, seasonSent };
 }
 
 // ---------- storage ----------
@@ -90,7 +106,7 @@ async function topPlayers(me) {
     count = c.rows[0].n;
   } else count = memory.size;
   // id-лерді сыртқа шығармаймыз: тек «бұл сенсің» белгісі
-  return { players: rows.map((r) => ({ name: r.name, cls: r.cls, total: r.total, me: r.id === me })), count };
+  return { season, players: rows.map((r) => ({ name: r.name, cls: r.cls, total: r.total, me: r.id === me })), count };
 }
 
 // ---------- http ----------
@@ -167,6 +183,8 @@ const server = http.createServer(async (req, res) => {
       try { body = JSON.parse(await readBody(req)); } catch (e) { return send(res, 400, { error: 'bad_json' }); }
       const s = validScore(body);
       if (!s) return send(res, 400, { error: 'invalid' });
+      // ескі маусымның ұпайлары қабылданбайды — қосымша оларды нөлдеп, қайта жібереді
+      if (s.seasonSent !== season) return send(res, 409, { error: 'season', season });
       await saveScore(s);
       return send(res, 200, { ok: true });
     }

@@ -474,16 +474,26 @@ async function fetchBoard() {
     const r = await fetch(API + '/api/top?me=' + encodeURIComponent(S.id), { cache: 'no-store' });
     if (!r.ok) throw new Error(r.status);
     lastBoard = await r.json(); online = true;
+    if (lastBoard.season && S.season !== lastBoard.season) await newSeason(lastBoard.season);
   } catch (e) { online = false; }
   renderBoard();
 }
 function startPolling() { stopPolling(); fetchBoard(); pollTimer = setInterval(() => { if (!document.hidden) fetchBoard(); }, 8000); }
 function stopPolling() { if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
-async function pushScore() {
+async function pushScore(retry = true) {
   if (!S.name) return;
   try {
-    await fetch(API + '/api/score', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: S.id, name: S.name, cls: S.cls, best: S.best, xp: S.xp }) });
+    const r = await fetch(API + '/api/score', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: S.id, name: S.name, cls: S.cls, best: S.best, xp: S.xp, season: S.season || '' }) });
+    if (r.status === 409 && retry) { const j = await r.json().catch(() => ({})); if (j.season) await newSeason(j.season); }
   } catch (e) { /* желі жоқ: нәтиже осы құрылғыда сақталған */ }
+}
+// Мұғалім рейтингті тазалады: осы құрылғыдағы ескі ұпайларды нөлдейміз, аты-жөні қалады
+async function newSeason(season) {
+  if (S.season === season) return;
+  S.season = season; S.best = {}; S.xp = 0; S.allFour = false; save();
+  if (!$('sHome').hidden) renderHome();
+  $('xpVal').textContent = S.xp;
+  await pushScore(false);
 }
 function renderBoard() {
   const box = $('lb'); box.textContent = '';
