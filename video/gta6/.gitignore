@@ -1,0 +1,5 @@
+remotion/node_modules/
+out/silent*.mp4
+out/*_preview.mp4
+work/
+audio/*.wav
