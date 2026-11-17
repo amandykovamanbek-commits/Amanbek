@@ -226,13 +226,6 @@ label { font-size: 13px; font-weight: 600; color: var(--soft); display: block; m
 .xp-pop { font: 900 22px/1 var(--display); color: var(--sun); animation: pop .7s var(--spring) both; animation-delay: .9s; }
 #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
 .note { font-size: 13px; color: var(--mute); background: var(--card); border-radius: 12px; padding: 10px 12px; margin: 0; }
-.install { position: relative; display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--light); border-radius: 20px; padding: 14px 16px; background: linear-gradient(120deg, #1B2A78, #13205C); border: 1.5px solid var(--line); overflow: hidden; }
-.install::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.08) 50%, transparent 70%); transform: translateX(-100%); animation: shine 3.2s ease-in-out infinite; }
-@keyframes shine { 60%, 100% { transform: translateX(100%); } }
-.install img { flex: none; border-radius: 14px; }
-.install b { display: block; font: 800 15px/1.2 var(--display); }
-.install small { display: block; color: var(--soft); font-size: 12px; margin-top: 3px; }
-.install .dl { margin-left: auto; flex: none; background: var(--sun); color: var(--ink); border-radius: 12px; padding: 9px 12px; font: 800 13px/1 var(--display); }
 .linkbtn { background: none; border: 0; color: var(--mute); text-decoration: underline; font-size: 13px; padding: 0; align-self: flex-start; }
 
 @media (max-width: 430px) { .brand { font-size: 17px; gap: 8px; } .chip { padding: 5px 9px; font-size: 12px; } }
@@ -286,13 +279,7 @@ label { font-size: 13px; font-weight: 600; color: var(--soft); display: block; m
       <div class="lb" id="lb"></div>
       <p class="small">Рейтинг төрт пәннің ең жақсы нәтижелерінің қосындысымен есептеледі (ең көбі 40).</p>
     </div>
-    <a class="install" id="installCard" href="/app" hidden style="--i:3">
-      <img src="icon-192.png" alt="" width="48" height="48">
-      <span><b>Android қосымшасы</b><small id="installSub">Телефонға орнатып, интернетсіз де оқы</small></span>
-      <span class="dl">APK</span>
-    </a>
-    <p class="note" id="iosTip" hidden style="--i:3">iPhone-да қосымша ретінде ашу үшін: Safari-де «Бөлісу» батырмасын бас, сосын «Экран «Домой»-ға қосу» таңда.</p>
-    <button class="linkbtn" id="renameBtn" type="button" style="--i:4">Атымды өзгерту</button>
+    <button class="linkbtn" id="renameBtn" type="button" style="--i:3">Атымды өзгерту</button>
   </section>
 
   <section class="screen" id="sQuiz" hidden>
@@ -692,15 +679,6 @@ function confetti() {
   })(t0);
 }
 
-/* ================= install hints ================= */
-(function () {
-  if (IN_APP) return;
-  const ua = navigator.userAgent || '';
-  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  if (standalone) return;
-  if (/iPhone|iPad|iPod/i.test(ua)) $('iosTip').hidden = false;
-  else $('installCard').hidden = false;
-})();
 window.addEventListener('online', () => { pushScore().then(fetchBoard); });
 
 /* ================= boot ================= */

@@ -136,8 +136,6 @@ function rateLimited(ip) {
 
 // Android қосымшасы (Capacitor) осы origin-дерден сұрау жібереді
 const APP_ORIGINS = new Set(['https://localhost', 'capacitor://localhost', 'http://localhost']);
-// APK GitHub Releases-те жатады; /app — QR-код үшін қысқа сілтеме
-const APK_URL = process.env.APK_URL || 'https://github.com/amandykovamanbek-commits/Amanbek/releases/download/bilim-qadam-apk/BILIM-QADAM.apk';
 const STATIC = {
   '/manifest.webmanifest': 'application/manifest+json',
   '/icon-192.png': 'image/png',
@@ -156,10 +154,6 @@ const server = http.createServer(async (req, res) => {
   }
   try {
     if (req.method === 'OPTIONS' && url.pathname.startsWith('/api/')) { res.writeHead(204); return res.end(); }
-
-    if (req.method === 'GET' && url.pathname === '/app') {
-      res.writeHead(302, { Location: APK_URL, 'Cache-Control': 'no-store' }); return res.end();
-    }
 
     if (req.method === 'GET' && STATIC[url.pathname]) {
       return send(res, 200, fs.readFileSync(path.join(__dirname, 'public', url.pathname.slice(1))), STATIC[url.pathname], { 'Cache-Control': 'public, max-age=86400' });
