@@ -1,0 +1,10 @@
+# Intermediate and regenerable files
+work/video/node_modules/
+work/video/out/
+work/video/public/music.wav
+work/stills/
+work/render.mp4
+work/chk*.png
+work/fonts.css
+# The final video is kept
+!brag.mp4
