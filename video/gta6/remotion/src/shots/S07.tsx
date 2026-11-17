@@ -9,6 +9,7 @@ import {ARMS, FACES} from '../lib/Stickman';
 import {Crowd, Hero, Lera, Mom} from '../lib/Cast';
 import {CCTV, Heli, PoliceCar} from '../lib/Props';
 import {Menu, Star} from '../lib/UI';
+import {RoofStandoff} from './S00';
 
 const Helicopter: React.FC<{d: number}> = ({d}) => {
   const f = useCurrentFrame();
@@ -238,6 +239,7 @@ export const S07: SceneDef = {
     {cue: 'Ты бежишь', C: RoofRun},
     {cue: 'А потом ты видишь', C: LeraTrapped},
     {cue: 'Ты жмёшь паузу', C: PauseFail, hud: false},
+    {cue: 'И вот ты здесь', C: (p) => <RoofStandoff d={p.d} punch={[4]} />},
     {cue: 'В меню', C: Restart, hud: false},
   ],
 };

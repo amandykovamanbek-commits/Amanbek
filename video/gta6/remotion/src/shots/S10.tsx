@@ -7,8 +7,9 @@ import {Cam, Light, Vignette} from '../lib/FX';
 import {Chars, Pos} from '../lib/Frame';
 import {ARMS, FACES} from '../lib/Stickman';
 import {Hero} from '../lib/Cast';
+import {Blank} from './S09';
 
-const WhoNext: React.FC<{d: number}> = ({d}) => {
+const WhoNext: React.FC<{d: number; title?: string}> = ({d, title = 'КОМУ ОТПРАВИТЬ?'}) => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill>
@@ -22,7 +23,7 @@ const WhoNext: React.FC<{d: number}> = ({d}) => {
           </Pos>
         </Chars>
         <AbsoluteFill style={{alignItems: 'center', paddingTop: 70, fontFamily: FONT}}>
-          <div style={{color: C.gold, fontWeight: 900, fontSize: 100, textShadow: glowText, opacity: ramp(f, 4, 10), transform: `scale(${0.92 + 0.08 * ramp(f, 4, 12, backOut)})`}}>КОМУ ОТПРАВИТЬ?</div>
+          <div style={{color: C.gold, fontWeight: 900, fontSize: 100, textShadow: glowText, opacity: ramp(f, 4, 10), transform: `scale(${0.92 + 0.08 * ramp(f, 4, 12, backOut)})`}}>{title}</div>
         </AbsoluteFill>
       </Cam>
       <Vignette />
@@ -83,8 +84,9 @@ const NextBox: React.FC<{d: number}> = ({d}) => {
 export const S10: SceneDef = {
   id: 'S10',
   shots: [
-    {cue: 'Так', C: WhoNext, hud: false},
+    {cue: 'Теперь', C: (p) => <WhoNext d={p.d} title="ТЕПЕРЬ ВЫБИРАЕШЬ ТЫ" />, hud: false},
+    {cue: 'На новой', C: Blank, hud: false},
+    {cue: 'Кому', C: (p) => <WhoNext d={p.d} />, hud: false},
     {cue: 'Напиши', C: Comments, hud: false},
-    {cue: 'Самый безумный', C: NextBox, hud: false},
   ],
 };

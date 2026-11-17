@@ -113,7 +113,7 @@ const Rules: React.FC<{d: number; at: (p: string) => number}> = ({d, at}) => {
   return (
     <AbsoluteFill style={{background: '#0D0C1F'}}>
       <AbsoluteFill style={{background: 'radial-gradient(ellipse 60% 70% at 30% 50%, rgba(255,220,160,0.12) 0%, rgba(0,0,0,0) 70%)'}} />
-      <Cam dur={d} from={1.0} to={1.04} ox="30%">
+      <Cam dur={d} from={1.0} to={1.04} ox="30%" punch={ts.slice(1)} punchK={0.025}>
         <div style={{position: 'absolute', left: 110, top: 90, width: 1000, height: 900, background: '#EFE8D8', borderRadius: 10, boxShadow: '0 30px 80px rgba(0,0,0,0.6)', transform: 'rotate(-1.5deg)', fontFamily: FONT, padding: '50px 60px', boxSizing: 'border-box',
           backgroundImage: 'repeating-linear-gradient(0deg, rgba(60,90,160,0.18) 0 2px, rgba(0,0,0,0) 2px 76px)', backgroundPosition: '0 150px'}}>
           <div style={{fontWeight: 900, fontSize: 76, color: '#1C1A24', letterSpacing: 6}}>ПРАВИЛА</div>

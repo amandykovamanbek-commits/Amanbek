@@ -26,12 +26,13 @@ export const Light: React.FC<{x: string; y: string; color: string; size?: string
 );
 
 /** Camera: slow push / pan. from/to = [scale, x%, y%] transform origin */
-export const Cam: React.FC<{dur: number; from?: number; to?: number; ox?: string; oy?: string; dx?: number; dy?: number; shake?: number; children: React.ReactNode}> = ({
-  dur, from = 1, to = 1.06, ox = '50%', oy = '50%', dx = 0, dy = 0, shake = 0, children,
+export const Cam: React.FC<{dur: number; from?: number; to?: number; ox?: string; oy?: string; dx?: number; dy?: number; shake?: number; punch?: number[]; punchK?: number; children: React.ReactNode}> = ({
+  dur, from = 1, to = 1.06, ox = '50%', oy = '50%', dx = 0, dy = 0, shake = 0, punch = [], punchK = 0.08, children,
 }) => {
   const f = useCurrentFrame();
   const k = interpolate(f, [0, Math.max(1, dur)], [0, 1], clamp);
-  const s = from + (to - from) * k;
+  const pk = punch.reduce((acc, pf) => acc + interpolate(f, [pf, pf + 3], [0, 1], clamp), 0);
+  const s = (from + (to - from) * k) * (1 + punchK * pk);
   const sx = shake ? Math.sin(f * 2.3) * shake + Math.sin(f * 5.1) * shake * 0.5 : 0;
   const sy = shake ? Math.cos(f * 2.9) * shake : 0;
   return (

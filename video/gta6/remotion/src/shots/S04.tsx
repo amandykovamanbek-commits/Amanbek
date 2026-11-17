@@ -152,7 +152,7 @@ const LeraIntro: React.FC<{d: number; at: At}> = ({d, at}) => {
       <Corridor blur={12} />
       <AbsoluteFill style={{background: 'rgba(30,10,40,0.35)'}} />
       <Light x="45%" y="45%" color="rgba(255,150,220,0.35)" size="40%" />
-      <Cam dur={d} from={1.0} to={1.08} ox="45%">
+      <Cam dur={d} from={1.0} to={1.08} ox="45%" punch={[fifth, never]} punchK={0.06}>
         <Chars>
           <Pos x={860} y={1700} s={2.3}>
             <Lera face={{...FACES.smile, lx: 6}} />

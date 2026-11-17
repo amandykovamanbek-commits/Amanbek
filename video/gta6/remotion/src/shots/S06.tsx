@@ -7,7 +7,7 @@ import {Bolt, Cam, Light, MoneyRain, Sparkle, Storm, Vignette} from '../lib/FX';
 import {Chars, Pos} from '../lib/Frame';
 import {ARMS, FACES} from '../lib/Stickman';
 import {Crowd, Director, Hero, Lera} from '../lib/Cast';
-import {CodeInput, Counter, Menu, Stamp} from '../lib/UI';
+import {Bubble, CodeInput, Counter, Menu, Stamp} from '../lib/UI';
 
 const CodesMenu: React.FC<{d: number}> = ({d}) => {
   const f = useCurrentFrame();
@@ -196,8 +196,10 @@ const Subs: React.FC<{d: number}> = ({d}) => {
   );
 };
 
-const LeraApart: React.FC<{d: number}> = ({d}) => {
+const LeraApart: React.FC<{d: number; at: At}> = ({d, at}) => {
   const f = useCurrentFrame();
+  const say = at('Мне больше');
+  const go = at('И уходит');
   return (
     <AbsoluteFill>
       <Yard blur={4} />
@@ -207,11 +209,12 @@ const LeraApart: React.FC<{d: number}> = ({d}) => {
           <Crowd n={5} x0={0} x1={1100} y={1300} s={1.3} seed={71} face="happy" hold="phoneUp" arms={() => [[10, 6], [150, 20]]} />
         </Chars>
         <Chars>
-          <Pos x={1400} y={1050} s={1.15}>
-            <Lera face={{...FACES.sad, lx: -10, eyeOpen: 0.9}} />
+          <Pos x={interpolate(f, [go, go + 45], [1400, 2150], clamp)} y={1050} s={1.15}>
+            <Lera face={{...FACES.sad, lx: f >= go ? 12 : -10, eyeOpen: 0.9}} legs={f >= go ? 'walk' : 'stand'} phase={f / 24} />
           </Pos>
         </Chars>
         <Light x="73%" y="45%" color="rgba(255,150,220,0.25)" size="30%" />
+        {f < go + 20 && <Bubble x={1080} y={300} text="Мне больше нравился ты до всего этого." start={say} w={600} size={44} />}
       </Cam>
       <Vignette s={0.85} />
     </AbsoluteFill>

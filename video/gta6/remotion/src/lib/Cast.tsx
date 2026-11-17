@@ -11,7 +11,7 @@ export const Director: React.FC<P> = (p) => <Stickman color={C.director} rim={C.
 export const Cleaner: React.FC<P> = (p) => <Stickman color={C.cleaner} rim={C.rimDay} hair="scarf" hairColor="#E07A5F" hold="bucket" armR={[14, 0]} {...p} />;
 export const Coach: React.FC<P> = (p) => <Stickman color={C.coach} rim={C.rimDay} hair="cap" hairColor="#E8E8F0" {...p} />;
 export const Extra: React.FC<P & {i: number}> = ({i, ...p}) => (
-  <Stickman color={C.crowd[i % C.crowd.length]} simple hair={rnd(i) < 0.3 ? 'pony' : rnd(i) < 0.45 ? 'spiky' : 'none'} {...p} />
+  <Stickman color={C.crowd[i % C.crowd.length]} seed={i} simple hair={rnd(i) < 0.3 ? 'pony' : rnd(i) < 0.45 ? 'spiky' : 'none'} {...p} />
 );
 
 /** A row/cluster of crowd extras. pos: [x, y, scale] list */

@@ -6,7 +6,7 @@ import {CityNight, Landing, Yard} from '../lib/Sets';
 import {Cam, Dissolve, Dust, Light, Sparkle, Vignette} from '../lib/FX';
 import {Chars, Pos} from '../lib/Frame';
 import {FACES} from '../lib/Stickman';
-import {Crowd, Hero, Lera} from '../lib/Cast';
+import {Crowd, Hero, Lera, Timur} from '../lib/Cast';
 import {Box, Firework} from '../lib/Props';
 import {Toast} from '../lib/UI';
 
@@ -117,14 +117,16 @@ const BoxAgain: React.FC<{d: number}> = ({d}) => (
 const RuleFive: React.FC<{d: number; at: At}> = ({d, at}) => {
   const f = useCurrentFrame();
   const txt = at('Первый игрок');
+  const sig = at('Одна буква');
   return (
     <AbsoluteFill style={{background: '#0D0C1F'}}>
       <AbsoluteFill style={{background: 'radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255,210,120,0.18) 0%, rgba(0,0,0,0) 70%)'}} />
-      <Cam dur={d} from={1.0} to={1.06}>
+      <Cam dur={d} from={1.0} to={1.06} punch={[at('А внизу'), at('Одна буква')]} punchK={0.07}>
         <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
           <div style={{transform: 'rotate(-2deg)', background: '#EFE8D8', width: 1200, padding: '60px 70px', boxShadow: '0 30px 80px rgba(0,0,0,0.6)', fontFamily: FONT, color: '#1C1A24', textAlign: 'center'}}>
             <div style={{fontWeight: 900, fontSize: 60, color: '#B02A3A', letterSpacing: 6}}>ПРАВИЛО №5</div>
             <div style={{fontWeight: 900, fontSize: 76, marginTop: 30, lineHeight: 1.15, opacity: ramp(f, txt, 10)}}>ПЕРВЫЙ ИГРОК ВЫБИРАЕТ СЛЕДУЮЩЕГО</div>
+            <div style={{fontFamily: "'DejaVu Serif', serif", fontStyle: 'italic', fontWeight: 700, fontSize: 120, color: '#B02A3A', textAlign: 'right', marginTop: 10, marginRight: 30, opacity: ramp(f, sig, 6), transform: `scale(${ramp(f, sig, 8, backOut)}) rotate(-6deg)`}}>— Т.</div>
           </div>
         </AbsoluteFill>
       </Cam>
@@ -133,7 +135,7 @@ const RuleFive: React.FC<{d: number; at: At}> = ({d, at}) => {
   );
 };
 
-const Blank: React.FC<{d: number}> = ({d}) => {
+export const Blank: React.FC<{d: number}> = ({d}) => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill>
@@ -153,6 +155,49 @@ const Blank: React.FC<{d: number}> = ({d}) => {
   );
 };
 
+const Flashback: React.FC<{d: number; at: At}> = ({d, at}) => {
+  const f = useCurrentFrame();
+  const angry = at('А потом');
+  const rich = f < angry;
+  return (
+    <AbsoluteFill>
+      <AbsoluteFill style={{filter: 'sepia(0.75) saturate(0.7) contrast(1.05)'}}>
+        <Cam dur={d} from={1.0} to={1.08} punch={[angry]} punchK={0.1}>
+          <Yard />
+          <Chars>
+            {rich && <Crowd n={6} x0={100} x1={1820} y={1050} s={0.78} seed={301} face="love" f={f} arms={() => [[150, 20], [150, 20]]} />}
+            <Pos x={960} y={1000} s={1.1}>
+              <Timur armL={rich ? [150, 12] : [10, 6]} armR={rich ? [150, 12] : [10, 6]} hold={rich ? 'none' : 'gamepad'} face={rich ? FACES.happy : {...FACES.angry, mouth: 'frown'}} />
+            </Pos>
+          </Chars>
+          {rich && <MoneyRainLite />}
+        </Cam>
+      </AbsoluteFill>
+      <AbsoluteFill style={{background: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0 2px, rgba(0,0,0,0) 2px 4px)'}} />
+      <div style={{position: 'absolute', right: 70, top: 60, fontFamily: FONT, fontWeight: 900, fontSize: 52, color: '#F4E6C8', letterSpacing: 6, textShadow: '0 3px 0 rgba(0,0,0,0.5)'}}>ГОД НАЗАД</div>
+      {!rich && (
+        <div style={{position: 'absolute', left: 70, top: 60, display: 'flex', gap: 6, opacity: ramp(f, angry, 6)}}>
+          {[0, 1, 2, 3, 4].map((i) => <div key={i} style={{width: 46, height: 46, background: '#7A2A2A', clipPath: 'polygon(50% 0, 62% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 38% 35%)'}} />)}
+        </div>
+      )}
+      <Vignette s={0.95} />
+    </AbsoluteFill>
+  );
+};
+
+const MoneyRainLite: React.FC = () => {
+  const f = useCurrentFrame();
+  return (
+    <svg width={1920} height={1080} style={{position: 'absolute'}}>
+      {Array.from({length: 36}).map((_, i) => {
+        const x = ((i * 137) % 1920) + Math.sin(f / 9 + i) * 30;
+        const y = ((i * 263 + f * (4 + (i % 4))) % 1250) - 100;
+        return <rect key={i} x={x} y={y} width={60} height={30} rx={3} fill="#9FBF7E" stroke="#4D5A2A" strokeWidth={3} transform={`rotate(${(f * 3 + i * 40) % 360} ${x + 30} ${y + 15})`} />;
+      })}
+    </svg>
+  );
+};
+
 export const S09: SceneDef = {
   id: 'S09',
   shots: [
@@ -162,6 +207,6 @@ export const S09: SceneDef = {
     {cue: 'Но Лера', C: Together, hud: false},
     {cue: 'А вечером', C: BoxAgain, hud: false},
     {cue: 'Внутри', C: RuleFive, hud: false},
-    {cue: 'И ещё одна', C: Blank, hud: false},
+    {cue: 'И ты вдруг', C: Flashback, hud: false},
   ],
 };

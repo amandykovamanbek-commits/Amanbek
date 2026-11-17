@@ -3,14 +3,14 @@ import {AbsoluteFill, Sequence, interpolate, useCurrentFrame} from 'remotion';
 import {TIMING, findCue, sec2f, scene} from './lib/timeline';
 import {HudEv, SceneDef} from './lib/shot';
 import {Grain, Vignette} from './lib/FX';
-import {HUD} from './lib/UI';
+import {Chapter, HUD} from './lib/UI';
 import {C, FONT, clamp, glowText, ramp} from './lib/theme';
 import {Void} from './lib/Sets';
 import {SCENES, HUD_EVENTS} from './shots';
 
 const FADE = 8;
 
-type Placed = {key: string; from: number; dur: number; C: SceneDef['shots'][0]['C']; at: (p: string, nth?: number) => number; hud: boolean; fadeIn: boolean; fadeOut: boolean};
+type Placed = {key: string; from: number; dur: number; C: SceneDef['shots'][0]['C']; at: (p: string, nth?: number) => number; hud: boolean; fadeIn: boolean; fadeOut: boolean; dip?: boolean};
 
 const place = (): Placed[] => {
   const out: Placed[] = [];
@@ -39,7 +39,7 @@ const place = (): Placed[] => {
         for (let n = 0; n < nth; n++) r = findCue(sc.id, p, r.idx + 1);
         return sec2f(r.t) - from;
       };
-      out.push({key: `${sc.id}_${i}`, from, dur: Math.max(1, to - from), C: sh.C, at, hud: sh.hud !== false, fadeIn: i === 0 && si > 0, fadeOut: i === sc.shots.length - 1});
+      out.push({key: `${sc.id}_${i}`, from, dur: Math.max(1, to - from), C: sh.C, at, hud: sh.hud !== false, fadeIn: i === 0 && si > 1, fadeOut: i === sc.shots.length - 1 && si > 0, dip: si === 1 && i === 0});
     });
   });
   return out;
@@ -47,10 +47,27 @@ const place = (): Placed[] => {
 
 const PLACED = place();
 
-const Fader: React.FC<{dur: number; fadeIn: boolean; fadeOut: boolean; children: React.ReactNode}> = ({dur, fadeIn, fadeOut, children}) => {
+/** whip transition: slide + motion blur in/out */
+const Fader: React.FC<{dur: number; fadeIn: boolean; fadeOut: boolean; dip?: boolean; children: React.ReactNode}> = ({dur, fadeIn, fadeOut, dip, children}) => {
   const f = useCurrentFrame();
-  const o = Math.min(fadeIn ? interpolate(f, [0, FADE], [0, 1], clamp) : 1, fadeOut ? interpolate(f, [dur - FADE, dur], [1, 0], clamp) : 1);
-  return <AbsoluteFill style={{opacity: o}}>{children}</AbsoluteFill>;
+  if (dip) {
+    const o = Math.min(fadeIn ? interpolate(f, [0, FADE], [0, 1], clamp) : 1, fadeOut ? interpolate(f, [dur - FADE, dur], [1, 0], clamp) : 1);
+    return <AbsoluteFill style={{opacity: o}}>{children}</AbsoluteFill>;
+  }
+  const W = 7;
+  const kin = fadeIn ? interpolate(f, [0, W], [1, 0], {...clamp, easing: (t) => 1 - Math.pow(1 - t, 3)}) : 0;
+  const kout = fadeOut ? interpolate(f, [dur - W, dur], [0, 1], {...clamp, easing: (t) => t * t * t}) : 0;
+  const x = kin * 260 - kout * 260;
+  const blur = (kin + kout) * 26;
+  const o = Math.min(1 - kin * 0.6, 1 - kout * 0.6);
+  return (
+    <AbsoluteFill style={{opacity: o, transform: `translateX(${x}px) scale(${1 + (kin + kout) * 0.04})`, filter: blur > 0.5 ? `blur(${blur}px)` : undefined}}>{children}</AbsoluteFill>
+  );
+};
+
+const CHAPTERS: Record<string, [string, string]> = {
+  S01: ['1', 'КОРОБКА'], S03: ['2', 'ПРАВИЛА'], S04: ['3', 'ОТКРЫТЫЙ МИР'], S05: ['4', 'ТИМУР'],
+  S06: ['5', 'КОДЫ'], S07: ['6', 'ПЯТЬ ЗВЁЗД'], S08: ['7', 'ГЛАВНАЯ МИССИЯ'], S09: ['8', 'РЕЛИЗ'],
 };
 
 // ---- global HUD -----------------------------------------------------------
@@ -125,7 +142,7 @@ const EndCard: React.FC = () => {
 };
 
 export const Video: React.FC = () => {
-  const s1 = scene('S01');
+  const s1 = scene('S00');
   const t0 = sec2f(s1.title![0]);
   const t1 = sec2f(s1.title![1]);
   const e0 = sec2f(TIMING.end[0]);
@@ -134,21 +151,26 @@ export const Video: React.FC = () => {
     <AbsoluteFill style={{background: '#000'}}>
       {PLACED.map((p) => (
         <Sequence key={p.key} from={p.from} durationInFrames={p.dur}>
-          <Fader dur={p.dur} fadeIn={p.fadeIn} fadeOut={p.fadeOut}>
+          <Fader dur={p.dur} fadeIn={p.fadeIn || !!p.dip} fadeOut={p.fadeOut} dip={p.dip}>
             <p.C d={p.dur} at={p.at} />
           </Fader>
         </Sequence>
       ))}
       <Sequence from={t0} durationInFrames={t1 - t0}>
-        <Fader dur={t1 - t0} fadeIn fadeOut>
+        <Fader dur={t1 - t0} fadeIn fadeOut dip>
           <TitleCard />
         </Fader>
       </Sequence>
       <Sequence from={e0} durationInFrames={e1 - e0}>
-        <Fader dur={e1 - e0} fadeIn fadeOut={false}>
+        <Fader dur={e1 - e0} fadeIn fadeOut={false} dip>
           <EndCard />
         </Fader>
       </Sequence>
+      {Object.entries(CHAPTERS).map(([id, [n, title]]) => (
+        <Sequence key={'ch' + id} from={sec2f(scene(id).start) + 8} durationInFrames={90}>
+          <Chapter n={n} title={title} />
+        </Sequence>
+      ))}
       <GlobalHUD />
       <Grain />
     </AbsoluteFill>

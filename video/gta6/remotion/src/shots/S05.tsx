@@ -7,7 +7,7 @@ import {Cam, Light, Sparkle, Vignette} from '../lib/FX';
 import {Chars, Pos} from '../lib/Frame';
 import {ARMS, FACES} from '../lib/Stickman';
 import {Crowd, Hero, Mom, Timur} from '../lib/Cast';
-import {Bubble, Counter, Dialog, Quest} from '../lib/UI';
+import {Bubble, Counter, Dialog, Mission, Quest} from '../lib/UI';
 
 const Money: React.FC<{d: number; at: At}> = ({d, at}) => {
   const f = useCurrentFrame();
@@ -86,11 +86,12 @@ const Sneakers: React.FC<{d: number; at: At}> = ({d, at}) => {
   const f = useCurrentFrame();
   const sum = at('На сорок');
   const last = at('Кроссовки');
+  void 0;
   return (
     <AbsoluteFill>
       <Kitchen blur={12} />
       <AbsoluteFill style={{background: 'rgba(20,10,10,0.35)'}} />
-      <Cam dur={d} from={1.0} to={1.06}>
+      <Cam dur={d} from={1.0} to={1.06} punch={[sum, last]} punchK={0.07}>
         <Chars>
           <Pos x={1300} y={2550} s={3.8}>
             <Hero rim={C.rimWarm} rimDx={-8} face={{...FACES.grin, lx: -14, brow: -6}} armL={[10, 6]} armR={[60, -70]} />
@@ -209,9 +210,40 @@ const FirstTime: React.FC<{d: number}> = ({d}) => {
           <Sparkle x={560} y={300} s={0.8} />
           <Sparkle x={1400} y={260} s={0.6} phase={2} />
         </Chars>
-        <div style={{position: 'absolute', left: 960, top: 70, transform: 'translateX(-50%)', fontFamily: FONT, fontWeight: 900, fontSize: 72, color: C.gold, textShadow: glowText, opacity: ramp(f, 6, 10), whiteSpace: 'nowrap'}}>ВПЕРВЫЕ В ЖИЗНИ</div>
       </Cam>
+      <AbsoluteFill style={{transform: 'translateY(300px)'}}><Mission title="ЗАДАНИЕ ВЫПОЛНЕНО" sub="Уважение класса +100" start={4} dur={Math.max(50, d - 6)} /></AbsoluteFill>
       <Vignette />
+    </AbsoluteFill>
+  );
+};
+
+const Foreshadow: React.FC<{d: number; at: At}> = ({d, at}) => {
+  const f = useCurrentFrame();
+  const pad = at('А на твой');
+  const seen = at('Так');
+  return (
+    <AbsoluteFill>
+      <Corridor blur={14} dim={0.5} />
+      <AbsoluteFill style={{background: 'rgba(20,4,8,0.45)'}} />
+      <Light x="30%" y="45%" color="rgba(255,60,60,0.25)" size="40%" />
+      <Cam dur={d} from={1.0} to={1.1} ox="30%" punch={[pad, seen]} punchK={0.06}>
+        <Chars>
+          <Pos x={560} y={3200} s={5}>
+            <Timur face={{eyes: 'oval', eyeOpen: f >= pad ? 0.45 : 0.8, mouth: 'line', brow: f >= seen ? -6 : 14, browY: 4, lx: 22, ly: 8}} />
+          </Pos>
+        </Chars>
+        <svg width={1920} height={1080} style={{position: 'absolute'}}>
+          <g transform="translate(1420 760) scale(4)" opacity={ramp(f, pad - 4, 8)}>
+            <path d="M -46 -16 Q -50 -22 -38 -22 L 38 -22 Q 50 -22 46 -16 L 52 14 Q 54 26 40 22 L 22 8 L -22 8 L -40 22 Q -54 26 -52 14 Z" fill="#1C1B26" stroke={C.head} strokeWidth={2} />
+            <circle cx={-24} cy={-6} r={7} fill="#3A394A" />
+            <circle cx={26} cy={-10} r={5} fill="#5BE38A" style={{filter: 'drop-shadow(0 0 4px #5BE38A)'}} />
+            <circle cx={36} cy={-2} r={5} fill="#FF4D5E" />
+            <circle cx={16} cy={-2} r={5} fill="#4DA3FF" />
+          </g>
+        </svg>
+        {f >= seen && <div style={{position: 'absolute', left: 1000, top: 260, fontFamily: FONT, fontWeight: 900, fontSize: 150, color: C.red, textShadow: '0 0 24px rgba(255,77,94,0.6)', transform: `scale(${ramp(f, seen, 8, backOut)})`}}>?</div>}
+      </Cam>
+      <Vignette s={0.95} />
     </AbsoluteFill>
   );
 };
@@ -227,5 +259,6 @@ export const S05: SceneDef = {
     {cue: 'Над ним', C: RedQuest},
     {cue: 'Весь класс', C: ClassLaughs},
     {cue: 'Впервые', C: FirstTime, hud: false},
+    {cue: 'Странно', C: Foreshadow, hud: false},
   ],
 };

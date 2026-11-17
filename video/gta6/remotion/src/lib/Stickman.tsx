@@ -1,4 +1,5 @@
 import React from 'react';
+import {useCurrentFrame} from 'remotion';
 import {C, mixHex} from './theme';
 
 export type Mouth = 'none' | 'line' | 'smirk' | 'smile' | 'curve' | 'frown' | 'o' | 'wavy' | 'teeth' | 'bigO';
@@ -56,6 +57,9 @@ export type ManProps = {
   simple?: boolean; // crowd: no rim, no gloss
   glowScreen?: number; // light the face from a screen (0..1)
   dir?: number; // walking direction 1 right, -1 left
+  seed?: number;
+  noBlink?: boolean;
+  still?: boolean;
 };
 
 const HEAD = {x: 0, y: -528, r: 62};
@@ -260,7 +264,13 @@ export const Stickman: React.FC<ManProps> = (p) => {
     color, rim = C.rimCold, rimDx = -8, rimDy = -6, armL = [10, 6], armR = [10, 6], legs = 'stand', phase = 0,
     hair = 'none', hairColor, hold = 'none', tie, headTilt = 0, lean = 0, simple, glowScreen = 0,
   } = p;
-  const face: Face = typeof p.face === 'string' ? FACES[p.face] : p.face ?? FACES.neutral;
+  const fr = useCurrentFrame();
+  const seed = (color.charCodeAt(1) * 7 + color.charCodeAt(4) * 3 + (p.seed ?? 0) * 13) % 97;
+  const cyc = (fr + seed * 5) % (100 + (seed % 23));
+  const baseFace: Face = typeof p.face === 'string' ? FACES[p.face] : p.face ?? FACES.neutral;
+  const canBlink = !p.noBlink && (baseFace.eyes ?? 'oval') !== 'happy' && (baseFace.eyes ?? 'oval') !== 'closed';
+  const face: Face = canBlink && cyc < 4 ? {...baseFace, eyeOpen: 0.08} : baseFace;
+  const breathe = p.still ? 0 : Math.sin((fr + seed * 9) / 17) * 2.6;
   const s2 = Math.sin(phase * Math.PI * 2);
   const dir = p.dir ?? 1;
   let drop = 0;
@@ -302,7 +312,7 @@ export const Stickman: React.FC<ManProps> = (p) => {
       {!simple && (
         <g transform={`translate(${rimDx} ${rimDy})`}>
           <path d={legsD} stroke={rim} strokeWidth={16} strokeLinecap="round" strokeLinejoin="round" fill="none" />
-          <g transform={`translate(0 ${drop})`}>
+          <g transform={`translate(0 ${drop + breathe})`}>
             <path d={BODY_D} fill={rim} stroke={rim} strokeWidth={6} />
             {headG(rim, true)}
             <Arm p={L} color={rim} rim />
@@ -311,7 +321,7 @@ export const Stickman: React.FC<ManProps> = (p) => {
         </g>
       )}
       <path d={legsD} stroke={C.head} strokeWidth={simple ? 12 : 14} strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <g transform={`translate(0 ${drop})`}>
+      <g transform={`translate(0 ${drop + breathe})`}>
         <path d={BODY_D} fill={color} stroke={C.head} strokeWidth={6} strokeLinejoin="round" />
         {!simple && <path d="M -40 -430 Q 0 -390 40 -430 Q 0 -446 -40 -430 Z" fill={mixHex(color, '#000000', 0.3)} />}
         {!simple && !tie && <path d="M -11 -414 L -13 -360 M 11 -414 L 13 -360" stroke={C.face} strokeWidth={4} strokeLinecap="round" opacity={0.85} />}

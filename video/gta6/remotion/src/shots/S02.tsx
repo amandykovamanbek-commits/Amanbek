@@ -181,7 +181,7 @@ const HudReveal: React.FC<{d: number; at: (p: string) => number}> = ({d, at}) =>
     <AbsoluteFill>
       <Bedroom blur={8} tv="#2A3C78" />
       <AbsoluteFill style={{background: 'rgba(4,4,14,0.35)'}} />
-      <Cam dur={d} from={1.0} to={1.06} oy="70%">
+      <Cam dur={d} from={1.0} to={1.06} oy="70%" punch={[z, st]} punchK={0.06}>
         <Chars>
           <Pos x={960} y={1720} s={2.2}>
             <Stickman color={C.hero} rim={C.rimCold} face={blink ? FACES.blink : f > show ? FACES.shock : FACES.neutral} glowScreen={0.6} />

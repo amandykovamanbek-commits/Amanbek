@@ -11,7 +11,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 TXT = json.loads((ROOT / 'data' / 'tts_text.json').read_text())
 FPS = 30
 LEAD = 0.6          # silence before the first line
-TITLE = 3.2         # title card after S01
+TITLE = 3.6         # title card after the cold open
 GAP = 1.0           # pause between scenes
 END = 4.5           # end card after S10
 RATE = 14.0         # estimated chars per second (ElevenLabs ru)
@@ -144,7 +144,7 @@ for i, (sid, text) in enumerate(TXT.items()):
         'words': [{'w': w, 'n': norm(w), 's': round(t + a, 3), 'e': round(t + b, 3)} for w, (a, b) in zip(words, times)],
     })
     t += dur
-    if sid == 'S01':
+    if sid == 'S00':
         scenes[-1]['title'] = [round(t + 0.3, 3), round(t + TITLE, 3)]
         t += TITLE
     elif i < len(TXT) - 1:
