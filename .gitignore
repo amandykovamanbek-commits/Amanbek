@@ -13,3 +13,10 @@ video/out/
 !video/s2e5/out/*.mp4
 !video/howto/out/*.mp4
 !video/limits/out/*.mp4
+video/mesto/node_modules/
+video/mesto/out/frames/
+video/mesto/out/*.log
+video/mesto/stills/
+video/mesto/audio/*.wav
+video/mesto/audio/*.mid
+!video/mesto/out/*.mp4
