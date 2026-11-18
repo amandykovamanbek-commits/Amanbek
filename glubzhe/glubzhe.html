@@ -1,0 +1,472 @@
+<title>Глубже: Экспедиция</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Rubik:wght@400;500;700&display=swap">
+<style>
+/* Layout: one narrow reading column; each section pairs a short text block with a full-width concept-art frame, like a game pitch deck scrolled vertically. Single dark "mine" look on purpose. */
+:root{
+  --rock:#16120f;      /* page ground: dark earth */
+  --stone:#221c17;     /* raised surfaces */
+  --seam:#3a3029;      /* hairlines */
+  --dust:#e9dfd3;      /* body text */
+  --dim:#a89a8b;       /* secondary text */
+  --lamp:#ffb547;      /* headlamp amber accent */
+  --crystal:#5ff3ff;   /* secondary accent, used sparingly */
+  --f-disp:"Russo One","Arial Black",system-ui,sans-serif;
+  --f-body:"Rubik","Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+body{background:var(--rock);color:var(--dust);font:400 17px/1.6 var(--f-body)}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 80px;display:flex;flex-direction:column;gap:56px}
+header{display:flex;flex-direction:column;gap:18px}
+.eyebrow{font:500 13px/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--lamp)}
+h1{font:400 clamp(40px,8vw,84px)/1 var(--f-disp);margin:0;text-wrap:balance;letter-spacing:.01em}
+h1 span{color:var(--lamp)}
+h2{font:400 clamp(26px,4vw,36px)/1.15 var(--f-disp);margin:0;text-wrap:balance}
+p{margin:0;max-width:65ch}
+.lede{font-size:20px;color:var(--dust)}
+.facts{display:flex;flex-wrap:wrap;gap:8px 10px;padding:0;margin:0;list-style:none}
+.facts li{border:1px solid var(--seam);border-radius:999px;padding:6px 14px;font-size:14px;color:var(--dim)}
+.facts b{color:var(--dust);font-weight:500}
+figure{margin:0;display:flex;flex-direction:column;gap:10px}
+canvas{width:100%;height:auto;max-width:100%;display:block;border-radius:12px;background:#000;aspect-ratio:16/9}
+figcaption{font-size:14px;color:var(--dim)}
+section{display:flex;flex-direction:column;gap:20px}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.steps li{background:var(--stone);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.steps .n{font:400 28px/1 var(--f-disp);color:var(--lamp)}
+.steps b{font-weight:500}
+.steps span{font-size:15px;color:var(--dim);line-height:1.45}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:15px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--seam);vertical-align:top}
+th{font:500 12px/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+ul.plain{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;max-width:70ch}
+ul.plain b{font-weight:500;color:var(--dust)}
+.price{color:var(--lamp);font-variant-numeric:tabular-nums;white-space:nowrap}
+.goals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.goal{border:1px solid var(--seam);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.goal .v{font:400 30px/1.1 var(--f-disp);color:var(--crystal);font-variant-numeric:tabular-nums}
+.goal .k{font-size:14px;color:var(--dim)}
+.note{font-size:14px;color:var(--dim);border-top:1px solid var(--seam);padding-top:16px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Концепт игры для Roblox</div>
+  <h1>Глубже: <span>Экспедиция</span></h1>
+  <p class="lede">Кооперативная игра про спуск в бесконечную шахту. Собираешь команду из друзей, спускаешься всё глубже, добываешь редкую руду и успеваешь подняться, пока давление не стало смертельным. Наверху тебя ждёт база, которая добывает руду даже без тебя.</p>
+  <ul class="facts">
+    <li><b>Жанр:</b> кооп-выживание + тайкун</li>
+    <li><b>Команда:</b> 1–4 игрока</li>
+    <li><b>Сервер:</b> до 16 игроков</li>
+    <li><b>Одна вылазка:</b> 8–12 минут</li>
+    <li><b>Аудитория:</b> 9+</li>
+  </ul>
+</header>
+
+<figure>
+  <canvas id="c1" width="1600" height="900" aria-label="Разрез шахты: база на поверхности и пять слоёв под землёй"></canvas>
+  <figcaption>Разрез мира. Наверху база и общий рекорд сервера, ниже пять слоёв, каждый со своей рудой и опасностями. Шахта общая: чем глубже кто-то прокопал, тем дальше могут спуститься все.</figcaption>
+</figure>
+
+<section>
+  <h2>Как играется одна вылазка</h2>
+  <ol class="steps">
+    <li><span class="n">1</span><b>Спуск</b><span>Команда садится в подъёмник и выбирает, с какой глубины начать.</span></li>
+    <li><span class="n">2</span><b>Добыча</b><span>Копаешь блоки, ищешь жилы, отбиваешься от существ.</span></li>
+    <li><span class="n">3</span><b>Риск</b><span>Рюкзак тяжелеет, давление растёт. Остаться ещё на минуту или подниматься?</span></li>
+    <li><span class="n">4</span><b>Подъём</b><span>Кто не успел, теряет половину добычи. Друг может спуститься и спасти.</span></li>
+    <li><span class="n">5</span><b>База</b><span>Продаёшь руду, улучшаешь буры и снаряжение, идёшь глубже.</span></li>
+  </ol>
+</section>
+
+<figure>
+  <canvas id="c2" width="1600" height="900" aria-label="Вид из игры: команда добывает кристаллы в тёмной пещере на глубине 1247 метров"></canvas>
+  <figcaption>Так выглядит игра на глубине 1 247 м. Свет есть только от налобных фонарей и кристаллов, а в темноте справа кто-то смотрит на игроков. Видны интерфейс глубины, рюкзак, давление и панель команды.</figcaption>
+</figure>
+
+<section>
+  <h2>Слои шахты</h2>
+  <p>Каждый новый слой выходит отдельным обновлением. Это даёт повод вернуться и тему для нового видео.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Слой</th><th>Глубина</th><th>Руда</th><th>Опасность</th></tr></thead>
+    <tbody>
+      <tr><td><span class="sw" style="background:#8a6240"></span>Земля</td><td class="num">0–100 м</td><td>Медь, уголь</td><td>Мелкие обвалы</td></tr>
+      <tr><td><span class="sw" style="background:#6b717c"></span>Камень</td><td class="num">100–500 м</td><td>Железо, золото</td><td>Газовые карманы, обвалы</td></tr>
+      <tr><td><span class="sw" style="background:#5ff3ff"></span>Кристаллы</td><td class="num">500–1 500 м</td><td>Кианит, розовый кварц</td><td>Кристальные пауки, давление</td></tr>
+      <tr><td><span class="sw" style="background:#ff6a1a"></span>Магма</td><td class="num">1 500–4 000 м</td><td>Огнекамень, рубин</td><td>Лава, жар, босс «Плавильщик»</td></tr>
+      <tr><td><span class="sw" style="background:#b06bff"></span>Пустота</td><td class="num">4 000 м +</td><td>Эфир</td><td>Гравитация меняется, «Наблюдатель»</td></tr>
+      <tr><td><span class="sw" style="background:#ffd98f"></span>Ядро</td><td class="num">?</td><td>Секрет</td><td>Открывается мировым событием, когда игроки всех серверов вместе дойдут до него</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Зачем возвращаться через неделю и через месяц</h2>
+  <p>С июня 2026 года Roblox продвигает игры, к которым возвращаются в течение 28 дней. Поэтому удержание здесь заложено в механику:</p>
+  <ul class="plain">
+    <li><b>Буры на базе работают без тебя.</b> Таймер «готово через 8 часов» приводит игрока обратно.</li>
+    <li><b>Ежедневный контракт:</b> «добудь 20 кианита за одну вылазку» с наградой-сундуком.</li>
+    <li><b>Новый слой или событие каждую неделю.</b></li>
+    <li><b>Сезон косметики на 4 недели</b> со своей темой, например «Глубокий холод».</li>
+    <li><b>Рекорд глубины сервера и мира.</b> Общая цель, ради которой зовут друзей.</li>
+  </ul>
+</section>
+
+<figure>
+  <canvas id="c3" width="1600" height="900" aria-label="База на поверхности: три бура разных уровней, конвейер, хранилище и скупщик"></canvas>
+  <figcaption>База на поверхности. Деревянный, стальной и золотой бур добывают руду, пока игрока нет. Конвейер везёт её в хранилище, а скупщик рядом даёт за неё монеты.</figcaption>
+</figure>
+
+<section>
+  <h2>Как игра зарабатывает</h2>
+  <p>Платят за скорость, удобство и внешний вид, а не за силу. Бесплатный игрок может дойти до любого слоя, просто медленнее.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Что продаём</th><th>Тип</th><th>Цена</th></tr></thead>
+    <tbody>
+      <tr><td>x2 скорость бура</td><td>Пропуск навсегда</td><td class="price">299 R$</td></tr>
+      <tr><td>VIP: тег в чате, x1.5 монет, VIP-подъёмник</td><td>Пропуск навсегда</td><td class="price">299 R$</td></tr>
+      <tr><td>Авто-копание на базе</td><td>Пропуск навсегда</td><td class="price">249 R$</td></tr>
+      <tr><td>Двойной рюкзак</td><td>Пропуск навсегда</td><td class="price">199 R$</td></tr>
+      <tr><td>Серверный бур: x2 скорость для всех на 15 минут, имя купившего видит весь сервер</td><td>Разовая покупка</td><td class="price">199 R$</td></tr>
+      <tr><td>Возрождение на месте с добычей</td><td>Разовая покупка</td><td class="price">25 R$</td></tr>
+      <tr><td>Скины шлемов, кирок и следов</td><td>Косметика сезона</td><td class="price">99–399 R$</td></tr>
+      <tr><td>Сезонный пропуск с наградами</td><td>Раз в 4 недели</td><td class="price">449 R$</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<figure>
+  <canvas id="c4" width="1600" height="900" aria-label="Окно магазина с пропусками и сезонной косметикой"></canvas>
+  <figcaption>Окно магазина. Сверху постоянные пропуска, ниже косметика сезона. Снизу уведомление: кто-то купил серверный бур, и ускорение получил весь сервер.</figcaption>
+</figure>
+
+<section>
+  <h2>План запуска</h2>
+  <ul class="plain">
+    <li><b>Недели 1–2:</b> минимальная версия. Три слоя, кооп до 4 игроков, база с одним буром, сохранения.</li>
+    <li><b>Неделя 3:</b> магазин, иконка и превью, небольшой тест рекламы внутри Roblox.</li>
+    <li><b>Неделя 4 и дальше:</b> новый слой или событие каждую неделю, короткие видео с самыми глубокими спусками.</li>
+  </ul>
+  <p>Цели, по которым решаем, развивать игру дальше или переделывать основной цикл:</p>
+  <div class="goals">
+    <div class="goal"><span class="v">≥ 20%</span><span class="k">вернулись на 1-й день</span></div>
+    <div class="goal"><span class="v">≥ 6%</span><span class="k">вернулись на 7-й день</span></div>
+    <div class="goal"><span class="v">≥ 18 мин</span><span class="k">средняя сессия</span></div>
+    <div class="goal"><span class="v">≥ 2%</span><span class="k">игроков что-то купили</span></div>
+  </div>
+</section>
+
+<p class="note">Картинки на этой странице нарисованы кодом как концепт-арты. Это не скриншоты готовой игры. Ники игроков на них вымышленные, а цифры в целях служат ориентирами, а не прогнозом.</p>
+</div>
+
+<script>
+const W=1600,H=900;
+const F={d:'"Russo One","Arial Black",sans-serif',b:'"Rubik","Segoe UI",sans-serif'};
+function R(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function rgb(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+function shade(h,a){const c=rgb(h).map(v=>Math.max(0,Math.min(255,Math.round(v+a*255))));return'#'+c.map(v=>v.toString(16).padStart(2,'0')).join('')}
+function rgba(h,a){const c=rgb(h);return`rgba(${c[0]},${c[1]},${c[2]},${a})`}
+function txt(c,s,x,y,o={}){c.save();c.font=`${o.w||400} ${o.size||24}px ${o.f||F.b}`;c.textAlign=o.align||'left';c.textBaseline=o.base||'alphabetic';if(o.stroke){c.lineWidth=o.sw||6;c.strokeStyle=o.stroke;c.lineJoin='round';c.strokeText(s,x,y)}if(o.glow){c.shadowColor=o.glow;c.shadowBlur=o.gb||20}c.fillStyle=o.color||'#fff';c.fillText(s,x,y);c.restore()}
+function rr(c,x,y,w,h,r,fill,stroke,lw){c.beginPath();c.roundRect(x,y,w,h,r);if(fill){c.fillStyle=fill;c.fill()}if(stroke){c.lineWidth=lw||2;c.strokeStyle=stroke;c.stroke()}}
+function drawOre(c,x,y,s,o,rand){c.save();if(o.glow){c.shadowColor=o.color;c.shadowBlur=o.glow}c.fillStyle=o.color;const n=o.n||3;for(let i=0;i<n;i++){const q=s*(.18+rand()*.14);c.fillRect(x+s*.15+rand()*(s*.7-q),y+s*.15+rand()*(s*.7-q),q,q)}c.restore()}
+function blocks(c,x0,y0,x1,y1,s,base,rand,ores=[],v=.05){
+  for(let y=y0;y<y1;y+=s)for(let x=x0;x<x1;x+=s){
+    const w=Math.min(s,x1-x),h=Math.min(s,y1-y);
+    c.fillStyle=shade(base,(rand()-.5)*v*2);c.fillRect(x,y,w,h);
+    c.fillStyle='rgba(255,255,255,.05)';c.fillRect(x,y,w,2);
+    c.fillStyle='rgba(0,0,0,.2)';c.fillRect(x,y+h-2,w,2);c.fillRect(x+w-2,y,2,h);
+    for(const o of ores){if(rand()<o.p){drawOre(c,x,y,s,o,rand);break}}
+  }
+}
+function hero(c,x,y,s,o){
+  const f=o.face||1,skin=o.skin||'#f1c27d';
+  c.save();
+  c.fillStyle=o.pants;c.fillRect(x-s,y-2*s,.95*s,2*s);c.fillRect(x+.05*s,y-2*s,.95*s,2*s);
+  c.fillStyle='#231c18';c.fillRect(x-s,y-.4*s,.95*s,.4*s);c.fillRect(x+.05*s,y-.4*s,.95*s,.4*s);
+  const bx=f>0?x-1.9*s:x+1*s;
+  c.fillStyle=shade(o.shirt,-.14);c.fillRect(bx,y-4*s,.9*s,2*s);c.fillStyle=skin;c.fillRect(bx,y-2.35*s,.9*s,.35*s);
+  c.fillStyle=o.shirt;c.fillRect(x-s,y-4*s,2*s,2*s);
+  if(o.vest){c.fillStyle=o.vest;c.fillRect(x-s,y-4*s,.45*s,2*s);c.fillRect(x+.55*s,y-4*s,.45*s,2*s)}
+  c.fillStyle='rgba(0,0,0,.28)';c.fillRect(x-s,y-2.3*s,2*s,.3*s);
+  c.fillStyle=skin;c.fillRect(x-.65*s,y-5.35*s,1.3*s,1.3*s);
+  c.fillStyle=o.eyes||'#1b1b1b';c.fillRect(x+f*.12*s-.08*s,y-4.85*s,.16*s,.24*s);c.fillRect(x+f*.42*s-.08*s,y-4.85*s,.16*s,.24*s);
+  if(o.helmet){c.fillStyle=o.helmet;c.fillRect(x-.75*s,y-5.78*s,1.5*s,.6*s);c.fillRect(x-.88*s,y-5.24*s,1.76*s,.16*s)}
+  let lamp=null;
+  if(o.lamp){lamp=[x+f*.62*s,y-5.45*s];c.save();c.shadowColor='#fff2b0';c.shadowBlur=s*2.5;c.fillStyle='#fffbe0';c.fillRect(lamp[0]-.2*s,lamp[1]-.2*s,.4*s,.4*s);c.restore()}
+  const sx=x+f*1.45*s,sy=y-3.9*s;
+  c.save();c.translate(sx,sy);c.rotate(-f*(o.arm||0));
+  c.fillStyle=shade(o.shirt,.05);c.fillRect(-.45*s,0,.9*s,2*s);c.fillStyle=skin;c.fillRect(-.45*s,1.65*s,.9*s,.35*s);
+  if(o.tool==='pick'){
+    c.fillStyle='#7a4f2a';c.fillRect(-.13*s,1.2*s,.26*s,2.6*s);
+    c.fillStyle=o.pickColor||'#a9b3bf';if(o.pickColor){c.shadowColor=o.pickColor;c.shadowBlur=s*1.5}
+    c.beginPath();c.moveTo(-1.4*s,3.35*s);c.quadraticCurveTo(0,3.05*s,1.4*s,3.35*s);c.quadraticCurveTo(0,4.05*s,-1.4*s,3.35*s);c.fill();
+  }
+  if(o.tool==='lantern'){c.fillStyle='#3a3a3a';c.fillRect(-.35*s,2*s,.7*s,.15*s);c.shadowColor='#ffcc66';c.shadowBlur=s*3;c.fillStyle='#ffd27a';c.fillRect(-.4*s,2.15*s,.8*s,.9*s)}
+  c.restore();c.restore();
+  return{lamp};
+}
+function cone(c,x,y,ang,len,spread,col,a){c.save();c.globalCompositeOperation='lighter';const g=c.createRadialGradient(x,y,0,x,y,len);g.addColorStop(0,rgba(col,a));g.addColorStop(1,rgba(col,0));c.fillStyle=g;c.beginPath();c.moveTo(x,y);c.arc(x,y,len,ang-spread,ang+spread);c.closePath();c.fill();c.restore()}
+function glow(c,x,y,r,col,a){c.save();c.globalCompositeOperation='lighter';const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,rgba(col,a));g.addColorStop(1,rgba(col,0));c.fillStyle=g;c.fillRect(x-r,y-r,2*r,2*r);c.restore()}
+function eyes(c,x,y,s,col){c.save();c.globalCompositeOperation='lighter';c.shadowColor=col;c.shadowBlur=s*3;c.fillStyle=col;c.fillRect(x-s*1.7,y,s,s*.55);c.fillRect(x+s*.7,y,s,s*.55);c.restore()}
+function crystal(c,x,y,h,w,ang,col){c.save();c.translate(x,y);c.rotate(ang);const g=c.createLinearGradient(-w/2,0,w/2,0);g.addColorStop(0,shade(col,.3));g.addColorStop(.5,col);g.addColorStop(1,shade(col,-.35));c.shadowColor=col;c.shadowBlur=30;c.fillStyle=g;c.beginPath();c.moveTo(-w/2,0);c.lineTo(-w/2,-h*.75);c.lineTo(0,-h);c.lineTo(w/2,-h*.75);c.lineTo(w/2,0);c.closePath();c.fill();c.shadowBlur=0;c.fillStyle='rgba(255,255,255,.4)';c.fillRect(-w/2+w*.16,-h*.7,w*.13,h*.6);c.restore()}
+function cluster(c,x,y,sc,col,rand,down){const n=6;for(let i=0;i<n;i++){const a=(rand()-.5)*1.1+(down?Math.PI:0);crystal(c,x+(i-(n-1)/2)*16*sc+(rand()-.5)*10*sc,y,(60+rand()*90)*sc,(20+rand()*12)*sc,a,col)}}
+
+/* ---------- 1. Разрез мира ---------- */
+function art1(c){
+  const r=R(7),GY=240,S=26;
+  let g=c.createLinearGradient(0,0,0,GY);g.addColorStop(0,'#211838');g.addColorStop(.55,'#6e3a5a');g.addColorStop(1,'#f08a4b');c.fillStyle=g;c.fillRect(0,0,W,GY);
+  for(let i=0;i<70;i++){c.fillStyle=`rgba(255,240,220,${.3+r()*.6})`;const q=1+r()*2.5;c.fillRect(r()*W,r()*110,q,q)}
+  c.save();c.shadowColor='#ffcf7a';c.shadowBlur=70;c.fillStyle='#ffd98f';c.fillRect(1230,150,80,80);c.restore();
+  for(let x=0;x<W;x+=40){const h=30+Math.abs(Math.sin(x*.004))*70+r()*14;c.fillStyle='#3e2a42';c.fillRect(x,GY-h,40,h)}
+  for(let x=0;x<W;x+=30){const h=14+Math.abs(Math.sin(x*.009+2))*36;c.fillStyle='#4b3348';c.fillRect(x,GY-h,30,h)}
+  const L=[
+    {n:'ЗЕМЛЯ',d:'0 м',y0:GY,y1:370,base:'#6b4a2f',ores:[{p:.05,color:'#d9833f'},{p:.03,color:'#222'}]},
+    {n:'КАМЕНЬ',d:'100 м',y0:370,y1:510,base:'#4d525c',ores:[{p:.05,color:'#d8d2c8'},{p:.03,color:'#f2c14e',glow:8}]},
+    {n:'КРИСТАЛЛЫ',d:'500 м',y0:510,y1:640,base:'#252b52',ores:[{p:.08,color:'#5ff3ff',glow:14},{p:.04,color:'#ff7ad9',glow:14}]},
+    {n:'МАГМА',d:'1 500 м',y0:640,y1:770,base:'#3a1611',ores:[{p:.1,color:'#ff6a1a',glow:16,n:4},{p:.03,color:'#ff2e4d',glow:12}]},
+    {n:'ПУСТОТА',d:'4 000 м',y0:770,y1:872,base:'#120d22',ores:[{p:.06,color:'#b06bff',glow:14},{p:.02,color:'#ffffff',glow:10,n:1}]}];
+  L.forEach(l=>blocks(c,0,l.y0,W,l.y1,S,l.base,r,l.ores));
+  g=c.createLinearGradient(0,872,0,H);g.addColorStop(0,'#ff8a1e');g.addColorStop(1,'#fff0b0');c.fillStyle=g;c.fillRect(0,872,W,H-872);
+  glow(c,W/2,H+200,700,'#ff9a2e',.35);
+  // карманы лавы
+  [[300,700,90],[1250,730,120],[560,745,70]].forEach(([x,y,w])=>{c.save();c.shadowColor='#ff6a1a';c.shadowBlur=30;c.fillStyle='#ff7a22';c.fillRect(x,y,w,22);c.fillStyle='#ffd27a';c.fillRect(x+8,y+4,w-16,6);c.restore()});
+  // затемнение с глубиной
+  g=c.createLinearGradient(0,GY,0,872);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.45)');c.fillStyle=g;c.fillRect(0,GY,W,872-GY);
+  // трава
+  c.fillStyle='#55a63f';c.fillRect(0,GY,W,10);c.fillStyle='#3d7f2e';c.fillRect(0,GY+10,W,6);
+  // выкопанные ходы
+  const dark='#0d0c13';
+  const carve=(x0,y0,x1,y1)=>{blocks(c,x0,y0,x1,y1,S,dark,r,[],.03);const sg=c.createLinearGradient(0,y0,0,y0+24);sg.addColorStop(0,'rgba(0,0,0,.6)');sg.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=sg;c.fillRect(x0,y0,x1-x0,24)};
+  carve(702,GY,832,822);carve(442,448,702,500);carve(832,578,1170,630);carve(832,768,1010,822);
+  // подъёмник
+  c.strokeStyle='#5a4a3a';c.lineWidth=10;c.beginPath();c.moveTo(684,GY);c.lineTo(767,GY-112);c.lineTo(850,GY);c.stroke();
+  c.fillStyle='#8a7a6a';c.beginPath();c.arc(767,GY-112,12,0,7);c.fill();
+  c.strokeStyle='#c9b9a0';c.lineWidth=2;c.beginPath();c.moveTo(752,GY-108);c.lineTo(752,470);c.moveTo(782,GY-108);c.lineTo(782,470);c.stroke();
+  c.fillStyle='#8f97a3';c.fillRect(706,470,122,8);c.fillStyle='#5c636d';c.fillRect(706,478,122,4);
+  // кристальная жила в конце туннеля
+  cluster(c,1150,630,.55,'#5ff3ff',r);
+  // персонажи под землёй
+  const p=[];
+  p.push([hero(c,735,470,7,{shirt:'#2f6fd0',pants:'#2a2d3a',helmet:'#f2c14e',lamp:true,face:-1}),Math.PI*.95]);
+  p.push([hero(c,800,470,7,{shirt:'#d04a3a',pants:'#2a2d3a',helmet:'#f2c14e',lamp:true,face:1}),.15]);
+  p.push([hero(c,490,500,7,{shirt:'#3aa76d',pants:'#3a2d22',helmet:'#e8e8e8',lamp:true,face:-1,tool:'pick',arm:1.7}),Math.PI]);
+  p.push([hero(c,1100,630,7,{shirt:'#8a4fd0',pants:'#2a2d3a',helmet:'#f2c14e',lamp:true,face:1,tool:'pick',arm:1.9}),0]);
+  p.push([hero(c,770,822,7,{shirt:'#e07b2a',pants:'#2a2d3a',helmet:'#ff5a5a',lamp:true,face:1}),0]);
+  p.forEach(([h,a])=>h.lamp&&cone(c,h.lamp[0],h.lamp[1],a,190,.32,'#ffc46b',.38));
+  eyes(c,985,786,9,'#ff3b3b');
+  // поверхность: буры, скупщик, табло
+  const tower=(x,h,col)=>{c.fillStyle=shade(col,-.2);c.fillRect(x-40,GY-h,10,h);c.fillRect(x+30,GY-h,10,h);c.strokeStyle=shade(col,-.2);c.lineWidth=5;for(let i=0;i<2;i++){const y1=GY-h+i*h/2;c.beginPath();c.moveTo(x-35,y1);c.lineTo(x+35,y1+h/2);c.moveTo(x+35,y1);c.lineTo(x-35,y1+h/2);c.stroke()}rr(c,x-50,GY-h-36,100,40,5,col);c.fillStyle='rgba(0,0,0,.25)';c.fillRect(x-50,GY-h-14,100,6);c.fillStyle=shade(col,-.25);c.beginPath();c.moveTo(x-18,GY);c.lineTo(x+18,GY);c.lineTo(x,GY+70);c.fill()};
+  tower(130,40,'#8b5a2b');tower(270,48,'#8f9bab');
+  // скупщик
+  c.fillStyle='#7a5434';c.fillRect(430,GY-78,190,78);
+  for(let i=0;i<8;i++){c.fillStyle=i%2?'#f4efe6':'#d8463a';c.fillRect(420+i*26,GY-96,26,22)}
+  c.fillStyle='#2a1d14';c.fillRect(500,GY-50,50,50);
+  rr(c,446,GY-130,158,30,5,'#2a1d14');txt(c,'СКУПЩИК',525,GY-108,{f:F.d,size:18,align:'center',color:'#ffd27a'});
+  // табло рекорда
+  c.fillStyle='#3a3029';c.fillRect(1090,GY-30,10,30);c.fillRect(1370,GY-30,10,30);
+  rr(c,1060,96,350,118,10,'rgba(18,14,24,.92)','#ffb547',3);
+  txt(c,'РЕКОРД СЕРВЕРА',1235,128,{f:F.d,size:20,align:'center',color:'#e9dfd3'});
+  txt(c,'3 812 м',1235,180,{f:F.d,size:50,align:'center',color:'#ffb547',glow:'#ff9a2e',gb:18});
+  txt(c,'Kira_77 · dimon_pro · AstraMiner',1235,204,{size:15,align:'center',color:'#a89a8b'});
+  hero(c,650,GY,7,{shirt:'#2aa1c9',pants:'#33302a',helmet:'#f2c14e',face:-1});
+  hero(c,900,GY,7,{shirt:'#c93f8f',pants:'#33302a',face:-1,arm:2.6});
+  // шкала глубины
+  c.fillStyle='rgba(10,8,16,.55)';c.fillRect(1500,GY,80,632);
+  c.fillStyle='#ffb547';c.fillRect(1538,GY,3,632);
+  L.forEach(l=>{c.fillStyle='#ffb547';c.fillRect(1528,l.y0,23,3);txt(c,l.d,1535,l.y0+24,{size:15,w:500,align:'center',color:'#e9dfd3'})});
+  txt(c,'ЯДРО',1540,893,{f:F.d,size:16,align:'center',color:'#3a1608'});
+  L.forEach(l=>{const cy=(l.y0+l.y1)/2;c.font=`400 20px ${F.d}`;const w=c.measureText(l.n).width+28;rr(c,24,cy-18,w,36,18,'rgba(10,8,16,.7)');txt(c,l.n,38,cy+7,{f:F.d,size:20,color:'#e9dfd3'})});
+  // логотип
+  const lg=c.createLinearGradient(0,20,0,100);lg.addColorStop(0,'#ffe08a');lg.addColorStop(1,'#ff8a1e');
+  c.save();c.font=`400 92px ${F.d}`;c.lineJoin='round';c.lineWidth=14;c.strokeStyle='#1a1020';c.strokeText('ГЛУБЖЕ',56,100);c.fillStyle=lg;c.shadowColor='rgba(255,150,40,.5)';c.shadowBlur=24;c.fillText('ГЛУБЖЕ',56,100);c.restore();
+  txt(c,'ЭКСПЕДИЦИЯ',62,140,{f:F.d,size:30,color:'#ffe7c2',stroke:'#1a1020',sw:8});
+}
+
+/* ---------- 2. Игровой процесс ---------- */
+function art2(c){
+  const r=R(21),S=50;
+  blocks(c,0,0,W,H,S,'#1b2046',r,[{p:.06,color:'#5ff3ff',glow:18},{p:.03,color:'#ff7ad9',glow:18}],.06);
+  blocks(c,0,250,W,720,S,'#0f1229',r,[{p:.035,color:'#5ff3ff',glow:12}],.04);
+  for(let x=0;x<W;x+=S){const n=Math.floor(r()*2.4);if(n)blocks(c,x,250,x+S,250+n*S,S,'#1b2046',r,[{p:.15,color:'#5ff3ff',glow:14}],.06)}
+  let g=c.createLinearGradient(0,250,0,360);g.addColorStop(0,'rgba(0,0,0,.6)');g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(0,250,W,110);
+  blocks(c,0,720,W,H,S,'#283063',r,[{p:.05,color:'#5ff3ff',glow:14}],.06);
+  blocks(c,1150,670,W,720,S,'#283063',r,[],.06);
+  c.fillStyle='rgba(255,255,255,.08)';c.fillRect(0,720,1150,3);c.fillRect(1150,670,W-1150,3);
+  // кристаллы
+  cluster(c,800,720,1.25,'#5ff3ff',r);
+  cluster(c,1060,250,.9,'#ff7ad9',r,true);
+  cluster(c,110,720,.7,'#5ff3ff',r);
+  cluster(c,1330,670,.8,'#ff7ad9',r);
+  // верёвка
+  c.strokeStyle='#8a6a44';c.lineWidth=6;c.beginPath();c.moveTo(330,0);c.lineTo(330,640);c.stroke();
+  // существо в темноте
+  c.fillStyle='#07080f';c.fillRect(1395,500,110,90);c.fillRect(1380,590,30,80);c.fillRect(1490,590,30,80);c.fillRect(1360,520,40,20);c.fillRect(1500,520,40,20);
+  // персонажи
+  const A=hero(c,650,720,22,{shirt:'#3aa76d',pants:'#2e2a40',helmet:'#f2c14e',vest:'#ffb547',lamp:true,face:1,tool:'pick',arm:2.05,pickColor:'#5ff3ff'});
+  const B=hero(c,1010,720,22,{shirt:'#d04a3a',pants:'#2e2a40',helmet:'#f2c14e',lamp:true,face:1,tool:'lantern',arm:1.2});
+  const C=hero(c,365,640,18,{shirt:'#2f6fd0',pants:'#2e2a40',helmet:'#e8e8e8',lamp:true,face:-1,arm:3.0});
+  // искры
+  for(let i=0;i<26;i++){const a=r()*Math.PI*2,d=20+r()*90;c.save();c.shadowColor='#5ff3ff';c.shadowBlur=10;c.fillStyle=r()<.7?'#bff9ff':'#5ff3ff';const q=4+r()*6;c.fillRect(760+Math.cos(a)*d,610+Math.sin(a)*d*.7,q,q);c.restore()}
+  // темнота
+  const o=document.createElement('canvas');o.width=W;o.height=H;const d=o.getContext('2d');
+  d.fillStyle='rgba(3,4,12,.9)';d.fillRect(0,0,W,H);d.globalCompositeOperation='destination-out';
+  const hole=(x,y,rad,a)=>{const gg=d.createRadialGradient(x,y,0,x,y,rad);gg.addColorStop(0,`rgba(0,0,0,${a})`);gg.addColorStop(1,'rgba(0,0,0,0)');d.fillStyle=gg;d.fillRect(x-rad,y-rad,2*rad,2*rad)};
+  hole(A.lamp[0]+80,A.lamp[1]+40,420,1);hole(B.lamp[0]+140,B.lamp[1]+40,470,1);hole(C.lamp[0],C.lamp[1]+80,300,.9);
+  hole(800,640,260,.9);hole(1060,320,220,.8);hole(110,670,170,.8);hole(1330,620,170,.7);hole(1080,760,260,.6);
+  c.drawImage(o,0,0);
+  cone(c,A.lamp[0],A.lamp[1],.45,360,.32,'#ffd08a',.3);
+  cone(c,B.lamp[0],B.lamp[1],.05,520,.28,'#ffd08a',.28);
+  cone(c,C.lamp[0],C.lamp[1],1.9,300,.3,'#ffd08a',.25);
+  glow(c,800,640,220,'#5ff3ff',.22);glow(c,1060,320,180,'#ff7ad9',.2);glow(c,1330,610,140,'#ff7ad9',.16);
+  eyes(c,1450,540,16,'#ff3b3b');
+  txt(c,'+3 Кианит',790,505,{f:F.d,size:34,align:'center',color:'#bff9ff',stroke:'#08131c',sw:7,glow:'#5ff3ff'});
+  // HUD: глубина
+  rr(c,30,30,400,140,16,'rgba(8,8,18,.72)','rgba(255,181,71,.5)',2);
+  txt(c,'ГЛУБИНА',54,66,{size:18,w:500,color:'#a89a8b'});
+  txt(c,'1 247 м',54,128,{f:F.d,size:62,color:'#ffb547',glow:'#ff9a2e',gb:14});
+  txt(c,'Слой: Кристаллы · до Магмы 253 м',54,156,{size:18,color:'#e9dfd3'});
+  // команда
+  rr(c,1250,30,320,170,16,'rgba(8,8,18,.72)');
+  txt(c,'КОМАНДА',1272,64,{size:16,w:500,color:'#a89a8b'});
+  [['Ты','#3aa76d',.86],['Kira_77','#d04a3a',.62],['dimon_pro','#2f6fd0',.34]].forEach(([n,col,hp],i)=>{const y=96+i*36;c.fillStyle=col;c.fillRect(1272,y-14,14,14);txt(c,n,1296,y,{size:18,w:500,color:'#e9dfd3'});rr(c,1420,y-14,128,12,6,'rgba(255,255,255,.12)');rr(c,1420,y-14,128*hp,12,6,hp<.4?'#ff5a5a':'#5fe08a')});
+  // предупреждение
+  rr(c,640,36,320,46,23,'rgba(120,20,30,.8)','#ff6a6a',2);txt(c,'ДАВЛЕНИЕ РАСТЁТ',800,67,{f:F.d,size:20,align:'center',color:'#ffd6d6'});
+  // рюкзак
+  rr(c,30,760,380,112,16,'rgba(8,8,18,.72)');
+  txt(c,'РЮКЗАК',54,796,{size:16,w:500,color:'#a89a8b'});txt(c,'34 / 50',386,796,{f:F.d,size:20,align:'right',color:'#e9dfd3'});
+  rr(c,54,808,332,12,6,'rgba(255,255,255,.12)');rr(c,54,808,332*.68,12,6,'#ffb547');
+  [['#5ff3ff','12'],['#ff7ad9','5'],['#f2c14e','17']].forEach(([col,n],i)=>{const x=54+i*110;c.save();c.shadowColor=col;c.shadowBlur=10;c.fillStyle=col;c.fillRect(x,834,22,22);c.restore();txt(c,'× '+n,x+32,853,{size:20,w:500,color:'#e9dfd3'})});
+  // слоты
+  const slots=['pick','lamp','tnt','rope','med',''];const sx=800-slots.length*92/2;
+  slots.forEach((t,i)=>{const x=sx+i*92,y=790;rr(c,x,y,80,80,12,'rgba(8,8,18,.75)',i===0?'#ffb547':'rgba(255,255,255,.15)',i===0?4:2);txt(c,String(i+1),x+8,y+20,{size:14,w:500,color:'#a89a8b'});
+    const cx=x+40,cy=y+42;c.save();
+    if(t==='pick'){c.fillStyle='#7a4f2a';c.save();c.translate(cx,cy);c.rotate(.6);c.fillRect(-4,-24,8,48);c.fillStyle='#5ff3ff';c.shadowColor='#5ff3ff';c.shadowBlur=10;c.beginPath();c.moveTo(-26,-20);c.quadraticCurveTo(0,-30,26,-20);c.quadraticCurveTo(0,-8,-26,-20);c.fill();c.restore()}
+    if(t==='lamp'){c.fillStyle='#555';c.fillRect(cx-12,cy-22,24,6);c.shadowColor='#ffcc66';c.shadowBlur=16;c.fillStyle='#ffd27a';c.fillRect(cx-14,cy-16,28,34)}
+    if(t==='tnt'){c.fillStyle='#d83a2a';c.fillRect(cx-18,cy-14,10,30);c.fillRect(cx-5,cy-14,10,30);c.fillRect(cx+8,cy-14,10,30);c.strokeStyle='#e9dfd3';c.lineWidth=3;c.beginPath();c.moveTo(cx,cy-14);c.quadraticCurveTo(cx+10,cy-26,cx+16,cy-22);c.stroke();txt(c,'×3',x+74,y+74,{size:14,w:700,align:'right',color:'#e9dfd3'})}
+    if(t==='rope'){c.strokeStyle='#b08a5a';c.lineWidth=5;for(let k=0;k<3;k++){c.beginPath();c.ellipse(cx,cy+6-k*8,20,8,0,0,7);c.stroke()}}
+    if(t==='med'){c.fillStyle='#f1ece4';c.fillRect(cx-20,cy-16,40,32);c.fillStyle='#e0413a';c.fillRect(cx-4,cy-11,8,22);c.fillRect(cx-11,cy-4,22,8)}
+    c.restore()});
+  // кислород/давление
+  rr(c,1190,760,380,112,16,'rgba(8,8,18,.72)');
+  txt(c,'КИСЛОРОД',1214,796,{size:16,w:500,color:'#a89a8b'});rr(c,1214,806,332,12,6,'rgba(255,255,255,.12)');rr(c,1214,806,332*.71,12,6,'#5ff3ff');
+  txt(c,'ДАВЛЕНИЕ',1214,846,{size:16,w:500,color:'#a89a8b'});rr(c,1214,856,332,12,6,'rgba(255,255,255,.12)');rr(c,1214,856,332*.82,12,6,'#ff5a5a');
+}
+
+/* ---------- 3. База ---------- */
+function art3(c,noHud){
+  const r=R(33),GY=640;
+  let g=c.createLinearGradient(0,0,0,GY);g.addColorStop(0,'#6cbcf5');g.addColorStop(1,'#d6f0ff');c.fillStyle=g;c.fillRect(0,0,W,GY);
+  c.save();c.shadowColor='#fff4c0';c.shadowBlur=60;c.fillStyle='#fff2b0';c.fillRect(730,36,80,80);c.restore();
+  [[380,120,5],[880,70,4],[1180,170,6],[620,230,3]].forEach(([x,y,n])=>{c.fillStyle='rgba(255,255,255,.92)';for(let i=0;i<n;i++){c.fillRect(x+i*36,y+(i%2?-16:0),48,34)}c.fillRect(x+20,y+12,n*36,30)});
+  for(let x=0;x<W;x+=40){const h=50+Math.abs(Math.sin(x*.005+1))*70;c.fillStyle='#8cc879';c.fillRect(x,GY-h,40,h)}
+  for(let x=0;x<W;x+=30){const h=20+Math.abs(Math.sin(x*.011))*40;c.fillStyle='#74b562';c.fillRect(x,GY-h,30,h)}
+  // табло
+  c.fillStyle='#4a3b30';c.fillRect(1180,300,14,GY-300);c.fillRect(1466,300,14,GY-300);
+  rr(c,1150,150,360,160,12,'rgba(18,14,24,.94)','#ffb547',4);
+  txt(c,'РЕКОРД СЕРВЕРА',1330,190,{f:F.d,size:22,align:'center',color:'#e9dfd3'});
+  txt(c,'3 812 м',1330,250,{f:F.d,size:58,align:'center',color:'#ffb547',glow:'#ff9a2e',gb:16});
+  txt(c,'мировой рекорд: 9 420 м',1330,288,{size:18,align:'center',color:'#a89a8b'});
+  // земля
+  blocks(c,0,GY+16,W,H,40,'#7a5634',r,[{p:.05,color:'#d9833f'},{p:.03,color:'#2a2a2a'}]);
+  c.fillStyle='#5cb043';c.fillRect(0,GY,W,10);c.fillStyle='#43892f';c.fillRect(0,GY+10,W,6);
+  // буры
+  const drill=(x,t)=>{const cols=['#8b5a2b','#8f9bab','#f2c14e'],col=cols[t],h=150+t*40,bl=110+t*50;
+    c.save();if(t===2){c.shadowColor='#ffd76a';c.shadowBlur=28}c.fillStyle=shade(col,-.08);c.beginPath();c.moveTo(x-24,GY+16);c.lineTo(x+24,GY+16);c.lineTo(x,GY+16+bl);c.closePath();c.fill();c.restore();
+    c.strokeStyle='rgba(0,0,0,.3)';c.lineWidth=3;for(let i=1;i<5;i++){const yy=GY+16+bl*i/5,ww=24*(1-i/5);c.beginPath();c.moveTo(x-ww,yy-6);c.lineTo(x+ww,yy+6);c.stroke()}
+    c.fillStyle='#555b63';c.fillRect(x-8,GY-h,16,h);
+    c.fillStyle=shade(col,-.25);c.fillRect(x-52,GY-h,12,h);c.fillRect(x+40,GY-h,12,h);
+    c.strokeStyle=shade(col,-.25);c.lineWidth=6;for(let i=0;i<3;i++){const y1=GY-h+i*h/3;c.beginPath();c.moveTo(x-46,y1);c.lineTo(x+46,y1+h/3);c.moveTo(x+46,y1);c.lineTo(x-46,y1+h/3);c.stroke()}
+    c.save();if(t===2){c.shadowColor='#ffd76a';c.shadowBlur=30}rr(c,x-66,GY-h-58,132,62,8,col);c.restore();
+    c.fillStyle='rgba(0,0,0,.2)';c.fillRect(x-66,GY-h-30,132,8);
+    c.fillStyle='#3a3a3a';c.fillRect(x+36,GY-h-86,16,30);
+    rr(c,x-22,GY-h-50,44,22,4,'rgba(0,0,0,.35)');txt(c,['I','II','III'][t],x,GY-h-33,{f:F.d,size:18,align:'center',color:'#fff'});
+    rr(c,x-74,GY-30,148,30,5,shade(col,-.18));
+    return GY-h-58};
+  const bubble=(x,y,t1,t2,col)=>{rr(c,x-120,y-82,240,70,14,'rgba(255,255,255,.95)');c.fillStyle='rgba(255,255,255,.95)';c.beginPath();c.moveTo(x-12,y-13);c.lineTo(x+12,y-13);c.lineTo(x,y);c.fill();txt(c,t1,x,y-54,{size:18,w:500,align:'center',color:'#4a3b30'});txt(c,t2,x,y-24,{f:F.d,size:24,align:'center',color:col})};
+  const tops=[drill(250,0),drill(520,1),drill(800,2)];
+  bubble(250,tops[0]-16,'Бур I','+12 руды/мин','#8b5a2b');
+  bubble(520,tops[1]-16,'Бур II','готово через 08:14','#4d6a8a');
+  bubble(800,tops[2]-16,'Бур III','ГОТОВО!','#2f9e4f');
+  // конвейер
+  c.fillStyle='#3a3f47';c.fillRect(180,GY-48,880,16);for(let x=190;x<1060;x+=34){c.fillStyle='#666d78';c.beginPath();c.arc(x,GY-32,7,0,7);c.fill()}
+  c.fillStyle='#4a4f57';for(let x=200;x<1060;x+=160)c.fillRect(x,GY-32,10,32);
+  [[330,'#d9833f'],[410,'#c9c2b8'],[650,'#f2c14e'],[700,'#d9833f'],[930,'#f2c14e'],[990,'#5ff3ff']].forEach(([x,col])=>{c.save();if(col==='#5ff3ff'||col==='#f2c14e'){c.shadowColor=col;c.shadowBlur=12}c.fillStyle=col;c.fillRect(x,GY-72,24,24);c.restore();c.fillStyle='rgba(0,0,0,.15)';c.fillRect(x,GY-52,24,4)});
+  // хранилище
+  c.fillStyle='#5d6f86';c.fillRect(1060,GY-190,220,190);c.fillStyle='#4a5a6e';c.fillRect(1050,GY-210,240,26);
+  c.fillStyle='#2b3440';c.fillRect(1130,GY-110,80,110);
+  rr(c,1074,GY-176,192,56,8,'#1d2430');txt(c,'ХРАНИЛИЩЕ',1170,GY-152,{f:F.d,size:18,align:'center',color:'#e9dfd3'});
+  rr(c,1090,GY-140,160,10,5,'rgba(255,255,255,.15)');rr(c,1090,GY-140,160*.62,10,5,'#ffb547');
+  txt(c,'1 240 / 2 000',1170,GY-120,{size:13,w:500,align:'center',color:'#a89a8b'});
+  // скупщик
+  c.fillStyle='#8a6240';c.fillRect(1320,GY-130,240,130);
+  for(let i=0;i<10;i++){c.fillStyle=i%2?'#f4efe6':'#d8463a';c.fillRect(1306+i*27,GY-158,27,30)}
+  c.fillStyle='#5a3f28';c.fillRect(1320,GY-70,240,14);
+  rr(c,1356,GY-218,168,46,8,'#2a1d14','#ffd27a',2);txt(c,'СКУПЩИК',1440,GY-187,{f:F.d,size:22,align:'center',color:'#ffd27a'});
+  hero(c,1440,GY-70,10,{shirt:'#6b4fa0',pants:'#33302a',skin:'#d9a066',face:-1});
+  txt(c,'+1 240',1440,GY-250,{f:F.d,size:36,align:'center',color:'#ffd24a',stroke:'#5a3a00',sw:7});
+  // вход в шахту
+  c.fillStyle='#1a1410';c.fillRect(30,GY,120,16);
+  c.strokeStyle='#5a4a3a';c.lineWidth=10;c.beginPath();c.moveTo(24,GY);c.lineTo(90,GY-110);c.lineTo(156,GY);c.stroke();c.fillStyle='#8a7a6a';c.beginPath();c.arc(90,GY-110,11,0,7);c.fill();
+  rr(c,40,GY-210,104,40,6,'#2a1d14');txt(c,'ШАХТА',92,GY-183,{f:F.d,size:18,align:'center',color:'#ffd27a'});
+  // игроки
+  hero(c,100,GY,10,{shirt:'#2f6fd0',pants:'#2e2a40',helmet:'#f2c14e',face:1,arm:2.7});
+  hero(c,960,GY,10,{shirt:'#3aa76d',pants:'#2e2a40',helmet:'#f2c14e',face:1,tool:'pick',arm:.4});
+  hero(c,1300,GY,10,{shirt:'#d04a3a',pants:'#2e2a40',helmet:'#f2c14e',face:1});
+  if(noHud)return;
+  rr(c,30,30,300,64,32,'rgba(18,14,24,.8)');c.save();c.shadowColor='#ffd24a';c.shadowBlur=10;c.fillStyle='#ffd24a';c.beginPath();c.arc(64,62,18,0,7);c.fill();c.restore();c.fillStyle='#c99a10';c.beginPath();c.arc(64,62,10,0,7);c.fill();
+  txt(c,'48 730',96,73,{f:F.d,size:30,color:'#fff'});
+  rr(c,350,30,330,64,32,'rgba(18,14,24,.8)');txt(c,'Перерождение 2 · x1.5',515,72,{size:22,w:500,align:'center',color:'#e9dfd3'});
+}
+
+/* ---------- 4. Магазин ---------- */
+function art4(c){
+  const o=document.createElement('canvas');o.width=W;o.height=H;art3(o.getContext('2d'),true);
+  c.filter='blur(8px)';c.drawImage(o,0,0);c.filter='none';
+  c.fillStyle='rgba(10,8,20,.6)';c.fillRect(0,0,W,H);
+  rr(c,150,50,1300,780,28,'#1b1630','#ffb547',3);
+  txt(c,'МАГАЗИН',200,122,{f:F.d,size:48,color:'#fff'});
+  rr(c,1170,82,180,52,26,'rgba(255,255,255,.08)');txt(c,'R$ 1 250',1260,117,{f:F.d,size:24,align:'center',color:'#e9dfd3'});
+  rr(c,1370,82,52,52,26,'rgba(255,255,255,.08)');c.strokeStyle='#e9dfd3';c.lineWidth=4;c.beginPath();c.moveTo(1384,96);c.lineTo(1408,120);c.moveTo(1408,96);c.lineTo(1384,120);c.stroke();
+  ['Пропуска','Бусты','Косметика'].forEach((t,i)=>{const x=200+i*190;rr(c,x,152,172,46,23,i===0?'#ffb547':'rgba(255,255,255,.07)');txt(c,t,x+86,183,{size:20,w:500,align:'center',color:i===0?'#1b1630':'#e9dfd3'})});
+  txt(c,'ПРОПУСКА НАВСЕГДА',200,240,{size:16,w:700,color:'#a89a8b'});
+  const icon=(t,cx,cy)=>{c.save();
+    if(t==='drill'){c.fillStyle='#ffb547';c.shadowColor='#ffb547';c.shadowBlur=18;c.beginPath();c.moveTo(cx-30,cy-30);c.lineTo(cx+30,cy-30);c.lineTo(cx,cy+40);c.fill();c.shadowBlur=0;c.strokeStyle='rgba(0,0,0,.3)';c.lineWidth=4;for(let i=0;i<4;i++){const y=cy-18+i*14,w=26-i*6;c.beginPath();c.moveTo(cx-w,y-4);c.lineTo(cx+w,y+4);c.stroke()}txt(c,'x2',cx+44,cy-14,{f:F.d,size:28,color:'#fff'})}
+    if(t==='gear'){c.fillStyle='#8f9bab';for(let i=0;i<8;i++){c.save();c.translate(cx,cy);c.rotate(i*Math.PI/4);c.fillRect(-8,-42,16,16);c.restore()}c.beginPath();c.arc(cx,cy,30,0,7);c.fill();c.fillStyle='#1b1630';c.beginPath();c.arc(cx,cy,11,0,7);c.fill()}
+    if(t==='bag'){rr(c,cx-32,cy-24,64,62,12,'#b0703a');rr(c,cx-32,cy-30,64,24,10,'#8a5428');c.fillStyle='#ffd27a';c.fillRect(cx-6,cy-12,12,12)}
+    if(t==='crown'){c.fillStyle='#ffd24a';c.shadowColor='#ffd24a';c.shadowBlur=16;c.beginPath();c.moveTo(cx-38,cy+24);c.lineTo(cx-38,cy-20);c.lineTo(cx-18,cy);c.lineTo(cx,cy-30);c.lineTo(cx+18,cy);c.lineTo(cx+38,cy-20);c.lineTo(cx+38,cy+24);c.closePath();c.fill()}
+    c.restore()};
+  const card=(x,y,w,h,title,desc,price,draw,tag,tagCol)=>{rr(c,x,y,w,h,18,'#251f3d','rgba(255,255,255,.08)',2);
+    rr(c,x+14,y+14,w-28,h*.42,12,'#1b1630');draw(x+w/2,y+14+h*.21);
+    if(tag){c.font=`700 13px ${F.b}`;const tw=c.measureText(tag).width+20;rr(c,x+22,y+22,tw,24,12,tagCol);txt(c,tag,x+32,y+39,{size:13,w:700,color:'#1b1630'})}
+    txt(c,title,x+20,y+h*.42+52,{f:F.d,size:22,color:'#fff'});
+    txt(c,desc,x+20,y+h*.42+80,{size:16,color:'#a89a8b'});
+    rr(c,x+20,y+h-62,w-40,44,22,'#3ecf6e');txt(c,'R$ '+price,x+w/2,y+h-33,{f:F.d,size:20,align:'center',color:'#0e2a17'})};
+  const cw=290,gap=20,x0=200;
+  [['x2 скорость бура','Копаешь вдвое быстрее','299','drill','ХИТ','#ffb547'],['Авто-копание','Бур на базе работает сам','249','gear'],['Двойной рюкзак','В два раза больше руды','199','bag'],['VIP','Тег в чате и x1.5 монет','299','crown']].forEach((d,i)=>card(x0+i*(cw+gap),256,cw,290,d[0],d[1],d[2],(cx,cy)=>icon(d[3],cx,cy),d[4],d[5]));
+  txt(c,'КОСМЕТИКА · СЕЗОН «ГЛУБОКИЙ ХОЛОД»',200,592,{size:16,w:700,color:'#a89a8b'});
+  const cos=[['Неоновый шлем','Редкий','149',{shirt:'#2a2d50',pants:'#1d1f36',helmet:'#5ff3ff',lamp:true},'#5ff3ff'],
+    ['Ледяная кирка','Эпический','249',{shirt:'#3a6ea8',pants:'#1d1f36',helmet:'#e8f6ff',tool:'pick',arm:1.9,pickColor:'#bff4ff'},'#b06bff'],
+    ['Скелет-шахтёр','Эпический','199',{shirt:'#e9e4da',pants:'#cfc8bb',skin:'#efeae0',eyes:'#ff3b3b',helmet:'#2a2a2a',lamp:true},'#b06bff'],
+    ['След лавы','Легендарный','399',{shirt:'#3a1611',pants:'#1a0d0a',helmet:'#ff6a1a',lamp:true},'#ffb547']];
+  cos.forEach((d,i)=>{const x=x0+i*(cw+gap),y=606,w=cw,h=208;rr(c,x,y,w,h,18,'#251f3d','rgba(255,255,255,.08)',2);
+    rr(c,x+14,y+14,110,h-28,12,'#1b1630');
+    if(i===3){for(let k=0;k<6;k++){c.save();c.shadowColor='#ff6a1a';c.shadowBlur=12;c.fillStyle=k%2?'#ffb547':'#ff6a1a';c.fillRect(x+30+k*12,y+h-34-(k%3)*4,10,10);c.restore()}}
+    hero(c,x+69,y+h-30,13,Object.assign({face:1},d[3]));
+    rr(c,x+138,y+20,120,24,12,d[4]);txt(c,d[1],x+198,y+37,{size:13,w:700,align:'center',color:'#1b1630'});
+    txt(c,d[0],x+138,y+78,{f:F.d,size:17,color:'#fff'});
+    rr(c,x+138,y+h-62,w-158,44,22,'#3ecf6e');txt(c,'R$ '+d[2],x+138+(w-158)/2,y+h-33,{f:F.d,size:20,align:'center',color:'#0e2a17'})});
+  rr(c,330,846,940,44,22,'rgba(255,181,71,.95)');
+  txt(c,'Kira_77 включил СЕРВЕРНЫЙ БУР: x2 скорость для всех · 14:59',800,876,{size:20,w:700,align:'center',color:'#1b1630'});
+}
+
+async function go(){
+  try{await Promise.race([Promise.all([document.fonts.load('400 40px "Russo One"','ГЛУБЖЕ abc'),document.fonts.load('400 20px "Rubik"','Глубина abc'),document.fonts.load('500 20px "Rubik"','Глубина'),document.fonts.load('700 20px "Rubik"','Глубина')]),new Promise(r=>setTimeout(r,2500))])}catch(e){}
+  [['c1',art1],['c2',art2],['c3',art3],['c4',art4]].forEach(([id,fn])=>{const cv=document.getElementById(id);try{fn(cv.getContext('2d'))}catch(e){console.error(id,e)}});
+  window.__done=true;
+}
+go();
+</script>
