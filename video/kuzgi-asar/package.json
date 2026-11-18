@@ -1,0 +1,14 @@
+{
+  "name": "kuzgi-asar",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render KuzgiAsar brag-output/work/silent.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.250",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.250"
+  }
+}

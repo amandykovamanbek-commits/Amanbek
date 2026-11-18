@@ -13,3 +13,6 @@ video/out/
 !video/s2e5/out/*.mp4
 !video/howto/out/*.mp4
 !video/limits/out/*.mp4
+!video/kuzgi-asar/brag-output/*.mp4
+video/kuzgi-asar/node_modules/
+video/kuzgi-asar/brag-output/work/
