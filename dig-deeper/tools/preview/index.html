@@ -1,0 +1,221 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Map Preview</title>
+<style>html,body{margin:0;background:#9fd3ff;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{ "imports": { "three": "./node_modules/three/build/three.module.js", "three/addons/": "./node_modules/three/examples/jsm/" } }</script>
+</head>
+<body>
+<script type="module">
+// Превью карты «Копай глубже»: рисует детали из build/map_preview.json через three.js.
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const params = new URLSearchParams(location.search);
+const view = params.get('view') || 'aerial';
+const W = +(params.get('w') || 1600), H = +(params.get('h') || 900);
+const data = await (await fetch('./map_preview.json')).json();
+const S = data.surfaceY;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H);
+renderer.setPixelRatio(1);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+// небо-градиент
+const sky = document.createElement('canvas'); sky.width = 4; sky.height = 256;
+const sg = sky.getContext('2d'); const grad = sg.createLinearGradient(0, 0, 0, 256);
+grad.addColorStop(0, '#3d8fe0'); grad.addColorStop(0.55, '#8cc8ff'); grad.addColorStop(1, '#d9f0ff');
+sg.fillStyle = grad; sg.fillRect(0, 0, 4, 256);
+const skyTex = new THREE.CanvasTexture(sky); skyTex.colorSpace = THREE.SRGBColorSpace;
+scene.background = skyTex;
+scene.fog = new THREE.Fog(0xbfe3ff, 380, 1100);
+
+scene.add(new THREE.HemisphereLight(0xcfe8ff, 0x5a8a3a, 1.1));
+const sun = new THREE.DirectionalLight(0xfff3dd, 2.4);
+sun.position.set(-160, S + 260, -120);
+sun.target.position.set(0, S, 0);
+sun.castShadow = true;
+sun.shadow.mapSize.set(4096, 4096);
+Object.assign(sun.shadow.camera, { left: -260, right: 260, top: 260, bottom: -260, near: 10, far: 900 });
+sun.shadow.bias = -0.0006;
+scene.add(sun); scene.add(sun.target);
+
+// текстура «студов» для верхних граней
+const stud = document.createElement('canvas'); stud.width = stud.height = 64;
+const st = stud.getContext('2d');
+st.fillStyle = '#ffffff'; st.fillRect(0, 0, 64, 64);
+st.fillStyle = 'rgba(0,0,0,0.16)'; st.beginPath(); st.arc(34, 35, 17, 0, Math.PI * 2); st.fill();
+st.fillStyle = '#ffffff'; st.beginPath(); st.arc(31, 31, 16, 0, Math.PI * 2); st.fill();
+st.strokeStyle = 'rgba(0,0,0,0.12)'; st.lineWidth = 2; st.stroke();
+st.fillStyle = 'rgba(255,255,255,0.9)'; st.beginPath(); st.arc(27, 27, 6, 0, Math.PI * 2); st.fill();
+const studTex = new THREE.CanvasTexture(stud);
+studTex.wrapS = studTex.wrapT = THREE.RepeatWrapping; studTex.colorSpace = THREE.SRGBColorSpace;
+studTex.anisotropy = 8;
+
+const toColor = c => new THREE.Color(`rgb(${c[0]},${c[1]},${c[2]})`);
+const matCache = new Map();
+function material(p, studs) {
+  const key = p.c.join(',') + p.m + p.t + (studs ? 's' : '');
+  if (matCache.has(key)) return matCache.get(key);
+  let m;
+  const color = toColor(p.c);
+  if (p.m === 'Neon') {
+    m = new THREE.MeshBasicMaterial({ color: color.clone().multiplyScalar(1.6) });
+  } else {
+    const metal = p.m === 'Metal' || p.m === 'DiamondPlate';
+    m = new THREE.MeshStandardMaterial({ color, roughness: metal ? 0.35 : 0.82, metalness: metal ? 0.55 : 0.0, map: studs ? studTex : null });
+    if (p.m === 'CrackedLava') { m.emissive = new THREE.Color(0x7a1a05); m.emissiveIntensity = 0.6; }
+  }
+  if (p.t > 0) { m.transparent = true; m.opacity = 1 - p.t; m.depthWrite = p.t < 0.3; }
+  matCache.set(key, m);
+  return m;
+}
+
+function addPart(p) {
+  if (p.t >= 0.99) return;
+  const [sx, sy, sz] = p.s;
+  let mesh;
+  if (p.sh === 'Cylinder') {
+    const g = new THREE.CylinderGeometry(Math.min(sy, sz) / 2, Math.min(sy, sz) / 2, sx, 40);
+    g.rotateZ(Math.PI / 2);
+    mesh = new THREE.Mesh(g, material(p, false));
+  } else if (p.sh === 'Ball') {
+    mesh = new THREE.Mesh(new THREE.SphereGeometry(Math.min(sx, sy, sz) / 2, 28, 20), material(p, false));
+  } else {
+    const g = new THREE.BoxGeometry(sx, sy, sz);
+    if (p.st) {
+      // UV верхней грани масштабируем по размеру — 1 «студ» на 1 stud
+      const uv = g.attributes.uv;
+      for (let i = 8; i < 12; i++) uv.setXY(i, uv.getX(i) * sx, uv.getY(i) * sz);
+      uv.needsUpdate = true;
+      const plain = material(p, false), studs = material(p, true);
+      mesh = new THREE.Mesh(g, [plain, plain, studs, plain, plain, plain]);
+    } else if (p.SignKey || p.Board) {
+      const plain = material(p, false);
+      const face = new THREE.MeshStandardMaterial({ map: signTexture(p), roughness: 0.8, emissive: 0xffffff, emissiveIntensity: 0.12, emissiveMap: null });
+      mesh = new THREE.Mesh(g, [plain, plain, plain, plain, plain, face]);
+    } else {
+      mesh = new THREE.Mesh(g, material(p, false));
+    }
+  }
+  const r = p.r;
+  const m4 = new THREE.Matrix4().set(r[0], r[1], r[2], p.p[0], r[3], r[4], r[5], p.p[1], r[6], r[7], r[8], p.p[2], 0, 0, 0, 1);
+  mesh.applyMatrix4(m4);
+  mesh.castShadow = p.m !== 'Neon' && p.t < 0.5;
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+}
+// надписи (в игре их рисует клиент на языке игрока; здесь — русский вариант)
+const SIGN_TEXT = { Title: 'КОПАЙ ГЛУБЖЕ', Sub: 'Докопайся до ядра планеты!', Mine: 'ШАХТА', Sell: 'ЛАВКА', PickShop: 'КУЗНИЦА',
+  BagShop: 'РЮКЗАКИ', Rebirth: 'ПЕРЕРОЖДЕНИЕ', Elevator: 'ЛИФТ', Daily: 'НАГРАДЫ' };
+const SIGN_COLOR = { Title: '#ffd84a', Mine: '#ffd84a' };
+function textCanvas(w, h, bg, draw) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d'); g.fillStyle = bg; g.fillRect(0, 0, w, h); draw(g, w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+function strokeText(g, text, x, y, size, color, align = 'center') {
+  g.font = `900 ${size}px "Arial Black", Arial, sans-serif`; g.textAlign = align; g.textBaseline = 'middle';
+  g.lineJoin = 'round'; g.lineWidth = Math.max(4, size / 7); g.strokeStyle = '#000'; g.strokeText(text, x, y);
+  g.fillStyle = color; g.fillText(text, x, y);
+}
+function fitSize(g, text, maxW, size) { g.font = `900 ${size}px "Arial Black", Arial, sans-serif`; const w = g.measureText(text).width; return w > maxW ? size * maxW / w : size; }
+function signTexture(p) {
+  const [sx, sy] = p.s; const W2 = 1024, H2 = Math.max(64, Math.round(1024 * sy / sx));
+  const bg = `rgb(${p.c.join(',')})`;
+  if (p.Board) {
+    return textCanvas(W2, H2, '#1e1e2c', (g, w, h) => {
+      g.fillStyle = p.Board === 'Depth' ? '#ffa028' : '#aa5aff'; g.fillRect(0, 0, w, h * 0.17);
+      strokeText(g, p.Board === 'Depth' ? 'ТОП ГЛУБИНЫ' : 'ТОП РЕБЁРТОВ', w / 2, h * 0.085, h * 0.11, '#fff');
+      const names = ['Kaban_PRO', 'MineMaster', 'DiggerX', 'Sasha2015', 'CoreHunter', 'Lava_King', 'Nikita', 'Pixel', 'Dimon', 'Rocky'];
+      names.forEach((n, i) => {
+        const y = h * (0.24 + i * 0.075), col = i === 0 ? '#ffd640' : i === 1 ? '#dce2f0' : i === 2 ? '#ffaa6e' : '#fff';
+        strokeText(g, `#${i + 1}  ${n}`, w * 0.06, y, h * 0.05, col, 'left');
+        strokeText(g, p.Board === 'Depth' ? `${(1000 - i * 87)} м` : `${12 - i}`, w * 0.94, y, h * 0.05, '#b8ff3d', 'right');
+      });
+    });
+  }
+  const text = SIGN_TEXT[p.SignKey] || p.SignKey;
+  return textCanvas(W2, H2, bg, (g, w, h) => {
+    const size = fitSize(g, text, w * 0.9, h * 0.62);
+    strokeText(g, text, w / 2, h / 2, size, SIGN_COLOR[p.SignKey] || '#ffffff');
+  });
+}
+const PAD_TEXT = { Sell: ['ПРОДАЖА', '#ff8a7c'], PickShop: ['КИРКИ', '#ffc060'], BagShop: ['РЮКЗАКИ', '#8cc4ff'], Rebirth: ['ПЕРЕРОЖДЕНИЕ', '#d2a0ff'], Elevator: ['ЛИФТ', '#ffe070'], Daily: ['НАГРАДЫ', '#9ef08c'] };
+function padLabel(p) {
+  const [text, color] = PAD_TEXT[p.PadKind] || [p.PadKind, '#fff'];
+  const tex = textCanvas(512, 160, 'rgba(0,0,0,0)', (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    strokeText(g, text, w / 2, h * 0.38, fitSize(g, text, w * 0.92, 64), color);
+    strokeText(g, 'Встань в круг', w / 2, h * 0.8, 30, '#ffffff');
+  });
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
+  spr.scale.set(22, 6.9, 1); spr.position.set(p.p[0], p.p[1] + 9, p.p[2]); scene.add(spr);
+}
+data.parts.forEach(p => {
+  addPart(p);
+  if (p.PadKind) padLabel(p);
+});
+
+
+// верхний слой шахты (на сервере он создаётся при запуске)
+let seed = 7;
+const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+for (let x = 0; x < 16; x++) for (let z = 0; z < 16; z++) {
+  const rare = rnd() < 0.08;
+  const f = 0.9 + rnd() * 0.16;
+  const c = rare ? [38, 38, 44] : [132 * f, 86 * f, 48 * f].map(Math.round);
+  addPart({ p: [-45 + x * 6, S - 3, -45 + z * 6], s: [6, 6, 6], r: [1, 0, 0, 0, 1, 0, 0, 0, 1], c, m: rare ? 'SmoothPlastic' : 'Plastic', t: 0, sh: 'Block', st: !rare });
+}
+
+// несколько «игроков» для масштаба
+function avatar(x, z, yaw, shirt, pants, pick) {
+  const g = new THREE.Group();
+  const skin = new THREE.MeshStandardMaterial({ color: 0xffd23f, roughness: 0.7 });
+  const box = (w, h, d, m, px, py, pz) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(px, py, pz); b.castShadow = true; g.add(b); return b; };
+  const sm = new THREE.MeshStandardMaterial({ color: shirt, roughness: 0.8 }), pm = new THREE.MeshStandardMaterial({ color: pants, roughness: 0.8 });
+  box(1, 2, 1, pm, -0.5, 1, 0); box(1, 2, 1, pm, 0.5, 1, 0); box(2, 2, 1, sm, 0, 3, 0);
+  box(1, 2, 1, sm, -1.5, 3, 0); const arm = box(1, 2, 1, sm, 1.5, 3.4, -0.6); arm.rotation.x = -1.1;
+  box(1.25, 1.25, 1.25, skin, 0, 4.65, 0);
+  if (pick) {
+    const h = box(0.35, 4, 0.35, new THREE.MeshStandardMaterial({ color: 0x7a4e2a }), 1.5, 4.6, -2.2); h.rotation.x = -0.5;
+    box(0.5, 0.6, 2.8, new THREE.MeshStandardMaterial({ color: pick, metalness: 0.5, roughness: 0.35 }), 1.5, 6.4, -3.2);
+  }
+  g.position.set(x, S, z); g.rotation.y = yaw; scene.add(g);
+}
+avatar(4, -114, Math.PI, 0x2f86ff, 0x23324f, 0xffc828);
+avatar(-6, -90, Math.PI * 0.9, 0xe0453a, 0x2b2b2b, 0xdedfe6);
+avatar(-90, -4, -Math.PI / 2, 0x3fc22b, 0x2a3a5a, 0x5febff);
+avatar(14, -40, Math.PI * 1.1, 0x9b4dff, 0x1f1f2a, 0xff6018);
+
+const VIEWS = {
+  aerial: { eye: [-150, S + 98, -205], at: [0, S - 8, 6], fov: 62 },
+  spawn: { eye: [8, S + 12, -150], at: [0, S + 12, 20], fov: 72 },
+  booths: { eye: [-12, S + 18, -34], at: [-96, S + 8, 50], fov: 70 },
+  east: { eye: [20, S + 20, -40], at: [100, S + 6, 10], fov: 70 },
+  shaft: { eye: [-20, S + 48, -20], at: [0, S - 30, 0], fov: 70 },
+  side: { eye: [330, S - 40, -260], at: [0, S - 70, 0], fov: 55 },
+};
+const v = VIEWS[view] || VIEWS.aerial;
+const camera = new THREE.PerspectiveCamera(v.fov, W / H, 0.5, 4000);
+camera.position.set(...v.eye); camera.lookAt(new THREE.Vector3(...v.at));
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), 0.45, 0.6, 0.86));
+composer.addPass(new OutputPass());
+composer.render();
+document.title = 'ready';
+</script>
+</body>
+</html>

@@ -2,6 +2,10 @@
   "name": "DigDeeper",
   "tree": {
     "$className": "DataModel",
+    "Workspace": {
+      "$className": "Workspace",
+      "Map": { "$path": "build/Map.rbxmx" }
+    },
     "ReplicatedStorage": {
       "Shared": { "$path": "src/shared" }
     },

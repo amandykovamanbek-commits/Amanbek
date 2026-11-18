@@ -18,3 +18,5 @@ video/out/
 *.exe
 *.rbxl.lock
 *.rbxlx.lock
+dig-deeper/build/map_preview.json
+node_modules/
