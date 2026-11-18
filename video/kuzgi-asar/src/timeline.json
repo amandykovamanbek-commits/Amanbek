@@ -1,15 +1,13 @@
 {
-  "fps": 30, "bpm": 100, "beat": 18, "bar": 72, "wipe": 12,
+  "fps": 30, "bpm": 100, "beat": 18, "wipe": 9,
   "scenes": [
-    {"id": "hook",   "bars": 3, "pops": [0, 18, 54, 72, 108]},
-    {"id": "sala",   "bars": 3, "pops": [36, 54, 72, 90]},
-    {"id": "maqsat", "bars": 4, "pops": [18, 36]},
-    {"id": "mindet", "bars": 5, "pops": [36, 72, 108]},
-    {"id": "qural",  "bars": 3, "pops": [27, 36, 45, 54, 63, 72, 81, 90]},
-    {"id": "stage1", "bars": 3, "pops": [36, 72, 108]},
-    {"id": "stage2", "bars": 6, "pops": [36, 108, 180, 252]},
-    {"id": "stage3", "bars": 3, "pops": [18, 45, 72, 99, 117]},
-    {"id": "natije", "bars": 4, "pops": [36, 72, 108]},
-    {"id": "outro",  "bars": 3, "pops": [18, 90, 126]}
+    {"id": "hook",   "beats": 6, "pops": [0, 2, 14, 26, 38]},
+    {"id": "sala",   "beats": 3, "pops": [4, 9, 13, 18]},
+    {"id": "maqsat", "beats": 4, "pops": [2, 6]},
+    {"id": "mindet", "beats": 4, "pops": [6, 15, 24]},
+    {"id": "qural",  "beats": 3, "pops": [4, 9, 13, 18, 22, 27]},
+    {"id": "uia",    "beats": 5, "pops": [9, 27, 45]},
+    {"id": "natije", "beats": 3, "pops": [4, 9, 13, 18]},
+    {"id": "outro",  "beats": 4, "pops": [0, 30, 42]}
   ]
 }

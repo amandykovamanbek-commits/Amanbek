@@ -3,8 +3,9 @@ const fs = require('node:fs');
 const TL = require('./src/timeline.json');
 const out = process.argv[2] || 'brag-output/work/mix_raw.wav';
 const SR = 48000, BEAT = 60 / TL.bpm, BAR = BEAT * 4, FPS = TL.fps;
-const bars = TL.scenes.reduce((a, s) => a + s.bars, 0);
-const DUR = bars * BAR;
+const beats = TL.scenes.reduce((a, s) => a + s.beats, 0);
+const bars = Math.ceil(beats / 4);
+const DUR = beats * BEAT;
 const N = Math.ceil((DUR + 0.2) * SR);
 const L = new Float32Array(N), R = new Float32Array(N), REV = new Float32Array(N);
 let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 2 - 1;
@@ -43,7 +44,7 @@ const CH = [ // pluck tones, bass, pad
 ];
 const K = kick(), C = clap(), HC = hat(false), HO = hat(true);
 for (let b = 0; b < bars; b++) {
-  const t0 = b * BAR, ch = CH[b % 4], last = b === bars - 1, intro = b === 0;
+  const t0 = b * BAR, ch = CH[b % 4], last = b === bars - 1, intro = false;
   put(t0, pad(ch.pad, BAR + 0.6), 0.05, 0, 0.4);
   if (last) { // final ring
     put(t0, pad(CH[0].pad, BAR), 0.06, 0, 0.5);
@@ -72,24 +73,25 @@ for (let b = 0; b < bars; b++) {
 }
 // pentatonic bell motif over hook and outro
 const motif = [[0, 74], [0.75, 76], [1.5, 78], [2, 81], [3, 78], [3.5, 76], [4, 74]];
-for (const startBar of [1, bars - 3]) for (const [bt, m] of motif) put(startBar * BAR + bt * BEAT, bell(m), 0.06, 0.15, 0.5);
+for (const [bt, m] of motif) put(bt * BEAT, bell(m), 0.05, 0.15, 0.5);
 
 /* ---------- SFX (cues from the same timeline) ---------- */
 const PENTA = [74, 76, 78, 81, 83, 86];
 let start = 0;
 TL.scenes.forEach((s, si) => {
-  const t0 = start * BAR;
+  const t0 = start * BEAT;
   if (si > 0) put(t0 - TL.wipe / FPS - 0.05, whoosh(0.55), 0.18, si % 2 ? 0.3 : -0.3, 0.3);
+  let prevQ = -1;
   s.pops.forEach((f, k) => {
-    const t = t0 + f / FPS;
+    const S16 = BEAT / 4, t = Math.round((t0 + f / FPS) / S16) * S16; // quantize to the 16th grid
+    if (t <= prevQ + 1e-6) return; prevQ = t;
     put(t, pluck(PENTA[(k + si) % PENTA.length], 0.5, 0.9), 0.08, (k % 2 ? 0.3 : -0.3), 0.3);
   });
-  start += s.bars;
+  start += s.beats;
 });
 // chime on the title and on the final quote
 const chime = (t) => [74, 78, 81, 86].forEach((m, i) => put(t + i * 0.06, bell(m, 1.8), 0.05, (i - 1.5) * 0.3, 0.6));
-chime(18 / FPS);
-chime((bars - 3) * BAR + 18 / FPS);
+chime((beats - TL.scenes[TL.scenes.length - 1].beats) * BEAT);
 
 /* ---------- reverb (Schroeder) on send ---------- */
 const comb = (x, d, g) => { const y = new Float32Array(x.length); for (let i = 0; i < x.length; i++) y[i] = x[i] + (i >= d ? g * y[i - d] : 0); return y; };

@@ -175,7 +175,7 @@ export const Scene: React.FC<{
       />
       <Leaves g={g} count={leaves} opacity={0.85} />
       <AbsoluteFill style={{opacity: 1 - exit, transform: `translateY(${-40 * exit}px)`}}>{children}</AbsoluteFill>
-      {index > 0 && index < 9 && (
+      {index > 0 && index < TL.scenes.length - 1 && (
         <div
           style={{
             position: 'absolute',
@@ -195,7 +195,7 @@ export const Scene: React.FC<{
           <span>«КҮЗГІ АСАР» ЖӘРМЕНКЕСІ · МАД ТОБЫ</span>
           <span>
             {label} &nbsp;
-            <b style={{color: theme.fg}}>{String(index).padStart(2, '0')}</b> / 08
+            <b style={{color: theme.fg}}>{String(index).padStart(2, '0')}</b> / {String(TL.scenes.length - 2).padStart(2, '0')}
           </span>
         </div>
       )}

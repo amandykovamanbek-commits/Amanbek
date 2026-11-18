@@ -6,7 +6,7 @@ import {Scene, WIPE} from './ui';
 
 const starts: number[] = [];
 let acc = 0;
-for (const s of TL.scenes) { starts.push(acc); acc += s.bars * TL.bar; }
+for (const s of TL.scenes) { starts.push(acc); acc += s.beats * TL.beat; }
 export const TOTAL = acc;
 
 const SceneHost: React.FC<{i: number; from: number}> = ({i, from}) => {
@@ -14,7 +14,7 @@ const SceneHost: React.FC<{i: number; from: number}> = ({i, from}) => {
   const s = TL.scenes[i];
   const def = SCENES[s.id];
   const t = f - (i > 0 ? WIPE : 0);
-  const len = s.bars * TL.bar;
+  const len = s.beats * TL.beat;
   return (
     <Scene theme={def.theme} t={t} len={len} g={f + from} origin={def.origin} first={i === 0} index={i} label={def.label}
       leaves={i === 0 || i === TL.scenes.length - 1 ? 16 : 8}>
@@ -28,7 +28,7 @@ export const KuzgiAsar: React.FC = () => (
     {TL.scenes.map((s, i) => {
       const last = i === TL.scenes.length - 1;
       const from = starts[i] - (i > 0 ? WIPE : 0);
-      const dur = s.bars * TL.bar + (i > 0 ? WIPE : 0) + (last ? 0 : WIPE);
+      const dur = s.beats * TL.beat + (i > 0 ? WIPE : 0) + (last ? 0 : WIPE);
       return (
         <Sequence key={s.id} from={from} durationInFrames={dur} name={s.id}>
           <SceneHost i={i} from={from} />
