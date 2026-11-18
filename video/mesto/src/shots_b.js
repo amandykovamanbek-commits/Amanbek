@@ -99,10 +99,10 @@ export function houseVideo(hs, t) {
   const cam = hs.camB;
   const p = kv(t, [[30, [2.3, 1.52, -0.3]], [32.6, [2.32, 1.5, -0.3]], [33.4, [2.2, 1.38, -0.38]], [35.4, [2.12, 1.36, -0.4]], [37.2, [1.45, 1.42, 0.45], 'io'], [40, [1.3, 1.36, 0.3]]]);
   const tg = kv(t, [[30, [-0.6, 0.95, -0.5]], [32.4, [-0.4, 0.95, -0.45]], [33.1, [1.62, 0.95, -0.5]], [35.5, [1.6, 0.95, -0.5]], [37.2, [0.3, 0.85, -0.95], 'io'], [40, [0.32, 0.83, -0.9]]]);
-  if (t > 33.2 && t < 35.4) tg.copy(V3(1.62, 0.96, -0.48).lerp(paper.position, 0.6));
+  if (t > 33.2 && t < 35.4) tg.copy(V3(1.62, 0.96, -0.48).lerp(paper.position, 0.6)).add(V3(0, -0.02 * sstep(33.2, 33.6, t) * (1 - sstep(35.0, 35.4, t)), 0));
   p.add(shake(t, 0.012, 1.6, 7)); tg.add(shake(t, 0.03, 1.1, 8));
   cam.aspect = env.W / env.H; cam.updateProjectionMatrix();
-  aim(cam, p, tg, kf(t, [[30, 42], [33.2, 42], [34.2, 34], [35.4, 40], [38.3, 36], [40, 32]]), Math.sin(t * 0.9) * 0.03);
+  aim(cam, p, tg, kf(t, [[30, 42], [33.2, 44], [34.2, 41], [35.4, 42], [38.3, 36], [40, 32]]), Math.sin(t * 0.9) * 0.03);
   return cam;
 }
 let rt = null;
@@ -125,15 +125,15 @@ function videoUI(ctx, t, alpha = 1) {
   ctx.save(); ctx.globalAlpha *= alpha;
   const y0 = O.PIC.y, y1 = O.PIC.y + O.PIC.h;
   // top: sender
-  const g = ctx.createLinearGradient(0, y0, 0, y0 + 120); g.addColorStop(0, 'rgba(0,0,0,0.45)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = g; ctx.fillRect(0, y0, 1920, 120);
+  const g = ctx.createLinearGradient(0, y0, 0, y0 + 170); g.addColorStop(0, 'rgba(0,0,0,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, y0, 1920, 170);
   const ag = ctx.createLinearGradient(60, y0 + 30, 110, y0 + 80); ag.addColorStop(0, '#6ab0ff'); ag.addColorStop(1, '#2a72d8');
   ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(90, y0 + 58, 26, 0, 7); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.font = '600 26px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('П', 90, y0 + 59);
   ctx.textAlign = 'left'; ctx.font = '600 28px Inter'; ctx.fillText('Папа', 132, y0 + 48); ctx.font = '400 21px Inter'; ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.fillText('сегодня в 22:50', 132, y0 + 78);
   // bottom: progress + caption
-  const g2 = ctx.createLinearGradient(0, y1 - 190, 0, y1); g2.addColorStop(0, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,0.6)');
-  ctx.fillStyle = g2; ctx.fillRect(0, y1 - 190, 1920, 190);
+  const g2 = ctx.createLinearGradient(0, y1 - 110, 0, y1); g2.addColorStop(0, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,0.5)');
+  ctx.fillStyle = g2; ctx.fillRect(0, y1 - 110, 1920, 110);
   const prog = clamp((t - 30) / 12);
   ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(80, y1 - 46, 1760, 5);
   ctx.fillStyle = '#fff'; ctx.fillRect(80, y1 - 46, 1760 * prog, 5); ctx.beginPath(); ctx.arc(80 + 1760 * prog, y1 - 43.5, 9, 0, 7); ctx.fill();
@@ -143,7 +143,7 @@ function videoUI(ctx, t, alpha = 1) {
   if (ce > 0) {
     ctx.globalAlpha *= ce; ctx.textAlign = 'center'; ctx.font = 'italic 400 44px "Cormorant Garamond"'; ctx.fillStyle = '#fff';
     ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = 14;
-    ctx.fillText('Папа: «Айко весь день рисовала»', 960, y1 - 112 + (1 - ce) * 12);
+    ctx.textAlign = 'left'; ctx.font = 'italic 400 40px "Cormorant Garamond"'; ctx.fillText('«Айко весь день рисовала»', 132, y0 + 124 + (1 - ce) * 10);
   }
   ctx.restore();
 }
