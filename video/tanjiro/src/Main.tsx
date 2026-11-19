@@ -10,9 +10,9 @@ import { clamp, easeOut, seg } from "./lib";
 export const GAP = 1.6;
 export const INTRO = 2.4;
 export const OUTRO = 4.0;
-type Word = { w: string; p: number; s: number; e: number };
-type Chapter = { i: number; head: string; start: number; dur: number; words: Word[] };
-const CH = (timeline as any).chapters as Chapter[];
+export type Word = { w: string; p: number; s: number; e: number };
+export type Chapter = { i: number; head: string; start: number; dur: number; words: Word[] };
+export const CH = (timeline as any).chapters as Chapter[];
 export const TOTAL = (timeline as any).end + OUTRO;
 
 const norm = (w: string) => w.toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9]/g, "");
@@ -52,7 +52,7 @@ const RESOLVED: Resolved[] = (() => {
 export const ALL_SHOTS = RESOLVED;
 
 // fonts ------------------------------------------------------------------------
-const useFonts = () => {
+export const useFonts = () => {
   const [handle] = useState(() => delayRender("fonts"));
   useEffect(() => {
     const css = document.createElement("style");
@@ -61,7 +61,7 @@ const useFonts = () => {
       document.head.appendChild(css);
       await Promise.all([
         document.fonts.load("900 40px Rubik", "Тест"), document.fonts.load("700 40px Rubik", "Тест"),
-        document.fonts.load("40px 'Rubik Dirt'", "Тест"), document.fonts.load("40px 'Yuji Boku'", "炭鬼"),
+        document.fonts.load("40px 'Rubik Dirt'", "Тест"), document.fonts.load("40px 'Yuji Boku'", "炭鬼"), document.fonts.load("40px 'Reggae One'", "ВСЯ ТВОЯ ЖИЗНЬ И СТАЛ ИМ."),
       ]);
       continueRender(handle);
     });
@@ -115,7 +115,7 @@ const HUD_RESOLVED = HUD_EVENTS.map((e) => {
   const set = e.cdTo ? { ...(e.set || {}), countdown: [T, cueTime(CH[e.cdTo[0]], e.cdTo[1], 0)[0]] as [number, number] } : e.set;
   return { ...e, set, T };
 }).sort((a, b) => a.T - b.T);
-const hudAt = (T: number) => {
+export const hudAt = (T: number) => {
   let st: HudState = { age: 13, fam: 6 };
   let changedAge = -99, changedFam = -99;
   for (const e of HUD_RESOLVED) {
@@ -211,7 +211,7 @@ const Card: React.FC<{ T: number }> = ({ T }) => {
 };
 
 // camera life: the frame never freezes (slow drift + tiny roll), on top of each shot's own move
-const camLife = (T: number) => {
+export const camLife = (T: number) => {
   const P = Math.PI * 2;
   const dx = 6 * Math.sin(P * 0.07 * T) + 3 * Math.sin(P * 0.13 * T + 1);
   const dy = 4 * Math.sin(P * 0.05 * T + 2) + 2 * Math.sin(P * 0.11 * T);
