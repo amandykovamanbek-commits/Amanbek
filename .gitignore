@@ -13,3 +13,7 @@ video/out/
 !video/s2e5/out/*.mp4
 !video/howto/out/*.mp4
 !video/limits/out/*.mp4
+video/tanjiro/node_modules/
+video/tanjiro/public/audio/*.wav
+!video/tanjiro/out/*.mp4
+video/tanjiro/out/silent.mp4

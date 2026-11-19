@@ -1,0 +1,19 @@
+{
+  "name": "tanjiro-life",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.380",
+    "@remotion/media": "^4.0.380",
+    "@remotion/renderer": "^4.0.380",
+    "@types/react": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.380",
+    "typescript": "^5.8.3"
+  }
+}
