@@ -9,7 +9,9 @@ export const RemotionRoot = () => (
     {[0, 1, 2, 3].map((i) => (
       <Composition key={i} id={`Sheet${i}`} component={ModelSheet} durationInFrames={30} fps={30} width={1920} height={1080} defaultProps={{ page: i }} />
     ))}
-    <Composition id="Thumb" component={Thumb} durationInFrames={1} fps={30} width={1920} height={1080} />
+    {[1, 2, 3].map((v) => (
+      <Composition key={v} id={`Thumb${v}`} component={Thumb} durationInFrames={1} fps={30} width={1920} height={1080} defaultProps={{ v }} />
+    ))}
     <Composition id="Cast" component={Cast} durationInFrames={30} fps={30} width={1920} height={1080} />
   </>
 );
