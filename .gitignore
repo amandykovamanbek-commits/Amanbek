@@ -17,3 +17,8 @@ video/tanjiro/node_modules/
 video/tanjiro/public/audio/*.wav
 !video/tanjiro/out/*.mp4
 video/tanjiro/out/silent.mp4
+video/tanjiro/out/tanjiro_HQ.mp4
+video/tanjiro/out/stitched.mp4
+video/tanjiro/out/tail.mp4
+video/tanjiro/out/web.mp4
+video/tanjiro/out/concat.txt

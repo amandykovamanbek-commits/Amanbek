@@ -452,8 +452,8 @@ export const CH15: Shot[] = [
             <Act key={id as string} id={id as string} t={t + i} seed={i} p={{ x: x as number, y: 1160, s: 0.85, expr: "smile", patch: id === "tanjiro", op: seg(t, i * 0.15, i * 0.15 + 0.5) }} />
           ))}
         </Stage>
-        <Caption text="НА КАКОМ МОМЕНТЕ БЫЛО БОЛЬНЕЕ ВСЕГО?" t={t} t0={0.2} dur={d} y={250} size={64} c="#fff" font="Rubik, sans-serif" />
-        <Caption text="КОГО ДЕЛАТЬ СЛЕДУЮЩИМ? ↓" t={t} t0={2.5} dur={d - 2.5} y={300} size={56} c="#ff9a2a" font="Rubik, sans-serif" />
+        <Caption text="НА КАКОМ МОМЕНТЕ БЫЛО БОЛЬНЕЕ ВСЕГО?" t={t} t0={0.2} dur={d} y={190} size={64} c="#fff" font="Rubik, sans-serif" />
+        <Caption text="КОГО ДЕЛАТЬ СЛЕДУЮЩИМ? ↓" t={t} t0={2.5} dur={d - 2.5} y={310} size={56} c="#ff9a2a" font="Rubik, sans-serif" />
       </>
     ),
   },
