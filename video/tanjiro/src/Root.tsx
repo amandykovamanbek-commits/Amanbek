@@ -5,6 +5,7 @@ import { Thumb } from "./Thumb";
 import { ThumbGenre } from "./ThumbGenre";
 import { ThumbReal } from "./ThumbReal";
 import { ThumbCut } from "./ThumbCut";
+import { ThumbKing } from "./ThumbKing";
 import { Main, TOTAL } from "./Main";
 export const RemotionRoot = () => (
   <>
@@ -23,6 +24,9 @@ export const RemotionRoot = () => (
     ))}
     {[1, 2, 3].map((v) => (
       <Composition key={"c" + v} id={`Cut${v}`} component={ThumbCut} durationInFrames={1} fps={30} width={1920} height={1080} defaultProps={{ v }} />
+    ))}
+    {[1, 2, 3, 4].map((v) => (
+      <Composition key={"k" + v} id={`King${v}`} component={ThumbKing} durationInFrames={1} fps={30} width={1920} height={1080} defaultProps={{ v }} />
     ))}
     <Composition id="Cast" component={Cast} durationInFrames={30} fps={30} width={1920} height={1080} />
   </>
