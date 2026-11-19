@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: victory-screen-from-image
+expected_outcome: |
+  Studio-ready Luau files for an end-of-round results screen with placings table, rewards row and Play again / Lobby buttons, opened by the server with real data, plus a Russian install guide.
+context:
+  scaffold_script: place-files.sh

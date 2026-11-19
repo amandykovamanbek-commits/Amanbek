@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: shop-from-screenshot
+expected_outcome: |
+  Studio-ready Luau files (client UI built in code, server purchase validation, shared config) recreating the shop window with three tabs and coin/gem prices, plus a Russian install guide.
+context:
+  scaffold_script: place-files.sh

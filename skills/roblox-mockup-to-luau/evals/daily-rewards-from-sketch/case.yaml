@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: daily-rewards-from-sketch
+expected_outcome: |
+  Studio-ready Luau files for a 7-day daily reward window that follow the handwritten notes (streak reset, greyed claim button), with server-side claim validation and a Russian install guide.
+context:
+  scaffold_script: place-files.sh
